@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+
+# TO DO
+#   Add functionality to capture any errors that are reported in the column of dashes at the end of a smartctl -a output. For any item in that column that is NOT a dash then that whole line should be shown in the output.
 import re
 import subprocess
 import os
