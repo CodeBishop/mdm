@@ -7,6 +7,7 @@ import re
 import subprocess
 import os
 import inspect
+import sys
 
 # Fetch the null device for dumping unsightly error messages into.
 DEVNULL = open(os.devnull, 'w')
@@ -14,10 +15,14 @@ MISSING_FIELD = ''  # This is what capture() returns if can't find the search st
 RECORD_CAPTURE_FAILURE, IGNORE_CAPTURE_FAILURE = 1, 2
 
 captureFailures = list()
-
+debugMode = False
 
 # Program definition.
 def main():
+    # Hide traceback dump unless in debug mode.
+    if not debugMode:
+        sys.tracebacklimit = 0
+
     # haltWithoutRootAuthority();
     # print "Hello"
     smartctlOutput = terminalCommand('smartctl -s on -a /dev/sda')
