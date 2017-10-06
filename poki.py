@@ -12,9 +12,6 @@ import sys
 
 from pySMART import Device
 
-sda = Device("/dev/sda")
-print sda.serial
-
 # Fetch the null device for dumping unsightly error messages into.
 DEVNULL = open(os.devnull, 'w')
 MISSING_FIELD = ''  # This is what capture() returns if can't find the search string.
@@ -29,11 +26,22 @@ def main():
     if not debugMode:
         sys.tracebacklimit = 0
 
-    # haltWithoutRootAuthority();
-    # print "Hello"
-    smartctlOutput = terminalCommand('smartctl -s on -a /dev/sda')
+    # Check for root.
+    haltWithoutRootAuthority()
+
+    # Load hard drive data.
+    sda = Device("/dev/sda")
+    print sda.serial
+    print sda.all_attributes()
+    print sda.model, sda.capacity
+    print "Device name: ", sda.name
+    print "Interface: ", sda.interface
+    print "Is SSD:", sda.is_ssd
+    print sda.all_selftests()
+
+    # smartctlOutput = terminalCommand('smartctl -s on -a /dev/sda')
     # print smartctlOutput
-    print "Serial: " + capture(r"Serial Number:\w*(.*)", smartctlOutput, IGNORE_CAPTURE_FAILURE)
+    # print "Serial: " + capture(r"Serial Number:\w*(.*)", smartctlOutput, IGNORE_CAPTURE_FAILURE)
 
 
 # Use a regular expression to capture part of a string or return MISSING_FIELD if unable.
