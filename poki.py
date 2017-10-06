@@ -20,6 +20,7 @@ RECORD_CAPTURE_FAILURE, IGNORE_CAPTURE_FAILURE = 1, 2
 captureFailures = list()
 debugMode = False
 
+
 # Program definition.
 def main():
     # Hide traceback dump unless in debug mode.
@@ -31,13 +32,18 @@ def main():
 
     # Load hard drive data.
     sda = Device("/dev/sda")
-    print sda.serial
-    print sda.all_attributes()
-    print sda.model, sda.capacity
+    print "All attributes\n--------------\n", sda.all_attributes(), "\n"
+    print "All self tests\n--------------\n", sda.all_selftests(), "\n"
+    print "Device model: ", sda.model
+    print "Serial number: ", sda.serial
+    print "Capacity: ", sda.capacity
     print "Device name: ", sda.name
     print "Interface: ", sda.interface
     print "Is SSD:", sda.is_ssd
-    print sda.all_selftests()
+    print "Assessment: ", sda.assessment
+    print "Firmware: ", sda.firmware
+    print "SMART suppored: ", sda.supports_smart
+
 
     # smartctlOutput = terminalCommand('smartctl -s on -a /dev/sda')
     # print smartctlOutput
@@ -69,10 +75,10 @@ def dumpCaptureFailures():
         print "   when called by: " + caller + "()" + "\n"
 
 
-# Run no-op (:) with sudo and halt if lacking root authority.
+# Run "true" with sudo (which does nothing) to test for root authority.
 def haltWithoutRootAuthority():
     try:
-        proc = subprocess.Popen(["sudo", ":"], stdout=subprocess.PIPE)
+        proc = subprocess.Popen(["sudo", "true"], stdout=subprocess.PIPE)
         proc.wait()
     except KeyboardInterrupt:
         assert False, "Cannot proceed without root authority."
