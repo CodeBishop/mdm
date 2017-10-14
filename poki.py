@@ -9,6 +9,7 @@ import subprocess
 import os
 import inspect
 import sys
+import glob
 
 from pySMART import Device
 
@@ -23,6 +24,21 @@ debugMode = False
 
 # Program definition.
 def main():
+    devicePaths = glob.glob('/dev/sd?')
+    for devicePath in devicePaths:
+        # Example output line:
+        #     sda, 120GB Kingston SSD, 1408 hours, realloc=0
+
+        # Show device name.
+        sys.stdout.write(devicePath[-3:] + ' ')
+
+        # Attempt to load device smartctl info.
+        device = Device(devicePath)
+
+        # Construct smartctl entry for device.
+        description = device.capacity + ' ' + device.model
+        print description
+
     # Hide traceback dump unless in debug mode.
     if not debugMode:
         sys.tracebacklimit = 0
@@ -49,6 +65,8 @@ def main():
     # print smartctlOutput
     # print "Serial: " + capture(r"Serial Number:\w*(.*)", smartctlOutput, IGNORE_CAPTURE_FAILURE)
 
+
+# def getAllDevices():
 
 # Use a regular expression to capture part of a string or return MISSING_FIELD if unable.
 def capture(pattern, text, failureAction=RECORD_CAPTURE_FAILURE):
