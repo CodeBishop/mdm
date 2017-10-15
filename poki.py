@@ -3,6 +3,8 @@
 
 # TO DO
 #   Add functionality to capture any errors that are reported in the column of dashes at the end of a smartctl -a output. For any item in that column that is NOT a dash then that whole line should be shown in the output.
+#   Test with various drives including both SSD and HDD.
+#   Delete the reallocated_sector_ct attribute from Device to test handling.
 
 import re
 import subprocess
@@ -35,8 +37,11 @@ def main():
         # Attempt to load device smartctl info.
         device = Device(devicePath)
 
-        # Construct smartctl entry for device.
-        description = device.capacity + ' ' + device.model
+        # Construct and print smartctl entry for device.
+        description = device.capacity + ' '
+        description += "SSD " if device.is_ssd else "HDD "
+        description += device.model + ' '
+        description += "realloc=" + str(device.attributes[5].raw) + ' '
         print description
 
     # Hide traceback dump unless in debug mode.
