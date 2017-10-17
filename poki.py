@@ -2,9 +2,11 @@
 
 
 # TO DO
-#   Add functionality to capture any errors that are reported in the column of dashes at the end of a smartctl -a output. For any item in that column that is NOT a dash then that whole line should be shown in the output.
 #   Test with various drives including both SSD and HDD.
 #   Delete the reallocated_sector_ct attribute from Device to test handling.
+#   Figure out why text is not being colored on sysrescue version of Linux. Other programs color their text on it.
+#   Decide how to display WHEN_FAILED attributes. Separate column headered section for each drive?
+#   Clean up the drive list so that it's fixed column widths (Example: realloc= always in same spot).
 
 import re
 import subprocess

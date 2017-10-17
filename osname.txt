@@ -1,0 +1,1 @@
+Linux sysresccd 3.18.25-std471-amd64 #2 SMP Fri Jan 1 21:48:48 UTC 2016 x86_64 AMD Athlon(tm) II X2 250 Processor AuthenticAMD GNU/Linux
