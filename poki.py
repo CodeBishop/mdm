@@ -15,6 +15,15 @@ import glob
 
 from pySMART import Device
 
+# Color codes for printing in color to the terminal.
+# default color \033[00m
+# red \033[91m   green \033[92m   yellow \033[93m   magenta \033[94m   purple \033[95m   cyan \033[96m   gray \033[97m
+COLOR_DEFAULT = '\033[00m'
+COLOR_RED = '\033[91m'
+COLOR_YELLOW = '\033[93m'
+COLOR_GREEN = '\033[92m'
+
+
 # Fetch the null device for dumping unsightly error messages into.
 DEVNULL = open(os.devnull, 'w')
 MISSING_FIELD = ''  # This is what capture() returns if can't find the search string.
@@ -41,8 +50,40 @@ def main():
         description = device.capacity + ' '
         description += "SSD " if device.is_ssd else "HDD "
         description += device.model + ' '
-        description += "realloc=" + str(device.attributes[5].raw) + ' '
+
+        # Fetch the number of reallocated sectors if smartctl knows it.
+        if device.attributes[5] != None:
+            reallocCount = int(device.attributes[5].raw)
+            if reallocCount > 0:
+                textColor = COLOR_RED
+            else:
+                textColor = COLOR_GREEN
+            description += textColor + "realloc=" + str(reallocCount) + ' ' + COLOR_DEFAULT
+        else:
+            description += "realloc=??? "
+
+        # Fetch the number of G-Sense errors if smartctl knows it.
+        GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
+        description += "g-sense=" + GSenseCount + ' '
+
+        # Fetch the number of hours if smartctl gives it without scanning.
+        if device.attributes[9] != None:
+            hours = int(re.findall("\d+", device.attributes[9].raw)[0])
+            if hours > 10000:
+                textColor = COLOR_YELLOW
+            else:
+                textColor = COLOR_DEFAULT
+            description += textColor + "hours=" + str(hours) + ' ' + COLOR_DEFAULT
+        else:
+            description += "hours=??? "
+
         print description
+
+        # List all WHEN_FAILED attributes that were found.
+        for attribute in device.attributes:
+            if attribute and attribute.when_failed != "-":
+                print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
+
 
     # Hide traceback dump unless in debug mode.
     if not debugMode:
@@ -53,7 +94,7 @@ def main():
 
     # Load hard drive data.
     sda = Device("/dev/sda")
-    print "All attributes\n--------------\n", sda.all_attributes(), "\n"
+    # print "All attributes\n--------------\n", sda.all_attributes(), "\n"
     print "All self tests\n--------------\n", sda.all_selftests(), "\n"
     print "Device model: ", sda.model
     print "Serial number: ", sda.serial
