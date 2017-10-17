@@ -12,6 +12,7 @@ import os
 import inspect
 import sys
 import glob
+import warnings
 
 from pySMART import Device
 
@@ -36,15 +37,20 @@ debugMode = False
 # Program definition.
 def main():
     devicePaths = glob.glob('/dev/sd?')
-    for devicePath in devicePaths:
+    for devicePath in sorted(devicePaths):
         # Example output line:
         #     sda, 120GB Kingston SSD, 1408 hours, realloc=0
 
         # Show device name.
-        sys.stdout.write(devicePath[-3:] + ' ')
+        sys.stdout.write(devicePath + ' ')
 
-        # Attempt to load device smartctl info.
+        # Attempt to load device smartctl info (and suppress pySmart warnings).
+        warnings.filterwarnings("ignore")
         device = Device(devicePath)
+        warnings.filterwarnings("default")
+        if device.name is None or device.interface is None:
+            print "does not respond to smartctl enquiries."
+            continue
 
         # Construct and print smartctl entry for device.
         description = device.capacity + ' '
@@ -83,7 +89,6 @@ def main():
         for attribute in device.attributes:
             if attribute and attribute.when_failed != "-":
                 print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
-
 
     # Hide traceback dump unless in debug mode.
     if not debugMode:
