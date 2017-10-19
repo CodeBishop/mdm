@@ -1,0 +1,7 @@
+/dev/sda 500 GB HDD TOSHIBA MK5065GSXF [91mrealloc=282 [00mg-sense=784 [93mhours=16961 [00m
+/dev/sdb 500 GB HDD ST3500418AS [92mrealloc=0 [00mg-sense=??? [00mhours=2929 [00m
+[93m190 Airflow_Temperature_Cel 071 044 045 Old_age  Always  In_the_past 29[00m
+/dev/sdc 500 GB HDD ST9500325AS [92mrealloc=0 [00mg-sense=15 [00mhours=1719 [00m
+[93m190 Airflow_Temperature_Cel 074 042 045 Old_age  Always  In_the_past 26[00m
+/dev/sdd 98.5 GB HDD FUJITSU MHV2100BH [92mrealloc=0 [00mg-sense=??? [93mhours=24793 [00m
+/dev/sde does not respond to smartctl enquiries.

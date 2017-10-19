@@ -5,9 +5,11 @@
 
 
 # TO DO
-#   Add functionality to capture any errors that are reported in the column of dashes at the end of a smartctl -a output. For any item in that column that is NOT a dash then that whole line should be shown in the output.
 #   Test with various drives including both SSD and HDD.
 #   Delete the reallocated_sector_ct attribute from Device to test handling.
+#   Figure out why text is not being colored on sysrescue version of Linux. Other programs color their text on it.
+#   Decide how to display WHEN_FAILED attributes. Separate column headered section for each drive?
+#   Clean up the drive list so that it's fixed column widths (Example: realloc= always in same spot).
 
 import re
 import subprocess
@@ -15,8 +17,18 @@ import os
 import inspect
 import sys
 import glob
+import warnings
 
 from pySMART import Device
+
+# Color codes for printing in color to the terminal.
+# default color \033[00m
+# red \033[91m   green \033[92m   yellow \033[93m   magenta \033[94m   purple \033[95m   cyan \033[96m   gray \033[97m
+COLOR_DEFAULT = '\033[00m'
+COLOR_RED = '\033[91m'
+COLOR_YELLOW = '\033[93m'
+COLOR_GREEN = '\033[92m'
+
 
 # Fetch the null device for dumping unsightly error messages into.
 DEVNULL = open(os.devnull, 'w')
@@ -26,26 +38,67 @@ RECORD_CAPTURE_FAILURE, IGNORE_CAPTURE_FAILURE = 1, 2
 captureFailures = list()
 debugMode = False
 
+# DEBUG: Test formatted printing methods.
+print("{0:3}{1:17}{2:23}{3:7}{4:14}{5:15}".format(
+    'Path', 'Test Description', 'Status', 'Hours',
+    '1st_Error@LBA', '[SK  ASC  ASCQ]'))
+
 
 # Program definition.
 def main():
     devicePaths = glob.glob('/dev/sd?')
-    for devicePath in devicePaths:
+    for devicePath in sorted(devicePaths):
         # Example output line:
         #     sda, 120GB Kingston SSD, 1408 hours, realloc=0
 
         # Show device name.
-        sys.stdout.write(devicePath[-3:] + ' ')
+        sys.stdout.write(devicePath + ' ')
 
-        # Attempt to load device smartctl info.
+        # Attempt to load device smartctl info (and suppress pySmart warnings).
+        warnings.filterwarnings("ignore")
         device = Device(devicePath)
+        warnings.filterwarnings("default")
+        if device.name is None or device.interface is None:
+            print "does not respond to smartctl enquiries."
+            continue
 
         # Construct and print smartctl entry for device.
         description = device.capacity + ' '
         description += "SSD " if device.is_ssd else "HDD "
         description += device.model + ' '
-        description += "realloc=" + str(device.attributes[5].raw) + ' '
+
+        # Fetch the number of reallocated sectors if smartctl knows it.
+        if device.attributes[5] != None:
+            reallocCount = int(device.attributes[5].raw)
+            if reallocCount > 0:
+                textColor = COLOR_RED
+            else:
+                textColor = COLOR_GREEN
+            description += textColor + "realloc=" + str(reallocCount) + ' ' + COLOR_DEFAULT
+        else:
+            description += "realloc=??? "
+
+        # Fetch the number of G-Sense errors if smartctl knows it.
+        GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
+        description += "g-sense=" + GSenseCount + ' '
+
+        # Fetch the number of hours if smartctl gives it without scanning.
+        if device.attributes[9] != None:
+            hours = int(re.findall("\d+", device.attributes[9].raw)[0])
+            if hours > 10000:
+                textColor = COLOR_YELLOW
+            else:
+                textColor = COLOR_DEFAULT
+            description += textColor + "hours=" + str(hours) + ' ' + COLOR_DEFAULT
+        else:
+            description += "hours=??? "
+
         print description
+
+        # List all WHEN_FAILED attributes that were found.
+        for attribute in device.attributes:
+            if attribute and attribute.when_failed != "-":
+                print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
 
     # Hide traceback dump unless in debug mode.
     if not debugMode:
@@ -56,7 +109,7 @@ def main():
 
     # Load hard drive data.
     sda = Device("/dev/sda")
-    print "All attributes\n--------------\n", sda.all_attributes(), "\n"
+    # print "All attributes\n--------------\n", sda.all_attributes(), "\n"
     print "All self tests\n--------------\n", sda.all_selftests(), "\n"
     print "Device model: ", sda.model
     print "Serial number: ", sda.serial
