@@ -39,11 +39,10 @@ captureFailures = list()
 debugMode = False
 
 # DEBUG: Test formatted printing methods.
-print("{0:3}{1:17}{2:23}{3:7}{4:14}{5:15}".format(
-    'Path', 'Test Description', 'Status', 'Hours',
-    '1st_Error@LBA', '[SK  ASC  ASCQ]'))
+#  {index:min_length}, {index:min_length}, ...
+print("{:5} {:5} {:5}".format('Path', 'TestDescription'[0:6], '[SK  ASC  ASCQ]'))
 
-
+exit(0) #DEBUG
 # Program definition.
 def main():
     devicePaths = glob.glob('/dev/sd?')
