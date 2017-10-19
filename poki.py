@@ -35,6 +35,11 @@ RECORD_CAPTURE_FAILURE, IGNORE_CAPTURE_FAILURE = 1, 2
 captureFailures = list()
 debugMode = False
 
+# DEBUG: Test formatted printing methods.
+print("{0:3}{1:17}{2:23}{3:7}{4:14}{5:15}".format(
+    'Path', 'Test Description', 'Status', 'Hours',
+    '1st_Error@LBA', '[SK  ASC  ASCQ]'))
+
 
 # Program definition.
 def main():
