@@ -10,6 +10,7 @@
 #   Figure out why text is not being colored on sysrescue version of Linux. Other programs color their text on it.
 #   Decide how to display WHEN_FAILED attributes. Separate column headered section for each drive?
 #   Clean up the drive list so that it's fixed column widths (Example: realloc= always in same spot).
+#   Clear out the unused copypasta code from lkm.
 
 import re
 import subprocess
@@ -40,25 +41,24 @@ debugMode = False
 
 # DEBUG: Test formatted printing methods.
 #  {index:min_length}, {index:min_length}, ...
-print("{:5} {:5} {:5}".format('Path', 'TestDescription'[0:6], '[SK  ASC  ASCQ]'))
+print("{:20} {} {}".format('Path', 'TestDescription', '[SK  ASC  ASCQ]'))
 
-exit(0) #DEBUG
+# Define column widths for displaying drive summaries.
+CW_PATH = 8
+
 # Program definition.
 def main():
+    # Get a list of all hard drive device paths.
     devicePaths = glob.glob('/dev/sd?')
+
+    # Query smartctl for each drive and output the data found.
     for devicePath in sorted(devicePaths):
-        # Example output line:
-        #     sda, 120GB Kingston SSD, 1408 hours, realloc=0
-
-        # Show device name.
-        sys.stdout.write(devicePath + ' ')
-
         # Attempt to load device smartctl info (and suppress pySmart warnings).
         warnings.filterwarnings("ignore")
         device = Device(devicePath)
         warnings.filterwarnings("default")
         if device.name is None or device.interface is None:
-            print "does not respond to smartctl enquiries."
+            print devicePath + " does not respond to smartctl enquiries."
             continue
 
         # Construct and print smartctl entry for device.
@@ -66,38 +66,42 @@ def main():
         description += "SSD " if device.is_ssd else "HDD "
         description += device.model + ' '
 
-        # Fetch the number of reallocated sectors if smartctl knows it.
-        if device.attributes[5] != None:
-            reallocCount = int(device.attributes[5].raw)
-            if reallocCount > 0:
-                textColor = COLOR_RED
-            else:
-                textColor = COLOR_GREEN
-            description += textColor + "realloc=" + str(reallocCount) + ' ' + COLOR_DEFAULT
-        else:
-            description += "realloc=??? "
-
-        # Fetch the number of G-Sense errors if smartctl knows it.
-        GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
-        description += "g-sense=" + GSenseCount + ' '
-
-        # Fetch the number of hours if smartctl gives it without scanning.
-        if device.attributes[9] != None:
-            hours = int(re.findall("\d+", device.attributes[9].raw)[0])
-            if hours > 10000:
-                textColor = COLOR_YELLOW
-            else:
-                textColor = COLOR_DEFAULT
-            description += textColor + "hours=" + str(hours) + ' ' + COLOR_DEFAULT
-        else:
-            description += "hours=??? "
-
-        print description
-
-        # List all WHEN_FAILED attributes that were found.
-        for attribute in device.attributes:
-            if attribute and attribute.when_failed != "-":
-                print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
+        # Output drive description
+        sys.stdout.write(devicePath + ' ')
+        sys.stdout.write("%d", device.capacity)
+        #
+        # # Fetch the number of reallocated sectors if smartctl knows it.
+        # if device.attributes[5] != None:
+        #     reallocCount = int(device.attributes[5].raw)
+        #     if reallocCount > 0:
+        #         textColor = COLOR_RED
+        #     else:
+        #         textColor = COLOR_GREEN
+        #     description += textColor + "realloc=" + str(reallocCount) + ' ' + COLOR_DEFAULT
+        # else:
+        #     description += "realloc=??? "
+        #
+        # # Fetch the number of G-Sense errors if smartctl knows it.
+        # GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
+        # description += "g-sense=" + GSenseCount + ' '
+        #
+        # # Fetch the number of hours if smartctl gives it without scanning.
+        # if device.attributes[9] != None:
+        #     hours = int(re.findall("\d+", device.attributes[9].raw)[0])
+        #     if hours > 10000:
+        #         textColor = COLOR_YELLOW
+        #     else:
+        #         textColor = COLOR_DEFAULT
+        #     description += textColor + "hours=" + str(hours) + ' ' + COLOR_DEFAULT
+        # else:
+        #     description += "hours=??? "
+        #
+        # print description
+        #
+        # # List all WHEN_FAILED attributes that were found.
+        # for attribute in device.attributes:
+        #     if attribute and attribute.when_failed != "-":
+        #         print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
 
     # Hide traceback dump unless in debug mode.
     if not debugMode:
