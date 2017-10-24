@@ -39,19 +39,34 @@ RECORD_CAPTURE_FAILURE, IGNORE_CAPTURE_FAILURE = 1, 2
 captureFailures = list()
 debugMode = False
 
-# DEBUG: Test formatted printing methods.
-#  {index:min_length}, {index:min_length}, ...
-print("{:20} {} {}".format('Path', 'TestDescription', '[SK  ASC  ASCQ]'))
-
-# Define column widths for displaying drive summaries.
+# Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_PATH = 8
+CW_HDD_TYPE = 4
+CW_SIZE = 7
+CW_MODEL = 20
+CW_SERIAL = 16
 
 # Program definition.
 def main():
+    # Hide traceback dump unless in debug mode.
+    if not debugMode:
+        sys.tracebacklimit = 0
+
+    # Check for root.
+    haltWithoutRootAuthority()
+
     # Get a list of all hard drive device paths.
     devicePaths = glob.glob('/dev/sd?')
 
-    # Query smartctl for each drive and output the data found.
+    # Print column header.
+    sys.stdout.write(leftColumn("Path", CW_PATH))
+    sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
+    sys.stdout.write(leftColumn("Size", CW_SIZE))
+    sys.stdout.write(leftColumn("Model", CW_MODEL))
+    sys.stdout.write(leftColumn("Serial", CW_SERIAL))
+    print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 + CW_SERIAL)
+
+    # For each drive output a 1-line summary of smartctl info.
     for devicePath in sorted(devicePaths):
         # Attempt to load device smartctl info (and suppress pySmart warnings).
         warnings.filterwarnings("ignore")
@@ -61,15 +76,17 @@ def main():
             print devicePath + " does not respond to smartctl enquiries."
             continue
 
-        # Construct and print smartctl entry for device.
-        description = device.capacity + ' '
-        description += "SSD " if device.is_ssd else "HDD "
-        description += device.model + ' '
+        # Construct one-line summary of drive.
+        description = ""
+        description += leftColumn(devicePath, CW_PATH)
+        description += leftColumn(("SSD" if device.is_ssd else "HDD"), CW_HDD_TYPE)
+        description += leftColumn(str(device.capacity), CW_SIZE)
+        description += leftColumn(device.model, CW_MODEL)
+        description += leftColumn(device.serial, CW_SERIAL)
 
-        # Output drive description
-        sys.stdout.write(devicePath + ' ')
-        sys.stdout.write("%d", device.capacity)
-        #
+        # Print out one-line summary of drive.
+        print description
+
         # # Fetch the number of reallocated sectors if smartctl knows it.
         # if device.attributes[5] != None:
         #     reallocCount = int(device.attributes[5].raw)
@@ -103,26 +120,19 @@ def main():
         #     if attribute and attribute.when_failed != "-":
         #         print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
 
-    # Hide traceback dump unless in debug mode.
-    if not debugMode:
-        sys.tracebacklimit = 0
-
-    # Check for root.
-    haltWithoutRootAuthority()
-
     # Load hard drive data.
-    sda = Device("/dev/sda")
-    # print "All attributes\n--------------\n", sda.all_attributes(), "\n"
-    print "All self tests\n--------------\n", sda.all_selftests(), "\n"
-    print "Device model: ", sda.model
-    print "Serial number: ", sda.serial
-    print "Capacity: ", sda.capacity
-    print "Device name: ", sda.name
-    print "Interface: ", sda.interface
-    print "Is SSD:", sda.is_ssd
-    print "Assessment: ", sda.assessment
-    print "Firmware: ", sda.firmware
-    print "SMART suppored: ", sda.supports_smart
+    # sda = Device("/dev/sda")
+    # # print "All attributes\n--------------\n", sda.all_attributes(), "\n"
+    # print "All self tests\n--------------\n", sda.all_selftests(), "\n"
+    # print "Device model: ", sda.model
+    # print "Serial number: ", sda.serial
+    # print "Capacity: ", sda.capacity
+    # print "Device name: ", sda.name
+    # print "Interface: ", sda.interface
+    # print "Is SSD:", sda.is_ssd
+    # print "Assessment: ", sda.assessment
+    # print "Firmware: ", sda.firmware
+    # print "SMART suppored: ", sda.supports_smart
 
 
     # smartctlOutput = terminalCommand('smartctl -s on -a /dev/sda')
@@ -130,8 +140,15 @@ def main():
     # print "Serial: " + capture(r"Serial Number:\w*(.*)", smartctlOutput, IGNORE_CAPTURE_FAILURE)
 
 
-# def getAllDevices():
+def leftColumn(someString, width):
+    if len(someString) <= width:
+        return someString.ljust(width) + ' '
+    else:
+        return someString[:width-3] + "... "
+    # Non-ellipsis version.
+    # return someString.ljust(width)[:width] + ' '
 
+#
 # Use a regular expression to capture part of a string or return MISSING_FIELD if unable.
 def capture(pattern, text, failureAction=RECORD_CAPTURE_FAILURE):
     result = re.search(pattern, text)
