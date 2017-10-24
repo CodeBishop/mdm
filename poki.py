@@ -46,6 +46,7 @@ CW_SIZE = 7
 CW_MODEL = 20
 CW_SERIAL = 16
 
+
 # Program definition.
 def main():
     # Hide traceback dump unless in debug mode.
@@ -76,13 +77,15 @@ def main():
             print devicePath + " does not respond to smartctl enquiries."
             continue
 
+        # Gather attribute data
+
         # Construct one-line summary of drive.
         description = ""
         description += leftColumn(devicePath, CW_PATH)
         description += leftColumn(("SSD" if device.is_ssd else "HDD"), CW_HDD_TYPE)
         description += leftColumn(str(device.capacity), CW_SIZE)
         description += leftColumn(device.model, CW_MODEL)
-        description += leftColumn(device.serial, CW_SERIAL)
+        description += leftColumn(COLOR_RED + device.serial, CW_SERIAL)
 
         # Print out one-line summary of drive.
         print description
@@ -141,7 +144,11 @@ def main():
 
 
 def leftColumn(someString, width):
-    if len(someString) <= width:
+    # Strip ANSI codes before calculating string length.
+    length = len(re.sub(r'\x1b\[([0-9,A-Z]{1,2}(;[0-9]{1,2})?(;[0-9]{3})?)?[m|K]?', '', someString))
+
+    # Left justify string, truncate (with ellipsis) or pad with spaces to fill column width.
+    if length <= width:
         return someString.ljust(width) + ' '
     else:
         return someString[:width-3] + "... "
