@@ -45,6 +45,8 @@ CW_HDD_TYPE = 4
 CW_SIZE = 7
 CW_MODEL = 20
 CW_SERIAL = 16
+CW_REALLOC = 7
+CW_DRIVEHOURS = 5
 
 
 # Program definition.
@@ -65,7 +67,10 @@ def main():
     sys.stdout.write(leftColumn("Size", CW_SIZE))
     sys.stdout.write(leftColumn("Model", CW_MODEL))
     sys.stdout.write(leftColumn("Serial", CW_SERIAL))
-    print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 + CW_SERIAL)
+    sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
+    sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
+    print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
+                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS)
 
     # For each drive output a 1-line summary of smartctl info.
     for devicePath in sorted(devicePaths):
@@ -78,6 +83,31 @@ def main():
             continue
 
         # Gather attribute data
+        # Fetch the number of reallocated sectors if smartctl knows it.
+        if device.attributes[5] is not None:
+            reallocCount = int(device.attributes[5].raw)
+            if reallocCount > 0:
+                textColor = COLOR_RED
+            else:
+                textColor = COLOR_GREEN
+            reallocText = textColor + str(reallocCount) + COLOR_DEFAULT
+        else:
+            reallocText = COLOR_YELLOW + "???" + COLOR_DEFAULT
+
+        # # Fetch the number of G-Sense errors if smartctl knows it.
+        GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
+
+        # Fetch the number of hours if smartctl gives it without scanning.
+        if device.attributes[9] is not None:
+            hours = int(re.findall("\d+", device.attributes[9].raw)[0])
+            hours = 12345  # DEBUG
+            if hours > 10000:
+                textColor = COLOR_YELLOW
+            else:
+                textColor = COLOR_DEFAULT
+            driveHours = textColor + str(hours) + ' ' + COLOR_DEFAULT
+        else:
+            driveHours = "???"
 
         # Construct one-line summary of drive.
         description = ""
@@ -85,39 +115,13 @@ def main():
         description += leftColumn(("SSD" if device.is_ssd else "HDD"), CW_HDD_TYPE)
         description += leftColumn(str(device.capacity), CW_SIZE)
         description += leftColumn(device.model, CW_MODEL)
-        description += leftColumn(COLOR_RED + device.serial, CW_SERIAL)
+        description += leftColumn(device.serial, CW_SERIAL)
+        description += leftColumn(reallocText, CW_REALLOC)
+        description += leftColumn(driveHours, CW_DRIVEHOURS)
 
         # Print out one-line summary of drive.
         print description
 
-        # # Fetch the number of reallocated sectors if smartctl knows it.
-        # if device.attributes[5] != None:
-        #     reallocCount = int(device.attributes[5].raw)
-        #     if reallocCount > 0:
-        #         textColor = COLOR_RED
-        #     else:
-        #         textColor = COLOR_GREEN
-        #     description += textColor + "realloc=" + str(reallocCount) + ' ' + COLOR_DEFAULT
-        # else:
-        #     description += "realloc=??? "
-        #
-        # # Fetch the number of G-Sense errors if smartctl knows it.
-        # GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
-        # description += "g-sense=" + GSenseCount + ' '
-        #
-        # # Fetch the number of hours if smartctl gives it without scanning.
-        # if device.attributes[9] != None:
-        #     hours = int(re.findall("\d+", device.attributes[9].raw)[0])
-        #     if hours > 10000:
-        #         textColor = COLOR_YELLOW
-        #     else:
-        #         textColor = COLOR_DEFAULT
-        #     description += textColor + "hours=" + str(hours) + ' ' + COLOR_DEFAULT
-        # else:
-        #     description += "hours=??? "
-        #
-        # print description
-        #
         # # List all WHEN_FAILED attributes that were found.
         # for attribute in device.attributes:
         #     if attribute and attribute.when_failed != "-":
@@ -149,13 +153,14 @@ def leftColumn(someString, width):
 
     # Left justify string, truncate (with ellipsis) or pad with spaces to fill column width.
     if length <= width:
-        return someString.ljust(width) + ' '
+        # NOTE: str.ljust() mis-formats this under some circumstances so don't use it.
+        return someString + ' ' * (width - length + 1)
     else:
         return someString[:width-3] + "... "
     # Non-ellipsis version.
     # return someString.ljust(width)[:width] + ' '
 
-#
+
 # Use a regular expression to capture part of a string or return MISSING_FIELD if unable.
 def capture(pattern, text, failureAction=RECORD_CAPTURE_FAILURE):
     result = re.search(pattern, text)
