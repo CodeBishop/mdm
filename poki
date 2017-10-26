@@ -11,6 +11,7 @@
 #   Decide how to display WHEN_FAILED attributes. Separate column headered section for each drive?
 #   Clean up the drive list so that it's fixed column widths (Example: realloc= always in same spot).
 #   Clear out the unused copypasta code from lkm.
+#   The haltWithoutRootAuthority() function is not working on the sysrescue machine.
 
 import re
 import subprocess
@@ -42,11 +43,11 @@ debugMode = False
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_PATH = 8
 CW_HDD_TYPE = 4
-CW_SIZE = 7
+CW_SIZE = 8
 CW_MODEL = 20
 CW_SERIAL = 16
 CW_REALLOC = 7
-CW_DRIVEHOURS = 5
+CW_DRIVEHOURS = 7
 
 
 # Program definition.
@@ -97,10 +98,9 @@ def main():
         # # Fetch the number of G-Sense errors if smartctl knows it.
         GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
 
-        # Fetch the number of hours if smartctl gives it without scanning.
+        # Fetch the number of hours if smartctl tracks it as an attribute.
         if device.attributes[9] is not None:
             hours = int(re.findall("\d+", device.attributes[9].raw)[0])
-            hours = 12345  # DEBUG
             if hours > 10000:
                 textColor = COLOR_YELLOW
             else:
