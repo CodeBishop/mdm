@@ -54,7 +54,9 @@ def main():
         sys.tracebacklimit = 0
 
     # Check for root.
-    haltWithoutRootAuthority()
+    if not admin():
+        print "Only user ID #0 (root) can run this program"
+        exit(1)
 
     # Get a list of all hard drive device paths.
     devicePaths = glob.glob('/dev/sd?')
@@ -181,15 +183,6 @@ def dumpCaptureFailures():
         print "capture() failed to match: r\"" + pattern + "\""
         print "   in string: " + text
         print "   when called by: " + caller + "()" + "\n"
-
-
-# Run "true" with sudo (which does nothing) to test for root authority.
-def haltWithoutRootAuthority():
-    try:
-        proc = subprocess.Popen(["sudo", "true"], stdout=subprocess.PIPE)
-        proc.wait()
-    except KeyboardInterrupt:
-        assert False, "Cannot proceed without root authority."
 
 
 # Get the output from a terminal command and block any error messages from appearing.
