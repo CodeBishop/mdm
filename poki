@@ -8,18 +8,25 @@
 #   Test with various drives including both SSD and HDD.
 #   Delete the reallocated_sector_ct attribute from Device to test handling.
 #   Decide how to display WHEN_FAILED attributes. Separate column headered section for each drive?
-#   Clear out the unused copypasta code from lkm.
-#   The haltWithoutRootAuthority() function is not working on the sysrescue machine.
+#   Remove the terminalCommand() function if you don't end up using it.
+#   Test if the pySMART.admin() function works on zsh/sysrescue.
+#   Add an interactive option for typing in a field and getting a summary of every drive with had a match
+#       for that field. This way you can scan any barcode on a drive and see what's up with it.
+#   Consider making it so you can operate the program entirely with a bar code scanner.
+
 
 import re
 import subprocess
 import os
-import inspect
 import sys
 import glob
 import warnings
 
+# Import pySMART but suppress the warning messages about not being root.
+warnings.filterwarnings("ignore")
 from pySMART import Device
+from pySMART.utils import admin
+warnings.filterwarnings("default")
 
 # ANSI color codes that are both bash (Ubuntu) and zsh compatible (sysrescue).
 # Taken from:  https://en.wikipedia.org/wiki/ANSI_escape_code#3.2F4_bit
@@ -27,7 +34,6 @@ COLOR_DEFAULT = '\x1b[0m'
 COLOR_RED = '\x1b[1;31m'
 COLOR_YELLOW = '\x1b[1;33m'
 COLOR_GREEN = '\x1b[1;32m'
-
 
 # Fetch the null device for dumping unsightly error messages into.
 DEVNULL = open(os.devnull, 'w')
@@ -45,6 +51,7 @@ CW_MODEL = 20
 CW_SERIAL = 16
 CW_REALLOC = 7
 CW_DRIVEHOURS = 7
+CW_WHENFAILEDSTATUS = 9
 
 
 # Program definition.
@@ -61,6 +68,9 @@ def main():
     # Get a list of all hard drive device paths.
     devicePaths = glob.glob('/dev/sd?')
 
+    # Start a list of all device WHEN_FAILED attributes.
+    whenFailedAttributes = list()
+
     # Print column header.
     sys.stdout.write(leftColumn("Path", CW_PATH))
     sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
@@ -69,8 +79,9 @@ def main():
     sys.stdout.write(leftColumn("Serial", CW_SERIAL))
     sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
     sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
+    sys.stdout.write(leftColumn("WHENFAIL", CW_WHENFAILEDSTATUS))
     print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
-                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS)
+                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 + CW_WHENFAILEDSTATUS)
 
     # For each drive output a 1-line summary of smartctl info.
     for devicePath in sorted(devicePaths):
@@ -97,7 +108,8 @@ def main():
         # # Fetch the number of G-Sense errors if smartctl knows it.
         GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
 
-        # Fetch the number of hours if smartctl tracks it as an attribute.
+        # Fetch the number of hours if smartctl knows it.
+        # NOTE: smartctl may output hour-count in scan results yet not have it as an "attribute".
         if device.attributes[9] is not None:
             hours = int(re.findall("\d+", device.attributes[9].raw)[0])
             if hours > 10000:
@@ -108,6 +120,14 @@ def main():
         else:
             driveHours = "???"
 
+        # Fetch all WHEN_FAILED attributes that were found.
+        whenFailedStatus = "-"
+        for attribute in device.attributes:
+            if attribute and attribute.when_failed != "-":
+                whenFailedStatus = "see below"
+                whenFailedAttributes.append((devicePath, attribute))
+                # print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
+
         # Construct one-line summary of drive.
         description = ""
         description += leftColumn(devicePath, CW_PATH)
@@ -117,33 +137,17 @@ def main():
         description += leftColumn(device.serial, CW_SERIAL)
         description += leftColumn(reallocText, CW_REALLOC)
         description += leftColumn(driveHours, CW_DRIVEHOURS)
+        description += leftColumn(whenFailedStatus, CW_WHENFAILEDSTATUS)
 
         # Print out one-line summary of drive.
         print description
 
-        # # List all WHEN_FAILED attributes that were found.
-        # for attribute in device.attributes:
-        #     if attribute and attribute.when_failed != "-":
-        #         print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
-
-    # Load hard drive data.
-    # sda = Device("/dev/sda")
-    # # print "All attributes\n--------------\n", sda.all_attributes(), "\n"
-    # print "All self tests\n--------------\n", sda.all_selftests(), "\n"
-    # print "Device model: ", sda.model
-    # print "Serial number: ", sda.serial
-    # print "Capacity: ", sda.capacity
-    # print "Device name: ", sda.name
-    # print "Interface: ", sda.interface
-    # print "Is SSD:", sda.is_ssd
-    # print "Assessment: ", sda.assessment
-    # print "Firmware: ", sda.firmware
-    # print "SMART suppored: ", sda.supports_smart
-
-
-    # smartctlOutput = terminalCommand('smartctl -s on -a /dev/sda')
-    # print smartctlOutput
-    # print "Serial: " + capture(r"Serial Number:\w*(.*)", smartctlOutput, IGNORE_CAPTURE_FAILURE)
+    # Print out any WHEN_FAILED attributes that were found.
+    if len(whenFailedAttributes) > 0:
+        print "\n\nPATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE"
+        print "----------------------------------------------------------------------------------------"
+        for (devicePath, attribute) in whenFailedAttributes:
+            print devicePath, attribute
 
 
 def leftColumn(someString, width):
@@ -160,62 +164,10 @@ def leftColumn(someString, width):
     # return someString.ljust(width)[:width] + ' '
 
 
-# Use a regular expression to capture part of a string or return MISSING_FIELD if unable.
-def capture(pattern, text, failureAction=RECORD_CAPTURE_FAILURE):
-    result = re.search(pattern, text)
-    if result and result.group(1):
-        return result.group(1)
-    else:
-        if failureAction == RECORD_CAPTURE_FAILURE:
-            caller = inspect.stack()[1][3]
-            captureFailures.append((caller, pattern, text))
-        return MISSING_FIELD
-
-
-# Output debugging information about any capture() calls that failed to find their target data.
-def dumpCaptureFailures():
-    for (caller, pattern, text) in captureFailures:
-        # Eliminate excess whitespace and newlines from descriptions of searched text.
-        text = re.sub(r"\s{2,}|\n", " ", text)
-        # Concatenate excessively long searched text strings.
-        if len(text) > 100:
-            text = text[:100] + " ..."
-        print "capture() failed to match: r\"" + pattern + "\""
-        print "   in string: " + text
-        print "   when called by: " + caller + "()" + "\n"
-
-
 # Get the output from a terminal command and block any error messages from appearing.
 def terminalCommand(command):
     output, _ = subprocess.Popen(["sudo"] + command.split(), stdout=subprocess.PIPE, stderr=DEVNULL).communicate()
     return output
-
-
-# Remove junk words, irrelevant punctuation and multiple spaces from a field string.
-# def sanitizeString(string):
-#     # Remove junk words like "corporation", "ltd", etc
-#     for word in junkWords:
-#         string = re.sub('(?i)' + word, '', string)
-#     # Fix words that can be written more neatly.
-#     for badWord in correctableWords.keys():
-#         goodWord = correctableWords[badWord]
-#         string = re.sub('(?i)' + badWord, goodWord, string)
-#     # Remove junk punctuation.
-#     string = re.sub(',', '', string)
-#     string = re.sub('\[', '', string)
-#     string = re.sub('\]', '', string)
-#     return stripExcessWhitespace(string)
-
-
-# Reduce multiple whitespaces to a single space and eliminate leading and trailing whitespace.
-def stripExcessWhitespace(string):
-    # Reduce multiple whitespace sections to a single space.
-    string = re.sub('\s\s+', ' ', string)
-    # Remove leading and trailing whitespace.
-    string = re.sub('^\s*', '', string)
-    string = re.sub('\s*$', '', string)
-    return string
-
 
 # Run the program.
 main()
