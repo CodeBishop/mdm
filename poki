@@ -54,6 +54,22 @@ CW_GSENSE = 5
 CW_WHENFAILEDSTATUS = 9
 
 
+def printDeviceColumnHeader():
+    sys.stdout.write(leftColumn("Path", CW_PATH))
+    sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
+    sys.stdout.write(leftColumn("Size", CW_SIZE))
+    sys.stdout.write(leftColumn("Model", CW_MODEL))
+    sys.stdout.write(leftColumn("Serial", CW_SERIAL))
+    sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
+    sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
+    sys.stdout.write(leftColumn("GSen", CW_GSENSE))
+    sys.stdout.write(leftColumn("WHENFAIL", CW_WHENFAILEDSTATUS))
+    print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
+                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
+                        CW_GSENSE + 1 + CW_WHENFAILEDSTATUS)
+
+
+
 # Program definition.
 def main():
     # Hide traceback dump unless in debug mode.
@@ -75,18 +91,7 @@ def main():
     deviceBySerial = dict()
 
     # Print column header.
-    sys.stdout.write(leftColumn("Path", CW_PATH))
-    sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
-    sys.stdout.write(leftColumn("Size", CW_SIZE))
-    sys.stdout.write(leftColumn("Model", CW_MODEL))
-    sys.stdout.write(leftColumn("Serial", CW_SERIAL))
-    sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
-    sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
-    sys.stdout.write(leftColumn("GSen", CW_GSENSE))
-    sys.stdout.write(leftColumn("WHENFAIL", CW_WHENFAILEDSTATUS))
-    print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
-                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
-                        CW_GSENSE + 1 + CW_WHENFAILEDSTATUS)
+    printDeviceColumnHeader()
 
     # For each drive output a 1-line summary of smartctl info.
     for devicePath in sorted(devicePaths):
@@ -129,9 +134,8 @@ def main():
         whenFailedStatus = "-"
         for attribute in device.attributes:
             if attribute and attribute.when_failed != "-":
-                whenFailedStatus = "see below"
+                whenFailedStatus = COLOR_YELLOW + "see below" + COLOR_DEFAULT
                 whenFailedAttributes.append((devicePath, attribute))
-                # print COLOR_YELLOW + str(attribute) + COLOR_DEFAULT
 
         # Construct one-line summary of drive.
         description = ""
@@ -160,11 +164,14 @@ def main():
 
     # Present interactive mode.
     while True:
-        print "Enter drive serial number or q to quit"
+        print "\nEnter drive serial number or q to quit"
         userInput = raw_input()
         if userInput == 'q':
             break
-
+        if userInput in deviceBySerial:
+            print "\n"
+            printDeviceColumnHeader()
+            print deviceBySerial[userInput]
 
 
 def leftColumn(someString, width):
