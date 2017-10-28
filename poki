@@ -149,6 +149,10 @@ def main():
         for (devicePath, attribute) in whenFailedAttributes:
             print devicePath, attribute
 
+    # Present interactive mode.
+    print "Enter drive serial number or q to quit"
+    test = raw_input()
+    print test
 
 def leftColumn(someString, width):
     # Strip ANSI codes before calculating string length.
