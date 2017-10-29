@@ -251,7 +251,7 @@ class Device(object):
         # it maxes, as above. Comparing the least-recent test result greatly
         # diminishes the chances that two sets of two tests each were run within
         # an hour of themselves, but with 16-17 other tests run in between them.
-        if self.tests is not None:
+        if self.tests is not None and len(self.tests) > 0:
             _first_entry = self.tests[0]
             _len = len(self.tests)
             _last_entry = self.tests[_len - 1]
