@@ -13,6 +13,12 @@
 #       Can you write a barcode scannable command for auto-mounting a USB drive?
 #   Add an option for starting long scans.
 #   Add the ability to show previous long scan results.
+#   Change the interface so that it always shows the drive summary section followed by a menu of options and
+#       entering a serial number highlights that drive in the summary with a blue-background on its description.
+#   Look into adding wipe functionality to eliminate the DBAN step.
+#   Add a command for starting long and short tests.
+#   Test that you can start a long test, quit this program, re-run this program and see the current testing status.
+#   Add functionality for viewing a summary of the past test results.
 
 
 import re
