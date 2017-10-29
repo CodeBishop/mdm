@@ -7,11 +7,12 @@
 # TO DO
 #   Test with various drives including both SSD and HDD.
 #   Remove the terminalCommand() function if you don't end up using it.
-#   Add an interactive option for typing in a field and getting a summary of every drive with had a match
+#   Add an interactive option for typing in a field and getting a summary of every drive which had a match
 #       for that field. This way you can scan any barcode on a drive and see what's up with it.
 #   Consider making it so you can operate the program entirely with a bar code scanner.
-#       Can you write a scannable command for auto-mounting a USB drive?
-#
+#       Can you write a barcode scannable command for auto-mounting a USB drive?
+#   Add an option for starting long scans.
+#   Add the ability to show previous long scan results.
 
 
 import re
@@ -52,6 +53,7 @@ CW_REALLOC = 7
 CW_DRIVEHOURS = 7
 CW_GSENSE = 5
 CW_WHENFAILEDSTATUS = 9
+CW_TESTINGSTATE = 12
 
 
 def printDeviceColumnHeader():
@@ -64,10 +66,10 @@ def printDeviceColumnHeader():
     sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
     sys.stdout.write(leftColumn("GSen", CW_GSENSE))
     sys.stdout.write(leftColumn("WHENFAIL", CW_WHENFAILEDSTATUS))
+    sys.stdout.write(leftColumn("Test State", CW_WHENFAILEDSTATUS))
     print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
                         CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
-                        CW_GSENSE + 1 + CW_WHENFAILEDSTATUS)
-
+                        CW_GSENSE + 1 + CW_WHENFAILEDSTATUS + 1 + CW_TESTINGSTATE)
 
 
 # Program definition.
@@ -137,6 +139,16 @@ def main():
                 whenFailedStatus = COLOR_YELLOW + "see below" + COLOR_DEFAULT
                 whenFailedAttributes.append((devicePath, attribute))
 
+        testingState = "Unknown"
+        # if device.get_selftest_result() == 0:
+        #     testingState = COLOR_GREEN + "complete" + COLOR_DEFAULT
+        # elif device.get_selftest_result() == 1:
+        #     testingState = "in progress"
+        # elif device.get_selftest_result() == 2:
+        #     testingState = "idle"
+        # else:
+        #     testingState = COLOR_YELLOW + "unknown" + COLOR_DEFAULT
+
         # Construct one-line summary of drive.
         description = ""
         description += leftColumn(devicePath, CW_PATH)
@@ -148,6 +160,7 @@ def main():
         description += leftColumn(driveHours, CW_DRIVEHOURS)
         description += leftColumn(GSenseCount, CW_GSENSE)
         description += leftColumn(whenFailedStatus, CW_WHENFAILEDSTATUS)
+        description += leftColumn(testingState, CW_TESTINGSTATE)
 
         # Print out one-line summary of drive.
         print description
@@ -164,10 +177,12 @@ def main():
 
     # Present interactive mode.
     while True:
-        print "\nEnter drive serial number or q to quit"
+        print "\nEnter drive serial number or command: (q)uit, show (a)ll, "
         userInput = raw_input()
         if userInput == 'q':
             break
+        if userInput == 'a':
+            print "Command not implemented yet."
         if userInput in deviceBySerial:
             print "\n"
             printDeviceColumnHeader()
