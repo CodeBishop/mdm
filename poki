@@ -19,6 +19,8 @@
 #   Add a command for starting long and short tests.
 #   Test that you can start a long test, quit this program, re-run this program and see the current testing status.
 #   Add functionality for viewing a summary of the past test results.
+#   Apparently some drives have a firmware function for doing an automated secure wipe. This would be better than
+#   DBAN or manual overwriting and should be investigated.
 
 
 import re
