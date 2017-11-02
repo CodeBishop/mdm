@@ -3,10 +3,19 @@
 # Poki is a program for fetching the most pertinent Smartctl information on all connected
 # drives and presenting it in a summary that fits on one page.
 
+# TESTING TO DO
+#   Test with various drives including both SSD, HDD and USB.
+#   Test trying to scan a drive while it's in use (i.e. system drive).
+#   Test operations on a drive that short and long smartctl tests in-progress.
+
+
 
 # TO DO
-#   Test with various drives including both SSD and HDD.
 #   Remove the terminalCommand() function if you don't end up using it.
+#   Make a wrapper class for pySMART's Device class so that you can have things like:
+#       bool DeviceWrapper.load() to load or refresh its fields.
+#       enum DeviceWrapper.runLongTest() and it returns a value saying whether one's in progress or now started.
+#       bool DeviceWrapper.
 #   Add an interactive option for typing in a field and getting a summary of every drive which had a match
 #       for that field. This way you can scan any barcode on a drive and see what's up with it.
 #   Consider making it so you can operate the program entirely with a bar code scanner.
@@ -15,12 +24,13 @@
 #   Add the ability to show previous long scan results.
 #   Change the interface so that it always shows the drive summary section followed by a menu of options and
 #       entering a serial number highlights that drive in the summary with a blue-background on its description.
-#   Look into adding wipe functionality to eliminate the DBAN step.
+#   Look into adding wipe functionality to eliminate the DBAN step. Include the ability to do military-spec
+#       erasure. There's a lot of consumer demand for that level of erasure even if it's not necessary.
 #   Add a command for starting long and short tests.
-#   Test that you can start a long test, quit this program, re-run this program and see the current testing status.
+#   Test that you can start a long test, quit this program, re-run this program and check the current testing status.
 #   Add functionality for viewing a summary of the past test results.
 #   Apparently some drives have a firmware function for doing an automated secure wipe. This would be better than
-#   DBAN or manual overwriting and should be investigated.
+#       DBAN or manual overwriting and should be investigated.
 
 
 import re
@@ -52,32 +62,16 @@ captureFailures = list()
 debugMode = False
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
-CW_PATH = 8
-CW_HDD_TYPE = 4
-CW_SIZE = 8
-CW_MODEL = 20
-CW_SERIAL = 16
-CW_REALLOC = 7
 CW_DRIVEHOURS = 7
 CW_GSENSE = 5
-CW_WHENFAILEDSTATUS = 9
+CW_HDD_TYPE = 4
+CW_MODEL = 20
+CW_PATH = 8
+CW_REALLOC = 7
+CW_SERIAL = 16
+CW_SIZE = 8
 CW_TESTINGSTATE = 11
-
-
-def printDeviceColumnHeader():
-    sys.stdout.write(leftColumn("Path", CW_PATH))
-    sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
-    sys.stdout.write(leftColumn("Size", CW_SIZE))
-    sys.stdout.write(leftColumn("Model", CW_MODEL))
-    sys.stdout.write(leftColumn("Serial", CW_SERIAL))
-    sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
-    sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
-    sys.stdout.write(leftColumn("GSen", CW_GSENSE))
-    sys.stdout.write(leftColumn("WHENFAIL", CW_WHENFAILEDSTATUS))
-    sys.stdout.write(leftColumn("TestState", CW_TESTINGSTATE))
-    print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
-                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
-                        CW_GSENSE + 1 + CW_WHENFAILEDSTATUS + 1 + CW_TESTINGSTATE)
+CW_WHENFAILEDSTATUS = 9
 
 
 # Program definition.
@@ -94,11 +88,8 @@ def main():
     # Get a list of all hard drive device paths.
     devicePaths = glob.glob('/dev/sd?')
 
-    # Start a list of all device WHEN_FAILED attributes.
-    whenFailedAttributes = list()
-
-    # Start a dictionary of devices by serial number.
-    deviceBySerial = dict()
+    whenFailedAttributes = list()  # List of WHEN_FAILED attributes of all drives.
+    deviceBySerial = dict()  # Dictionary of devices by serial number.
 
     # Print column header.
     printDeviceColumnHeader()
@@ -196,6 +187,22 @@ def main():
             print "\n"
             printDeviceColumnHeader()
             print deviceBySerial[userInput]
+
+
+def printDeviceColumnHeader():
+    sys.stdout.write(leftColumn("Path", CW_PATH))
+    sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
+    sys.stdout.write(leftColumn("Size", CW_SIZE))
+    sys.stdout.write(leftColumn("Model", CW_MODEL))
+    sys.stdout.write(leftColumn("Serial", CW_SERIAL))
+    sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
+    sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
+    sys.stdout.write(leftColumn("GSen", CW_GSENSE))
+    sys.stdout.write(leftColumn("WHENFAIL", CW_WHENFAILEDSTATUS))
+    sys.stdout.write(leftColumn("TestState", CW_TESTINGSTATE))
+    print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
+                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
+                        CW_GSENSE + 1 + CW_WHENFAILEDSTATUS + 1 + CW_TESTINGSTATE)
 
 
 def leftColumn(someString, width):
