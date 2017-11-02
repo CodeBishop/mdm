@@ -117,6 +117,9 @@ class DeviceWrapper:
 
         return description
 
+    def hasFailedAttributes(self):
+        return len(self.failedAttributes) > 0
+
 
 #######################################
 # Module functions and static methods #
@@ -135,6 +138,12 @@ def summaryHeader():
     return "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
                         CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
                         CW_GSENSE + 1 + CW_WHENFAILEDSTATUS + 1 + CW_TESTINGSTATE)
+
+
+def attributeHeader():
+    # Print out any WHEN_FAILED attributes that were found.
+    return "\nPATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE" +\
+           "-----------------------------------------------------------------------------------------"
 
 
 def leftColumn(someString, width):

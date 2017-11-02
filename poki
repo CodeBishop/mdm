@@ -102,23 +102,22 @@ def main():
     # Print column header.
     print summaryHeader()
 
-    # For each drive output a 1-line summary of smartctl info.
+    # Load each device and print a summary of it.
     for devicePath in sorted(devicePaths):
         # Attempt to load device smartctl info (and suppress pySmart warnings).
         device = DeviceWrapper(devicePath)
         devices.append(device)
 
-        # Print out one-line summary of drive.
         print device.oneLineSummary()
 
-    # Print out any WHEN_FAILED attributes that were found.
-    print "\nPATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE"
-    print "-----------------------------------------------------------------------------------------"
-    for device in devices:
-        for failedAttribute in device.failedAttributes:
-            print failedAttribute
+    # Show failed attributes for any devices.
+    if any(device.hasFailedAttributes() for device in devices):
+        print attributeHeader()
+        for device in devices:
+            for failedAttribute in device.failedAttributes:
+                print failedAttribute
 
-    # Present interactive mode.
+    # Begin interactive mode.
     while True:
         print "\nEnter drive serial number or command: (q)uit, show (a)ll, "
         userInput = raw_input()
