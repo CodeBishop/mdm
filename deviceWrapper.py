@@ -48,7 +48,15 @@ class DeviceWrapper:
         warnings.filterwarnings("default")
         self.smartCapable = False if (self.device.name is None or self.device.interface is None) else True
 
+        if self.smartCapable:
+            self.buildFailedAttributeList()
+
         return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
+
+    def buildFailedAttributeList(self):
+        for attribute in self.device.attributes:
+            if attribute and attribute.when_failed != "-":
+                self.failedAttributes.append(self.devicePath + " " + attribute)
 
     def refresh(self):
         outcome = self.load(self.devicePath)
@@ -84,12 +92,11 @@ class DeviceWrapper:
         else:
             driveHours = "???"
 
-        # Fetch all WHEN_FAILED attributes that were found.
-        whenFailedStatus = "-"
-        for attribute in self.device.attributes:
-            if attribute and attribute.when_failed != "-":
-                whenFailedStatus = COLOR_YELLOW + "see below" + COLOR_DEFAULT
-                self.failedAttributes.append(self.devicePath + " " + attribute)
+        # Note whether the device has any failed attributes.
+        if self.hasFailedAttributes():
+            whenFailedStatus = COLOR_YELLOW + "see below" + COLOR_DEFAULT
+        else:
+            whenFailedStatus = "-"
 
         # Assess the current testing status of the device.
         testResultCode = self.device.get_selftest_result()[0]
