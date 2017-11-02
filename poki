@@ -3,11 +3,24 @@
 # Poki is a program for fetching the most pertinent Smartctl information on all connected
 # drives and presenting it in a summary that fits on one page.
 
+# USE CASES
+#     (1) The user wants to see:
+#             What hard drives are connected? (i.e. are they all showing up?)
+#             What was the outcome of the most recent scan? Or an indication there's never been one.
+#             Has there been any past scan outcomes that showed failures?
+#             Are there any red flags (like bad realloc)?
+#             Is a scan currently running on a drive and what is its progress state and estimated time remaining?
+#     (2) The user wants to be able to bar code scan a particular drive and get all of its info in one section.
+#           This should show the complete scan history of the drive rather than just most recent and past failed.
+#     (3) The user wants to start long scans on drives and see their progress state.
+#     (4) The user want to start drive wipes and see their progress state.
+#     (5) The user wants to quit.
+
+
 # TESTING TO DO
 #   Test with various drives including both SSD, HDD and USB.
 #   Test trying to scan a drive while it's in use (i.e. system drive).
 #   Test operations on a drive that short and long smartctl tests in-progress.
-
 
 
 # TO DO
@@ -15,12 +28,11 @@
 #   Make a wrapper class for pySMART's Device class so that you can have things like:
 #       bool DeviceWrapper.load() to load or refresh its fields.
 #       enum DeviceWrapper.runLongTest() and it returns a value saying whether one's in progress or now started.
-#       bool DeviceWrapper.
+#       bool DeviceWrapper.search(searchString) return true if the string was a subset of any field.
 #   Add an interactive option for typing in a field and getting a summary of every drive which had a match
 #       for that field. This way you can scan any barcode on a drive and see what's up with it.
 #   Consider making it so you can operate the program entirely with a bar code scanner.
 #       Can you write a barcode scannable command for auto-mounting a USB drive?
-#   Add an option for starting long scans.
 #   Add the ability to show previous long scan results.
 #   Change the interface so that it always shows the drive summary section followed by a menu of options and
 #       entering a serial number highlights that drive in the summary with a blue-background on its description.
@@ -28,9 +40,17 @@
 #       erasure. There's a lot of consumer demand for that level of erasure even if it's not necessary.
 #   Add a command for starting long and short tests.
 #   Test that you can start a long test, quit this program, re-run this program and check the current testing status.
-#   Add functionality for viewing a summary of the past test results.
 #   Apparently some drives have a firmware function for doing an automated secure wipe. This would be better than
 #       DBAN or manual overwriting and should be investigated.
+#   Move code out of main()
+#       Create a loop of:
+#           enum userCommand = interpretInputAsCommand()
+#           if userCommand = CMD_UNRECOGNIZED:
+#               searchMatches = searchDevices(deviceList)
+#               for device in searchMatches:
+#                   print device.summary()
+#               if len(searchMatches) == 1:
+#                   print device.multilineHistory()
 
 
 import re
