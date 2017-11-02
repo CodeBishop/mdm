@@ -80,7 +80,7 @@ MISSING_FIELD = ''  # This is what capture() returns if can't find the search st
 RECORD_CAPTURE_FAILURE, IGNORE_CAPTURE_FAILURE = 1, 2
 
 captureFailures = list()
-debugMode = False
+debugMode = True
 
 
 # Program definition.
@@ -97,8 +97,7 @@ def main():
     # Get a list of all hard drive device paths.
     devicePaths = glob.glob('/dev/sd?')
 
-    whenFailedAttributes = list()  # List of WHEN_FAILED attributes of all drives.
-    deviceBySerial = dict()  # Dictionary of devices by serial number.
+    devices = list()
 
     # Print column header.
     print summaryHeader()
@@ -106,83 +105,18 @@ def main():
     # For each drive output a 1-line summary of smartctl info.
     for devicePath in sorted(devicePaths):
         # Attempt to load device smartctl info (and suppress pySmart warnings).
-        warnings.filterwarnings("ignore")
-        device = Device(devicePath)
-        warnings.filterwarnings("default")
-        if device.name is None or device.interface is None:
-            print devicePath + " does not respond to smartctl enquiries."
-            continue
-
-        # Gather attribute data
-        # Fetch the number of reallocated sectors if smartctl knows it.
-        if device.attributes[5] is not None:
-            reallocCount = int(device.attributes[5].raw)
-            if reallocCount > 0:
-                textColor = COLOR_RED
-            else:
-                textColor = COLOR_GREEN
-            reallocText = textColor + str(reallocCount) + COLOR_DEFAULT
-        else:
-            reallocText = COLOR_YELLOW + "???" + COLOR_DEFAULT
-
-        # Fetch the number of G-Sense errors if smartctl knows it.
-        GSenseCount = str(device.attributes[191].raw) if device.attributes[191] else "???"
-
-        # Fetch the number of hours if smartctl knows it.
-        # NOTE: smartctl may output hour-count in scan results yet not have it as an "attribute".
-        if device.attributes[9] is not None:
-            hours = int(re.findall("\d+", device.attributes[9].raw)[0])
-            if hours > 10000:
-                textColor = COLOR_YELLOW
-            else:
-                textColor = COLOR_DEFAULT
-            driveHours = textColor + str(hours) + ' ' + COLOR_DEFAULT
-        else:
-            driveHours = "???"
-
-        # Fetch all WHEN_FAILED attributes that were found.
-        whenFailedStatus = "-"
-        for attribute in device.attributes:
-            if attribute and attribute.when_failed != "-":
-                whenFailedStatus = COLOR_YELLOW + "see below" + COLOR_DEFAULT
-                whenFailedAttributes.append((devicePath, attribute))
-
-        # Assess the current testing status of the device.
-        testResultCode = device.get_selftest_result()[0]
-        if testResultCode == 0:
-            testingState = COLOR_GREEN + "complete" + COLOR_DEFAULT
-        elif testResultCode == 1:
-            testingState = "in progress"
-        elif testResultCode == 2:
-            testingState = "idle"
-        else:
-            testingState = COLOR_YELLOW + "state:" + str(device.get_selftest_result()) + COLOR_DEFAULT
-
-        # Construct one-line summary of drive.
-        description = ""
-        description += leftColumn(devicePath, CW_PATH)
-        description += leftColumn(("SSD" if device.is_ssd else "HDD"), CW_HDD_TYPE)
-        description += leftColumn(str(device.capacity), CW_SIZE)
-        description += leftColumn(device.model, CW_MODEL)
-        description += leftColumn(device.serial, CW_SERIAL)
-        description += leftColumn(reallocText, CW_REALLOC)
-        description += leftColumn(driveHours, CW_DRIVEHOURS)
-        description += leftColumn(GSenseCount, CW_GSENSE)
-        description += leftColumn(whenFailedStatus, CW_WHENFAILEDSTATUS)
-        description += leftColumn(testingState, CW_TESTINGSTATE)
+        device = DeviceWrapper(devicePath)
+        devices.append(device)
 
         # Print out one-line summary of drive.
-        print description
-
-        # Store description in lookup table.
-        deviceBySerial[device.serial] = description
+        print device.oneLineSummary()
 
     # Print out any WHEN_FAILED attributes that were found.
-    if len(whenFailedAttributes) > 0:
-        print "\nPATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE"
-        print "-----------------------------------------------------------------------------------------"
-        for (devicePath, attribute) in whenFailedAttributes:
-            print devicePath, attribute
+    print "\nPATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE"
+    print "-----------------------------------------------------------------------------------------"
+    for device in devices:
+        for failedAttribute in device.failedAttributes:
+            print failedAttribute
 
     # Present interactive mode.
     while True:
@@ -192,10 +126,10 @@ def main():
             break
         if userInput == 'a':
             print "Command not implemented yet."
-        if userInput in deviceBySerial:
-            print "\n"
-            printDeviceColumnHeader()
-            print deviceBySerial[userInput]
+        # if userInput in deviceBySerial:
+        #     print "\n"
+        #     printDeviceColumnHeader()
+        #     print deviceBySerial[userInput]
 
 
 # # Program definition.

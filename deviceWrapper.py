@@ -9,6 +9,13 @@ from pySMART import Device
 from pySMART.utils import admin
 warnings.filterwarnings("default")
 
+# ANSI color codes that are both bash (Ubuntu) and zsh compatible (sysrescue).
+# Taken from:  https://en.wikipedia.org/wiki/ANSI_escape_code#3.2F4_bit
+COLOR_DEFAULT = '\x1b[0m'
+COLOR_RED = '\x1b[1;31m'
+COLOR_YELLOW = '\x1b[1;33m'
+COLOR_GREEN = '\x1b[1;32m'
+
 # DeviceWrapper-related constants.
 DW_LOAD_FAILED, DW_LOAD_SUCCESS = range(2)
 
@@ -30,15 +37,16 @@ class DeviceWrapper:
         # Declare members of the DeviceWrapper class.
         self.device = None
         self.devicePath = devicePath
+        self.failedAttributes = list()
         self.smartCapable = None
 
         self.load(devicePath)
 
     def load(self, devicePath):
         warnings.filterwarnings("ignore")
-        device = Device(devicePath)
+        self.device = Device(devicePath)
         warnings.filterwarnings("default")
-        self.smartCapable = False if (device.name is None or device.interface is None) else False
+        self.smartCapable = False if (self.device.name is None or self.device.interface is None) else True
 
         return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
 
@@ -47,7 +55,67 @@ class DeviceWrapper:
         return outcome
 
     def oneLineSummary(self):
-        pass
+        if not self.smartCapable:
+            return self.devicePath + " does not respond to smartctl enquiries."
+
+        # Fetch the number of reallocated sectors if smartctl knows it.
+        if self.device.attributes[5] is not None:
+            reallocCount = int(self.device.attributes[5].raw)
+            if reallocCount > 0:
+                textColor = COLOR_RED
+            else:
+                textColor = COLOR_GREEN
+            reallocText = textColor + str(reallocCount) + COLOR_DEFAULT
+        else:
+            reallocText = COLOR_YELLOW + "???" + COLOR_DEFAULT
+
+        # Fetch the number of G-Sense errors if smartctl knows it.
+        GSenseCount = str(self.device.attributes[191].raw) if self.device.attributes[191] else "???"
+
+        # Fetch the number of hours if smartctl knows it.
+        # NOTE: smartctl may output hour-count in scan results yet not have it as an "attribute".
+        if self.device.attributes[9] is not None:
+            hours = int(re.findall("\d+", self.device.attributes[9].raw)[0])
+            if hours > 10000:
+                textColor = COLOR_YELLOW
+            else:
+                textColor = COLOR_DEFAULT
+            driveHours = textColor + str(hours) + ' ' + COLOR_DEFAULT
+        else:
+            driveHours = "???"
+
+        # Fetch all WHEN_FAILED attributes that were found.
+        whenFailedStatus = "-"
+        for attribute in self.device.attributes:
+            if attribute and attribute.when_failed != "-":
+                whenFailedStatus = COLOR_YELLOW + "see below" + COLOR_DEFAULT
+                self.failedAttributes.append(self.devicePath + " " + attribute)
+
+        # Assess the current testing status of the device.
+        testResultCode = self.device.get_selftest_result()[0]
+        if testResultCode == 0:
+            testingState = COLOR_GREEN + "complete" + COLOR_DEFAULT
+        elif testResultCode == 1:
+            testingState = "in progress"
+        elif testResultCode == 2:
+            testingState = "idle"
+        else:
+            testingState = COLOR_YELLOW + "state:" + str(self.device.get_selftest_result()) + COLOR_DEFAULT
+
+        # Construct one-line summary of drive.
+        description = ""
+        description += leftColumn(self.devicePath, CW_PATH)
+        description += leftColumn(("SSD" if self.device.is_ssd else "HDD"), CW_HDD_TYPE)
+        description += leftColumn(str(self.device.capacity), CW_SIZE)
+        description += leftColumn(self.device.model, CW_MODEL)
+        description += leftColumn(self.device.serial, CW_SERIAL)
+        description += leftColumn(reallocText, CW_REALLOC)
+        description += leftColumn(driveHours, CW_DRIVEHOURS)
+        description += leftColumn(GSenseCount, CW_GSENSE)
+        description += leftColumn(whenFailedStatus, CW_WHENFAILEDSTATUS)
+        description += leftColumn(testingState, CW_TESTINGSTATE)
+
+        return description
 
 
 #######################################
