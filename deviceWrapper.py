@@ -42,6 +42,7 @@ class DeviceWrapper:
         self.serial = ""
         self.model = ""
         self.name = ""
+        self.reallocCount = -1  # Marker value for uninitialized integer.
 
         self.load(devicePath)
 
@@ -60,6 +61,10 @@ class DeviceWrapper:
                 self.model = str(self.device.model)
             if self.device.name is not None:
                 self.name = str(self.device.name)
+            if self.device.attributes[5] is not None:
+                self.reallocCount = int(self.device.attributes[5].raw)
+            else:
+                print self.devicePath + " has no reallocated sector count!!!"
 
         return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
 
@@ -85,16 +90,13 @@ class DeviceWrapper:
         if not self.smartCapable:
             return self.devicePath + " does not respond to smartctl enquiries."
 
-        # Fetch the number of reallocated sectors if smartctl knows it.
-        if self.device.attributes[5] is not None:
-            reallocCount = int(self.device.attributes[5].raw)
-            if reallocCount > 0:
-                textColor = COLOR_RED
-            else:
-                textColor = COLOR_GREEN
-            reallocText = textColor + str(reallocCount) + COLOR_DEFAULT
-        else:
+        # Make a color-coded string of the reallocated sector count.
+        if self.reallocCount > 0:
+            reallocText = COLOR_RED + str(self.reallocCount) + COLOR_DEFAULT
+        elif self.reallocCount < 0:
             reallocText = COLOR_YELLOW + "???" + COLOR_DEFAULT
+        else:
+            reallocText = COLOR_GREEN + str(self.reallocCount) + COLOR_DEFAULT
 
         # Fetch the number of G-Sense errors if smartctl knows it.
         GSenseCount = str(self.device.attributes[191].raw) if self.device.attributes[191] else "???"

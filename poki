@@ -110,6 +110,7 @@ def main():
     # Begin interactive mode.
     while True:
         print "\nEnter search or enter command: (q)uit, show (a)ll, (r)efresh"
+        sys.stdout.write("> ")
         userInput = raw_input()
         if userInput == 'q':
             break
