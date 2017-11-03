@@ -39,6 +39,9 @@ class DeviceWrapper:
         self.devicePath = devicePath
         self.failedAttributes = list()
         self.smartCapable = None
+        self.serial = ""
+        self.model = ""
+        self.name = ""
 
         self.load(devicePath)
 
@@ -49,7 +52,14 @@ class DeviceWrapper:
         self.smartCapable = False if (self.device.name is None or self.device.interface is None) else True
 
         if self.smartCapable:
+            # Fill various DeviceWrapper fields with smartctl info.
             self.buildFailedAttributeList()
+            if self.device.serial is not None:
+                self.serial = str(self.device.serial)
+            if self.device.model is not None:
+                self.model = str(self.device.model)
+            if self.device.name is not None:
+                self.name = str(self.device.name)
 
         return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
 
@@ -61,6 +71,15 @@ class DeviceWrapper:
     def refresh(self):
         outcome = self.load(self.devicePath)
         return outcome
+
+    def matchSearchString(self, searchString):
+        # Look for the given searchString in various fields.
+        if re.search(searchString, self.serial) or \
+                re.search(searchString, self.model) or \
+                re.search(searchString, self.name):
+            return True
+        else:
+            return False
 
     def oneLineSummary(self):
         if not self.smartCapable:
@@ -114,7 +133,7 @@ class DeviceWrapper:
         description += leftColumn(self.devicePath, CW_PATH)
         description += leftColumn(("SSD" if self.device.is_ssd else "HDD"), CW_HDD_TYPE)
         description += leftColumn(str(self.device.capacity), CW_SIZE)
-        description += leftColumn(self.device.model, CW_MODEL)
+        description += leftColumn(self.model, CW_MODEL)
         description += leftColumn(self.device.serial, CW_SERIAL)
         description += leftColumn(reallocText, CW_REALLOC)
         description += leftColumn(driveHours, CW_DRIVEHOURS)

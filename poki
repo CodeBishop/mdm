@@ -119,12 +119,26 @@ def main():
 
     # Begin interactive mode.
     while True:
-        print "\nEnter drive serial number or command: (q)uit, show (a)ll, "
+        print "\nEnter drive search string or enter command: (q)uit, show (a)ll, "
         userInput = raw_input()
         if userInput == 'q':
             break
-        if userInput == 'a':
-            print "Command not implemented yet."
+        elif len(userInput) < 2:
+            print "Unrecognized command."
+        else:
+            searchMatchingDevices = list()
+            for device in devices:
+                if device.matchSearchString(userInput):
+                    searchMatchingDevices.append(device)
+            if len(searchMatchingDevices) == 0:
+                print "No drives matched search string."
+            elif len(searchMatchingDevices) == 1:
+                print "\nSearch matched one drive:"
+                print searchMatchingDevices[0].oneLineSummary()
+            else:
+                print "\nSearch matched multiple drives:"
+                for device in searchMatchingDevices:
+                    print device.oneLineSummary
         # if userInput in deviceBySerial:
         #     print "\n"
         #     printDeviceColumnHeader()
