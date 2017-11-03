@@ -3,6 +3,16 @@
 
 sda, 120GB Kingston SSD, 1408 hours, realloc=0
 
+Smartctl calls made by pySMART
+------------------------------
+    DeviceList._initialize(self):
+        cmd = Popen('smartctl --scan-open', shell=True, stdout=PIPE, stderr=PIPE)
+        _stdout, _stderr = cmd.communicate()
 
+    Device.update(self):
+        cmd = Popen('smartctl -d scsi -l background /dev/{1}'.format(smartctl_type[self.interface],
+            self.name), shell=True, stdout=PIPE, stderr=PIPE)
+        _stdout, _stderr = cmd.communicate()
 
-
+cmd = Popen('smartctl -d {0} -l sataphy /dev/{1}'.format(smartctl_type[test], self.name),
+    shell=True,stdout=PIPE, stderr=PIPE)

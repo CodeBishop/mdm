@@ -1,4 +1,6 @@
+import os
 import re
+import subprocess
 import sys
 import warnings
 
@@ -8,6 +10,9 @@ warnings.filterwarnings("ignore")
 from pySMART import Device
 from pySMART.utils import admin
 warnings.filterwarnings("default")
+
+# Open the null device for dumping unwanted output into.
+DEVNULL = open(os.devnull, 'w')
 
 # ANSI color codes that are both bash (Ubuntu) and zsh compatible (sysrescue).
 # Taken from:  https://en.wikipedia.org/wiki/ANSI_escape_code#3.2F4_bit
@@ -43,6 +48,7 @@ class DeviceWrapper:
         self.model = ""
         self.name = ""
         self.reallocCount = -1  # Marker value for uninitialized integer.
+        self.status = "unknown"
 
         self.load(devicePath)
 
@@ -77,6 +83,7 @@ class DeviceWrapper:
         outcome = self.load(self.devicePath)
         return outcome
 
+    # Test if a given string matches any device field as a substring.
     def matchSearchString(self, searchString):
         # Look for the given searchString in various fields.
         if re.search(searchString, self.serial, re.IGNORECASE) or \
@@ -186,3 +193,9 @@ def leftColumn(someString, width):
         return someString[:width-3] + "... "
     # Non-ellipsis version.
     # return someString.ljust(width)[:width] + ' '
+
+
+# Get the output from a terminal command and block any error messages from appearing.
+def terminalCommand(command):
+    output, _ = subprocess.Popen(["sudo"] + command.split(), stdout=subprocess.PIPE, stderr=DEVNULL).communicate()
+    return output

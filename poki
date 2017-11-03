@@ -52,7 +52,6 @@
 
 
 from deviceWrapper import *
-import subprocess
 import os
 import sys
 import glob
@@ -60,7 +59,6 @@ import warnings
 
 # Import pySMART but suppress the warning messages about not being root.
 warnings.filterwarnings("ignore")
-from pySMART import Device
 from pySMART.utils import admin
 warnings.filterwarnings("default")
 
@@ -73,12 +71,12 @@ COLOR_GREEN = '\x1b[1;32m'
 COLOR_CYAN = '\x1b[1;36m'
 
 # Fetch the null device for dumping unsightly error messages into.
-DEVNULL = open(os.devnull, 'w')
 MISSING_FIELD = ''  # This is what capture() returns if can't find the search string.
 RECORD_CAPTURE_FAILURE, IGNORE_CAPTURE_FAILURE = 1, 2
 
 captureFailures = list()
 debugMode = True
+
 
 # Program definition.
 def main():
@@ -178,11 +176,6 @@ def printDeviceColumnHeader():
                         CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
                         CW_GSENSE + 1 + CW_WHENFAILEDSTATUS + 1 + CW_TESTINGSTATE)
 
-
-# Get the output from a terminal command and block any error messages from appearing.
-def terminalCommand(command):
-    output, _ = subprocess.Popen(["sudo"] + command.split(), stdout=subprocess.PIPE, stderr=DEVNULL).communicate()
-    return output
 
 # Run the program.
 main()
