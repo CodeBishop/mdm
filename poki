@@ -47,7 +47,6 @@
 #       pySMART only seems to be aware of tests that were started by itself.
 #     search by devicePath so you can type "sda"
 #     Single drive description should include WHEN_FAIL attributes.
-#   Make searching case-insensitive.
 #   Start a user ticket system for the program.
 #   Rename the program (Doodle survey?).
 
@@ -119,7 +118,7 @@ def main():
             for device in devices:
                 print device.oneLineSummary()
         elif userInput == 'r':
-            print "Rescanning for devices...\n"
+            print "Refreshing devices!\n"
             devices = findAllDrives()
             printDeviceColumnHeader()
             printAllDeviceSummaries(devices)
@@ -133,13 +132,13 @@ def main():
                 if device.matchSearchString(userInput):
                     searchMatchingDevices.append(device)
             if len(searchMatchingDevices) == 0:
-                print COLOR_CYAN + "No drives matched search string." + COLOR_DEFAULT
+                print COLOR_RED + "No drives matched search string." + COLOR_DEFAULT
             elif len(searchMatchingDevices) == 1:
-                print COLOR_CYAN + "\nSearch matched one drive:" + COLOR_DEFAULT
+                print COLOR_GREEN + "\nSearch matched one drive:" + COLOR_DEFAULT
                 print searchMatchingDevices[0].oneLineSummary()
                 searchMatchingDevices[0].device.all_selftests()
             else:
-                print COLOR_CYAN + "\nSearch matched multiple drives:" + COLOR_DEFAULT
+                print COLOR_YELLOW + "\nSearch matched multiple drives:" + COLOR_DEFAULT
                 for device in searchMatchingDevices:
                     print device.oneLineSummary()
 
