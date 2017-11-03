@@ -42,15 +42,7 @@
 #   Test that you can start a long test, quit this program, re-run this program and check the current testing status.
 #   Apparently some drives have a firmware function for doing an automated secure wipe. This would be better than
 #       DBAN or manual overwriting and should be investigated.
-#   Move code out of main()
-#       Create a loop of:
-#           enum userCommand = interpretInputAsCommand()
-#           if userCommand = CMD_UNRECOGNIZED:
-#               searchMatches = searchDevices(deviceList)
-#               for device in searchMatches:
-#                   print device.summary()
-#               if len(searchMatches) == 1:
-#                   print device.multilineHistory()
+#   Add capability to capture the message where some drives warn they need their firmware updated.
 
 
 from deviceWrapper import *
@@ -73,6 +65,7 @@ COLOR_DEFAULT = '\x1b[0m'
 COLOR_RED = '\x1b[1;31m'
 COLOR_YELLOW = '\x1b[1;33m'
 COLOR_GREEN = '\x1b[1;32m'
+COLOR_CYAN = '\x1b[1;36m'
 
 # Fetch the null device for dumping unsightly error messages into.
 DEVNULL = open(os.devnull, 'w')
@@ -109,7 +102,7 @@ def main():
 
     # Begin interactive mode.
     while True:
-        print "\nEnter search or enter command: (q)uit, show (a)ll, (r)efresh"
+        print COLOR_CYAN + "\nEnter search or enter command: (q)uit, show (a)ll, (r)efresh" + COLOR_DEFAULT
         sys.stdout.write("> ")
         userInput = raw_input()
         if userInput == 'q':
