@@ -71,7 +71,7 @@ class DeviceWrapper:
     def buildFailedAttributeList(self):
         for attribute in self.device.attributes:
             if attribute and attribute.when_failed != "-":
-                self.failedAttributes.append(self.devicePath + " " + attribute)
+                self.failedAttributes.append(self.devicePath + " " + str(attribute))
 
     def refresh(self):
         outcome = self.load(self.devicePath)
@@ -171,7 +171,7 @@ def summaryHeader():
 def attributeHeader():
     # Print out any WHEN_FAILED attributes that were found.
     return "\nPATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE" +\
-           "-----------------------------------------------------------------------------------------"
+           "\n-----------------------------------------------------------------------------------------"
 
 
 def leftColumn(someString, width):
