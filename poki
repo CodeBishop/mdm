@@ -44,7 +44,16 @@
 #       DBAN or manual overwriting and should be investigated.
 #   Add capability to capture the message where some drives warn they need their firmware updated.
 #   Find a way to find out if a test is in progress. You'll probably need to directly query smartctl because
-#       pySMART only seems to be aware of test if started by itself.
+#       pySMART only seems to be aware of tests that were started by itself.
+#     search by devicePath so you can type "sda"
+#     Single drive description should include WHEN_FAIL attributes.
+#   Make searching case-insensitive
+#     Change prompt to say
+#         "Enter one char for command or >1 for search."
+#         "Commands: ..."
+#   Start a user ticket system for the program.
+#   Rename the program (Doodle survey?).
+
 
 
 from deviceWrapper import *
@@ -118,6 +127,8 @@ def main():
             devices = findAllDrives()
             printDeviceColumnHeader()
             printAllDeviceSummaries(devices)
+
+        # Presume user doesn't enter more than one character for anything but a search string.
         elif len(userInput) < 2:
             print "Unrecognized command."
         else:
@@ -126,13 +137,13 @@ def main():
                 if device.matchSearchString(userInput):
                     searchMatchingDevices.append(device)
             if len(searchMatchingDevices) == 0:
-                print "No drives matched search string."
+                print COLOR_CYAN + "No drives matched search string." + COLOR_DEFAULT
             elif len(searchMatchingDevices) == 1:
-                print "\nSearch matched one drive:"
+                print COLOR_CYAN + "\nSearch matched one drive:" + COLOR_DEFAULT
                 print searchMatchingDevices[0].oneLineSummary()
                 searchMatchingDevices[0].device.all_selftests()
             else:
-                print "\nSearch matched multiple drives:"
+                print COLOR_CYAN + "\nSearch matched multiple drives:" + COLOR_DEFAULT
                 for device in searchMatchingDevices:
                     print device.oneLineSummary()
 
