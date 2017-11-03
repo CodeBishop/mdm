@@ -47,10 +47,7 @@
 #       pySMART only seems to be aware of tests that were started by itself.
 #     search by devicePath so you can type "sda"
 #     Single drive description should include WHEN_FAIL attributes.
-#   Make searching case-insensitive
-#     Change prompt to say
-#         "Enter one char for command or >1 for search."
-#         "Commands: ..."
+#   Make searching case-insensitive.
 #   Start a user ticket system for the program.
 #   Rename the program (Doodle survey?).
 

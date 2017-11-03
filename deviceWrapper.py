@@ -79,9 +79,9 @@ class DeviceWrapper:
 
     def matchSearchString(self, searchString):
         # Look for the given searchString in various fields.
-        if re.search(searchString, self.serial) or \
-                re.search(searchString, self.model) or \
-                re.search(searchString, self.name):
+        if re.search(searchString, self.serial, re.IGNORECASE) or \
+                re.search(searchString, self.model, re.IGNORECASE) or \
+                re.search(searchString, self.name, re.IGNORECASE):
             return True
         else:
             return False
