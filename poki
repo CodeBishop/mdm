@@ -21,16 +21,13 @@
 #   Test with various drives including both SSD, HDD and USB.
 #   Test trying to scan a drive while it's in use (i.e. system drive).
 #   Test operations on a drive that short and long smartctl tests in-progress.
+#   Test that you can start a long test, quit this program, re-run this program and check the current testing status.
 
 
 # TO DO
 #   Remove the terminalCommand() function if you don't end up using it.
 #   Make a wrapper class for pySMART's Device class so that you can have things like:
-#       bool DeviceWrapper.load() to load or refresh its fields.
 #       enum DeviceWrapper.runLongTest() and it returns a value saying whether one's in progress or now started.
-#       bool DeviceWrapper.search(searchString) return true if the string was a subset of any field.
-#   Add an interactive option for typing in a field and getting a summary of every drive which had a match
-#       for that field. This way you can scan any barcode on a drive and see what's up with it.
 #   Consider making it so you can operate the program entirely with a bar code scanner.
 #       Can you write a barcode scannable command for auto-mounting a USB drive?
 #   Add the ability to show previous long scan results.
@@ -39,7 +36,6 @@
 #   Look into adding wipe functionality to eliminate the DBAN step. Include the ability to do military-spec
 #       erasure. There's a lot of consumer demand for that level of erasure even if it's not necessary.
 #   Add a command for starting long and short tests.
-#   Test that you can start a long test, quit this program, re-run this program and check the current testing status.
 #   Apparently some drives have a firmware function for doing an automated secure wipe. This would be better than
 #       DBAN or manual overwriting and should be investigated.
 #   Add capability to capture the message where some drives warn they need their firmware updated.
@@ -49,6 +45,8 @@
 #     Single drive description should include WHEN_FAIL attributes.
 #   Start a user ticket system for the program.
 #   Rename the program (Doodle survey?).
+#   If you can get a drive's percentage of long-test completion then show it as a progress bar with a percentage
+#       centered in the middle of it and an ETA at one end.
 
 
 from deviceWrapper import *
