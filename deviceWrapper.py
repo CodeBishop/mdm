@@ -8,7 +8,6 @@ import warnings
 # Import pySMART but suppress the warning messages about not being root.
 warnings.filterwarnings("ignore")
 from pySMART import Device
-from pySMART.utils import admin
 warnings.filterwarnings("default")
 
 # Open the null device for dumping unwanted output into.
@@ -23,6 +22,9 @@ COLOR_GREEN = '\x1b[1;32m'
 
 # DeviceWrapper-related constants.
 DW_LOAD_FAILED, DW_LOAD_SUCCESS = range(2)
+DW_STATUS_IDLE, DW_STATUS_TEST_IN_PROGRESS = range(2)
+
+MISSING_FIELD = "not found"  # This is what capture() returns if can't find the search string.
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_DRIVEHOURS = 7
@@ -48,6 +50,7 @@ class DeviceWrapper:
         self.model = ""
         self.name = ""
         self.reallocCount = -1  # Marker value for uninitialized integer.
+        self.testProgress = -1  # Marker value for uninitialized integer.
         self.status = "unknown"
 
         self.load(devicePath)
@@ -69,8 +72,14 @@ class DeviceWrapper:
                 self.name = str(self.device.name)
             if self.device.attributes[5] is not None:
                 self.reallocCount = int(self.device.attributes[5].raw)
-            else:
-                print self.devicePath + " has no reallocated sector count!!!"
+
+            # Call smartctl directly to see if a test is in progress.
+            rawResults = terminalCommand("smartctl -c " + self.devicePath)
+            if re.search("previous self-test", rawResults):
+                self.status = DW_STATUS_IDLE
+            elif re.search("% of test remaining", rawResults):
+                self.status = DW_STATUS_TEST_IN_PROGRESS
+                self.testProgress = int(capture(r"(\d+)% of test remaining", rawResults))
 
         return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
 
@@ -126,16 +135,13 @@ class DeviceWrapper:
         else:
             whenFailedStatus = "-"
 
-        # Assess the current testing status of the device.
-        testResultCode = self.device.get_selftest_result()[0]
-        if testResultCode == 0:
-            testingState = COLOR_GREEN + "complete" + COLOR_DEFAULT
-        elif testResultCode == 1:
-            testingState = "in progress"
-        elif testResultCode == 2:
+        # Describe current testing status.
+        if self.status == DW_STATUS_IDLE:
             testingState = "idle"
+        elif self.status == DW_STATUS_TEST_IN_PROGRESS:
+            testingState = COLOR_YELLOW + str(self.testProgress) + "%" + COLOR_DEFAULT
         else:
-            testingState = COLOR_YELLOW + "state:" + str(self.device.get_selftest_result()) + COLOR_DEFAULT
+            testingState = COLOR_RED + "Unrecognized status code" + COLOR_DEFAULT
 
         # Construct one-line summary of drive.
         description = ""
@@ -199,3 +205,12 @@ def leftColumn(someString, width):
 def terminalCommand(command):
     output, _ = subprocess.Popen(["sudo"] + command.split(), stdout=subprocess.PIPE, stderr=DEVNULL).communicate()
     return output
+
+
+# Use a regular expression to capture part of a string or return MISSING_FIELD if unable.
+def capture(pattern, text):
+    result = re.search(pattern, text)
+    if result and result.group(1):
+        return result.group(1)
+    else:
+        return MISSING_FIELD

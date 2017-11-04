@@ -47,6 +47,7 @@
 #   Rename the program (Doodle survey?).
 #   If you can get a drive's percentage of long-test completion then show it as a progress bar with a percentage
 #       centered in the middle of it and an ETA at one end.
+#   Fix whatever's causing leftColumn() to miscalculate the string "90% complete".
 
 
 from deviceWrapper import *
@@ -173,7 +174,6 @@ def printDeviceColumnHeader():
     print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
                         CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
                         CW_GSENSE + 1 + CW_WHENFAILEDSTATUS + 1 + CW_TESTINGSTATE)
-
 
 # Run the program.
 main()
