@@ -52,7 +52,9 @@
 #   For never-tested drives make the individual report say "No history of tests" instead of a column header.
 #   Add drive type and size to searchable fields.
 #   Add connection type (SCSI, SATA, IDE) as a column and as a searchable field.
-
+#   Cover all 4 of the big indicators: scan errors(198), reallocation count(196), offline reallocation(5) and
+#       probational count (197).
+#   Write an install.sh that will put poki in some appropriate bin folder.
 
 from deviceWrapper import *
 import os
