@@ -97,6 +97,7 @@ class DeviceWrapper:
         # Look for the given searchString in various fields.
         if re.search(searchString, self.serial, re.IGNORECASE) or \
                 re.search(searchString, self.model, re.IGNORECASE) or \
+                re.search(searchString, self.devicePath, re.IGNORECASE) or \
                 re.search(searchString, self.name, re.IGNORECASE):
             return True
         else:
@@ -203,7 +204,7 @@ def leftColumn(someString, width):
 
 # Get the output from a terminal command and block any error messages from appearing.
 def terminalCommand(command):
-    output, _ = subprocess.Popen(["sudo"] + command.split(), stdout=subprocess.PIPE, stderr=DEVNULL).communicate()
+    output, _ = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=DEVNULL).communicate()
     return output
 
 
