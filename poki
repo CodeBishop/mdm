@@ -167,13 +167,13 @@ def printDeviceColumnHeader():
     sys.stdout.write(leftColumn("Model", CW_MODEL))
     sys.stdout.write(leftColumn("Serial", CW_SERIAL))
     sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
-    sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
+    sys.stdout.write(leftColumn("Hours", CW_DRIVE_HOURS))
     sys.stdout.write(leftColumn("GSen", CW_GSENSE))
-    sys.stdout.write(leftColumn("WHENFAIL", CW_WHENFAILEDSTATUS))
-    sys.stdout.write(leftColumn("TestState", CW_TESTINGSTATE))
+    sys.stdout.write(leftColumn("WHENFAIL", CW_WHEN_FAILED_STATUS))
+    sys.stdout.write(leftColumn("TestState", CW_TESTING_STATE))
     print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
-                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
-                        CW_GSENSE + 1 + CW_WHENFAILEDSTATUS + 1 + CW_TESTINGSTATE)
+                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVE_HOURS + 1 +
+                        CW_GSENSE + 1 + CW_WHEN_FAILED_STATUS + 1 + CW_TESTING_STATE)
 
 # Run the program.
 main()

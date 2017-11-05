@@ -22,12 +22,12 @@ COLOR_GREEN = '\x1b[1;32m'
 
 # DeviceWrapper-related constants.
 DW_LOAD_FAILED, DW_LOAD_SUCCESS = range(2)
-DW_STATUS_IDLE, DW_STATUS_TEST_IN_PROGRESS = range(2)
+DW_STATUS_UNKNOWN, DW_STATUS_IDLE, DW_STATUS_TEST_IN_PROGRESS = range(3)
 
 MISSING_FIELD = "not found"  # This is what capture() returns if can't find the search string.
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
-CW_DRIVEHOURS = 7
+CW_DRIVE_HOURS = 7
 CW_GSENSE = 5
 CW_HDD_TYPE = 4
 CW_MODEL = 20
@@ -35,8 +35,8 @@ CW_PATH = 8
 CW_REALLOC = 7
 CW_SERIAL = 16
 CW_SIZE = 8
-CW_TESTINGSTATE = 11
-CW_WHENFAILEDSTATUS = 9
+CW_TESTING_STATE = 22
+CW_WHEN_FAILED_STATUS = 9
 
 
 class DeviceWrapper:
@@ -80,6 +80,8 @@ class DeviceWrapper:
             elif re.search("% of test remaining", rawResults):
                 self.status = DW_STATUS_TEST_IN_PROGRESS
                 self.testProgress = int(capture(r"(\d+)% of test remaining", rawResults))
+            else:
+                self.status = DW_STATUS_UNKNOWN
 
         return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
 
@@ -126,23 +128,26 @@ class DeviceWrapper:
                 textColor = COLOR_YELLOW
             else:
                 textColor = COLOR_DEFAULT
-            driveHours = textColor + leftColumn(str(hours), CW_DRIVEHOURS) + ' ' + COLOR_DEFAULT
+            driveHours = textColor + leftColumn(str(hours), CW_DRIVE_HOURS) + COLOR_DEFAULT
         else:
-            driveHours = leftColumn("???", CW_DRIVEHOURS)
+            driveHours = leftColumn("???", CW_DRIVE_HOURS)
 
         # Note whether the device has any failed attributes.
         if self.hasFailedAttributes():
-            whenFailedStatus = COLOR_YELLOW + leftColumn("see below", CW_WHENFAILEDSTATUS) + COLOR_DEFAULT
+            whenFailedStatus = COLOR_YELLOW + leftColumn("see below", CW_WHEN_FAILED_STATUS) + COLOR_DEFAULT
         else:
-            whenFailedStatus = leftColumn("-", CW_WHENFAILEDSTATUS)
+            whenFailedStatus = leftColumn("-", CW_WHEN_FAILED_STATUS)
 
         # Describe current testing status.
-        if self.status == DW_STATUS_IDLE:
-            testingState = leftColumn("idle", CW_TESTINGSTATE)
+        if self.status == DW_STATUS_UNKNOWN:
+            testingState = leftColumn("unknown", CW_TESTING_STATE)
+        elif self.status == DW_STATUS_IDLE:
+            testingState = leftColumn("idle", CW_TESTING_STATE)
         elif self.status == DW_STATUS_TEST_IN_PROGRESS:
-            testingState = COLOR_YELLOW + leftColumn(str(self.testProgress), CW_TESTINGSTATE) + "%" + COLOR_DEFAULT
+            testingState = COLOR_YELLOW + leftColumn(str(self.testProgress), CW_TESTING_STATE) + "%" + COLOR_DEFAULT
         else:
-            testingState = COLOR_RED + leftColumn("Unrecognized status code", CW_TESTINGSTATE) + COLOR_DEFAULT
+            # Since these codes are defined in this program this error should never happen...
+            testingState = COLOR_RED + leftColumn("unknown code:" + str(self.status), CW_TESTING_STATE) + COLOR_DEFAULT
 
         # Construct one-line summary of drive.
         description = ""
@@ -173,13 +178,13 @@ def summaryHeader():
     sys.stdout.write(leftColumn("Model", CW_MODEL))
     sys.stdout.write(leftColumn("Serial", CW_SERIAL))
     sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
-    sys.stdout.write(leftColumn("Hours", CW_DRIVEHOURS))
+    sys.stdout.write(leftColumn("Hours", CW_DRIVE_HOURS))
     sys.stdout.write(leftColumn("GSen", CW_GSENSE))
-    sys.stdout.write(leftColumn("WHENFAIL", CW_WHENFAILEDSTATUS))
-    sys.stdout.write(leftColumn("TestState", CW_TESTINGSTATE))
+    sys.stdout.write(leftColumn("WHENFAIL", CW_WHEN_FAILED_STATUS))
+    sys.stdout.write(leftColumn("TestState", CW_TESTING_STATE))
     return "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
-                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVEHOURS + 1 +
-                        CW_GSENSE + 1 + CW_WHENFAILEDSTATUS + 1 + CW_TESTINGSTATE)
+                         CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVE_HOURS + 1 +
+                         CW_GSENSE + 1 + CW_WHEN_FAILED_STATUS + 1 + CW_TESTING_STATE)
 
 
 def attributeHeader():
