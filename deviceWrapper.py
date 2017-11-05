@@ -31,12 +31,12 @@ CW_DRIVE_HOURS = 7
 CW_GSENSE = 5
 CW_HDD_TYPE = 4
 CW_MODEL = 20
-CW_PATH = 8
+CW_PATH = 9
 CW_REALLOC = 7
 CW_SERIAL = 16
 CW_SIZE = 8
 CW_TESTING_STATE = 22
-CW_WHEN_FAILED_STATUS = 9
+CW_WHEN_FAILED_STATUS = 10
 
 
 class DeviceWrapper:
@@ -127,7 +127,7 @@ class DeviceWrapper:
             if hours > 10000:
                 textColor = COLOR_YELLOW
             else:
-                textColor = COLOR_DEFAULT
+                textColor = COLOR_GREEN
             driveHours = textColor + leftColumn(str(hours), CW_DRIVE_HOURS) + COLOR_DEFAULT
         else:
             driveHours = leftColumn("???", CW_DRIVE_HOURS)
@@ -136,7 +136,7 @@ class DeviceWrapper:
         if self.hasFailedAttributes():
             whenFailedStatus = COLOR_YELLOW + leftColumn("see below", CW_WHEN_FAILED_STATUS) + COLOR_DEFAULT
         else:
-            whenFailedStatus = leftColumn("-", CW_WHEN_FAILED_STATUS)
+            whenFailedStatus = COLOR_GREEN + leftColumn("-", CW_WHEN_FAILED_STATUS) + COLOR_DEFAULT
 
         # Describe current testing status.
         if self.status == DW_STATUS_UNKNOWN:
