@@ -74,7 +74,7 @@ class DeviceWrapper:
                 self.reallocCount = int(self.device.attributes[5].raw)
 
             # Call smartctl directly to see if a test is in progress.
-            rawResults = terminalCommand("smartctl -c " + self.devicePath)
+            rawResults = terminalCommand("smartctl -s on -c " + self.devicePath)
             if re.search("previous self-test", rawResults):
                 self.status = DW_STATUS_IDLE
             elif re.search("% of test remaining", rawResults):
@@ -109,11 +109,11 @@ class DeviceWrapper:
 
         # Make a color-coded string of the reallocated sector count.
         if self.reallocCount > 0:
-            reallocText = COLOR_RED + str(self.reallocCount) + COLOR_DEFAULT
+            reallocText = COLOR_RED + leftColumn(str(self.reallocCount), CW_REALLOC) + COLOR_DEFAULT
         elif self.reallocCount < 0:
-            reallocText = COLOR_YELLOW + "???" + COLOR_DEFAULT
+            reallocText = COLOR_YELLOW + leftColumn("???", CW_REALLOC) + COLOR_DEFAULT
         else:
-            reallocText = COLOR_GREEN + str(self.reallocCount) + COLOR_DEFAULT
+            reallocText = COLOR_GREEN + leftColumn(str(self.reallocCount), CW_REALLOC) + COLOR_DEFAULT
 
         # Fetch the number of G-Sense errors if smartctl knows it.
         GSenseCount = str(self.device.attributes[191].raw) if self.device.attributes[191] else "???"
@@ -126,23 +126,23 @@ class DeviceWrapper:
                 textColor = COLOR_YELLOW
             else:
                 textColor = COLOR_DEFAULT
-            driveHours = textColor + str(hours) + ' ' + COLOR_DEFAULT
+            driveHours = textColor + leftColumn(str(hours), CW_DRIVEHOURS) + ' ' + COLOR_DEFAULT
         else:
-            driveHours = "???"
+            driveHours = leftColumn("???", CW_DRIVEHOURS)
 
         # Note whether the device has any failed attributes.
         if self.hasFailedAttributes():
-            whenFailedStatus = COLOR_YELLOW + "see below" + COLOR_DEFAULT
+            whenFailedStatus = COLOR_YELLOW + leftColumn("see below", CW_WHENFAILEDSTATUS) + COLOR_DEFAULT
         else:
-            whenFailedStatus = "-"
+            whenFailedStatus = leftColumn("-", CW_WHENFAILEDSTATUS)
 
         # Describe current testing status.
         if self.status == DW_STATUS_IDLE:
-            testingState = "idle"
+            testingState = leftColumn("idle", CW_TESTINGSTATE)
         elif self.status == DW_STATUS_TEST_IN_PROGRESS:
-            testingState = COLOR_YELLOW + str(self.testProgress) + "%" + COLOR_DEFAULT
+            testingState = COLOR_YELLOW + leftColumn(str(self.testProgress), CW_TESTINGSTATE) + "%" + COLOR_DEFAULT
         else:
-            testingState = COLOR_RED + "Unrecognized status code" + COLOR_DEFAULT
+            testingState = COLOR_RED + leftColumn("Unrecognized status code", CW_TESTINGSTATE) + COLOR_DEFAULT
 
         # Construct one-line summary of drive.
         description = ""
@@ -151,11 +151,11 @@ class DeviceWrapper:
         description += leftColumn(str(self.device.capacity), CW_SIZE)
         description += leftColumn(self.model, CW_MODEL)
         description += leftColumn(self.device.serial, CW_SERIAL)
-        description += leftColumn(reallocText, CW_REALLOC)
-        description += leftColumn(driveHours, CW_DRIVEHOURS)
+        description += reallocText
+        description += driveHours
         description += leftColumn(GSenseCount, CW_GSENSE)
-        description += leftColumn(whenFailedStatus, CW_WHENFAILEDSTATUS)
-        description += leftColumn(testingState, CW_TESTINGSTATE)
+        description += whenFailedStatus
+        description += testingState
 
         return description
 
