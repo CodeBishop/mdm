@@ -48,6 +48,10 @@
 #   If you can get a drive's percentage of long-test completion then show it as a progress bar with a percentage
 #       centered in the middle of it and an ETA at one end.
 #   Fix whatever's causing leftColumn() to miscalculate the string "90% complete".
+#   Fix crash caused by pushing up-arrow and enter as user input.
+#   For never-tested drives make the individual report say "No history of tests" instead of a column header.
+#   Add drive type and size to searchable fields.
+#   Add connection type (SCSI, SATA, IDE) as a column and as a searchable field.
 
 
 from deviceWrapper import *
@@ -88,7 +92,7 @@ def main():
         print "Only user ID #0 (root) can run this program"
         exit(1)
 
-    print "Scanning for devices...\n"
+    print COLOR_CYAN + "Scanning for devices...\n" + COLOR_DEFAULT
     devices = findAllDrives()
 
     # Print column header.
@@ -115,27 +119,27 @@ def main():
             for device in devices:
                 print device.oneLineSummary()
         elif userInput == 'r':
-            print "Refreshing devices!\n"
+            print COLOR_CYAN + "Refreshing devices!\n" + COLOR_DEFAULT
             devices = findAllDrives()
             printDeviceColumnHeader()
             printAllDeviceSummaries(devices)
 
         # Presume user doesn't enter more than one character for anything but a search string.
         elif len(userInput) < 2:
-            print "Unrecognized command."
+            print COLOR_CYAN + "Unrecognized command." + COLOR_DEFAULT
         else:
             searchMatchingDevices = list()
             for device in devices:
                 if device.matchSearchString(userInput):
                     searchMatchingDevices.append(device)
             if len(searchMatchingDevices) == 0:
-                print COLOR_RED + "No drives matched search string." + COLOR_DEFAULT
+                print COLOR_CYAN + "No drives matched search string." + COLOR_DEFAULT
             elif len(searchMatchingDevices) == 1:
-                print COLOR_GREEN + "\nSearch matched one drive:" + COLOR_DEFAULT
+                print COLOR_CYAN + "\nSearch matched one drive:" + COLOR_DEFAULT
                 print searchMatchingDevices[0].oneLineSummary()
                 searchMatchingDevices[0].device.all_selftests()
             else:
-                print COLOR_YELLOW + "\nSearch matched multiple drives:" + COLOR_DEFAULT
+                print COLOR_CYAN + "\nSearch matched multiple drives:" + COLOR_DEFAULT
                 for device in searchMatchingDevices:
                     print device.oneLineSummary()
 
