@@ -15,6 +15,7 @@
 #     (3) The user wants to start long scans on drives and see their progress state.
 #     (4) The user want to start drive wipes and see their progress state.
 #     (5) The user wants to quit.
+#     (6) The user wants to bar code scan 3 drives and then just enter (t)est once to start them up.
 
 
 # TESTING TO DO
@@ -64,6 +65,10 @@
 #       good, bad, no test,      no longs,          not able
 #   The counterpart to the history enumerator will be the status enumerator with states:
 #       completed short, completed long, running short, running long, idle, wiping
+#   Make the one-line summary also a searched member as a catch-all that the user can type anything they see.
+#   Change the search results to highlight all matching drives and keep adding new ones with each search then also
+#       have subtractive searches, select all and cancel all.
+#   Add a centerColumn() function so that reAlloc and hours can be centered in their columns like numbers should be.
 #   Get smartctl -a output from several drives to store in this project as reference data.
 
 from deviceWrapper import *
