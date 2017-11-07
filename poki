@@ -57,6 +57,12 @@
 #   Write an install.sh that will put poki in some appropriate bin folder.
 #   Find a drive that's never been tested to use as an example and put tape markers on your test drives to mark
 #       what each one is an example of.
+#   Try the various -d options for bridging various USB enclosures.
+#   Create a "history" enumerator to describe the drive's history of tests. Possible states:
+#       good, bad, never tested, never long-tested, not capable of testing
+#       good, bad, no test,      no longs,          not able
+#   The counterpart to the history enumerator will be the status enumerator with states:
+#       completed short, completed long, running short, running long, idle, wiping
 #   Get smartctl -a output from several drives to store in this project as reference data.
 
 from deviceWrapper import *
