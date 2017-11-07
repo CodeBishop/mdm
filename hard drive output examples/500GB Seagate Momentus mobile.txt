@@ -1,0 +1,116 @@
+smartctl 6.4 2015-06-04 r4109 [x86_64-linux-3.18.25-std471-amd64] (local build)
+Copyright (C) 2002-15, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF INFORMATION SECTION ===
+Model Family:     Seagate Momentus 5400.6
+Device Model:     ST9500325AS
+Serial Number:    S2WGG9KM
+LU WWN Device Id: 5 000c50 04b3076af
+Firmware Version: D005DEM1
+User Capacity:    500,107,862,016 bytes [500 GB]
+Sector Size:      512 bytes logical/physical
+Rotation Rate:    5400 rpm
+Device is:        In smartctl database [for details use: -P show]
+ATA Version is:   ATA8-ACS T13/1699-D revision 4
+SATA Version is:  SATA 2.6, 3.0 Gb/s
+Local Time is:    Tue Nov  7 11:41:00 2017 UTC
+SMART support is: Available - device has SMART capability.
+SMART support is: Disabled
+
+=== START OF ENABLE/DISABLE COMMANDS SECTION ===
+SMART Enabled.
+
+=== START OF READ SMART DATA SECTION ===
+SMART overall-health self-assessment test result: PASSED
+See vendor-specific Attribute list for marginal Attributes.
+
+General SMART Values:
+Offline data collection status:  (0x00)	Offline data collection activity
+					was never started.
+					Auto Offline Data Collection: Disabled.
+Self-test execution status:      (   0)	The previous self-test routine completed
+					without error or no self-test has ever 
+					been run.
+Total time to complete Offline 
+data collection: 		(    0) seconds.
+Offline data collection
+capabilities: 			 (0x73) SMART execute Offline immediate.
+					Auto Offline data collection on/off support.
+					Suspend Offline collection upon new
+					command.
+					No Offline surface scan supported.
+					Self-test supported.
+					Conveyance Self-test supported.
+					Selective Self-test supported.
+SMART capabilities:            (0x0003)	Saves SMART data before entering
+					power-saving mode.
+					Supports SMART auto save timer.
+Error logging capability:        (0x01)	Error logging supported.
+					General Purpose Logging supported.
+Short self-test routine 
+recommended polling time: 	 (   2) minutes.
+Extended self-test routine
+recommended polling time: 	 ( 138) minutes.
+Conveyance self-test routine
+recommended polling time: 	 (   3) minutes.
+SCT capabilities: 	       (0x103f)	SCT Status supported.
+					SCT Error Recovery Control supported.
+					SCT Feature Control supported.
+					SCT Data Table supported.
+
+SMART Attributes Data Structure revision number: 10
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000f   117   099   006    Pre-fail  Always       -       117607478
+  3 Spin_Up_Time            0x0003   098   098   085    Pre-fail  Always       -       0
+  4 Start_Stop_Count        0x0032   100   100   020    Old_age   Always       -       981
+  5 Reallocated_Sector_Ct   0x0033   100   100   036    Pre-fail  Always       -       0
+  7 Seek_Error_Rate         0x000f   073   060   030    Pre-fail  Always       -       23671704
+  9 Power_On_Hours          0x0032   099   099   000    Old_age   Always       -       1742
+ 10 Spin_Retry_Count        0x0013   100   100   097    Pre-fail  Always       -       0
+ 12 Power_Cycle_Count       0x0032   100   100   020    Old_age   Always       -       886
+184 End-to-End_Error        0x0032   100   100   099    Old_age   Always       -       0
+187 Reported_Uncorrect      0x0032   099   099   000    Old_age   Always       -       1
+188 Command_Timeout         0x0032   100   099   000    Old_age   Always       -       25770196998
+189 High_Fly_Writes         0x003a   100   100   000    Old_age   Always       -       0
+190 Airflow_Temperature_Cel 0x0022   081   042   045    Old_age   Always   In_the_past 19 (0 24 19 16 0)
+191 G-Sense_Error_Rate      0x0032   100   100   000    Old_age   Always       -       15
+192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       36
+193 Load_Cycle_Count        0x0032   071   071   000    Old_age   Always       -       58226
+194 Temperature_Celsius     0x0022   019   058   000    Old_age   Always       -       19 (0 12 0 0 0)
+195 Hardware_ECC_Recovered  0x001a   041   037   000    Old_age   Always       -       117607478
+197 Current_Pending_Sector  0x0012   100   100   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0010   100   100   000    Old_age   Offline      -       0
+199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
+240 Head_Flying_Hours       0x0000   100   253   000    Old_age   Offline      -       1432 (223 88 0)
+241 Total_LBAs_Written      0x0000   100   253   000    Old_age   Offline      -       3286185780
+242 Total_LBAs_Read         0x0000   100   253   000    Old_age   Offline      -       339846434
+254 Free_Fall_Sensor        0x0032   001   001   000    Old_age   Always       -       42
+
+SMART Error Log Version: 1
+No Errors Logged
+
+SMART Self-test log structure revision number 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Extended offline    Aborted by host               30%      1732         -
+# 2  Extended offline    Completed without error       00%      1695         -
+# 3  Short offline       Completed without error       00%      1414         -
+# 4  Short offline       Completed without error       00%       405         -
+# 5  Short offline       Completed without error       00%         0         -
+# 6  Short offline       Completed without error       00%         0         -
+# 7  Short offline       Completed without error       00%         0         -
+# 8  Short offline       Completed without error       00%         0         -
+# 9  Short offline       Completed without error       00%         0         -
+#10  Short offline       Completed without error       00%         0         -
+
+SMART Selective self-test log data structure revision number 1
+ SPAN  MIN_LBA  MAX_LBA  CURRENT_TEST_STATUS
+    1        0        0  Not_testing
+    2        0        0  Not_testing
+    3        0        0  Not_testing
+    4        0        0  Not_testing
+    5        0        0  Not_testing
+Selective self-test flags (0x0):
+  After scanning selected spans, do NOT read-scan remainder of disk.
+If Selective self-test is pending on power-up, resume after 0 minute delay.
+
