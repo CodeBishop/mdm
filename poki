@@ -22,6 +22,7 @@
 #   Test trying to scan a drive while it's in use (i.e. system drive).
 #   Test operations on a drive that short and long smartctl tests in-progress.
 #   Test that you can start a long test, quit this program, re-run this program and check the current testing status.
+#   Test that the history enumerator sensibly interprets incomplete tests in the drive history (mid-test shutdowns).
 
 
 # TO DO
