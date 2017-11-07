@@ -55,6 +55,9 @@
 #   Cover all 4 of the big indicators: scan errors(198), reallocation count(196), offline reallocation(5) and
 #       probational count (197).
 #   Write an install.sh that will put poki in some appropriate bin folder.
+#   Find a drive that's never been tested to use as an example and put tape markers on your test drives to mark
+#       what each one is an example of.
+#   Get smartctl -a output from several drives to store in this project as reference data.
 
 from deviceWrapper import *
 import os

@@ -51,7 +51,7 @@ class DeviceWrapper:
         self.name = ""
         self.reallocCount = -1  # Marker value for uninitialized integer.
         self.testProgress = -1  # Marker value for uninitialized integer.
-        self.status = "unknown"
+        self.status = DW_STATUS_UNKNOWN
 
         self.load(devicePath)
 

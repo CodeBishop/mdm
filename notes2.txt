@@ -6,11 +6,12 @@ Potential Commands
     One drive long scan.
     One drive wipe.
     One drive long scan and if pass then wipe.
+    One drive show all test history or state there is none or state that the drive is incapable.
     All drives short scan.
     All drives long scan.
     All drives wipe.
     All drives long scan and if pass then wipe.
-I might need to spawn a separate process that monitors long scans and initiates wipes.
+I might need to spawn a separate process that monitors long scans and then initiates wipes.
 
 
 
