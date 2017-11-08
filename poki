@@ -70,6 +70,8 @@
 #       have subtractive searches, select all and cancel all.
 #   Add a centerColumn() function so that reAlloc and hours can be centered in their columns like numbers should be.
 #   Figure out why the first time this program is run it can't get re-alloc count.
+#   From a PXE environment see if you can copy this program to a directory and remove the USB stick. Does the
+#       file persist? What about if you reboot?
 
 
 from deviceWrapper import *
