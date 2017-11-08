@@ -155,7 +155,7 @@ class DeviceWrapper:
         elif self.status == DR_STATUS_IDLE:
             testingState = leftColumn("idle", CW_TESTING_STATE)
         elif self.status == DR_STATUS_TEST_IN_PROGRESS:
-            testingState = COLOR_YELLOW + leftColumn(str(self.testProgress), CW_TESTING_STATE) + "%" + COLOR_DEFAULT
+            testingState = COLOR_YELLOW + leftColumn(str(self.testProgress) + '%', CW_TESTING_STATE) + COLOR_DEFAULT
         else:
             # Since these codes are defined in this program this error should never happen...
             testingState = COLOR_RED + leftColumn("unknown code:" + str(self.status), CW_TESTING_STATE) + COLOR_DEFAULT
