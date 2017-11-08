@@ -69,7 +69,8 @@
 #   Change the search results to highlight all matching drives and keep adding new ones with each search then also
 #       have subtractive searches, select all and cancel all.
 #   Add a centerColumn() function so that reAlloc and hours can be centered in their columns like numbers should be.
-#   Get smartctl -a output from several drives to store in this project as reference data.
+#   Figure out why the first time this program is run it can't get re-alloc count.
+
 
 from deviceWrapper import *
 import os

@@ -20,11 +20,22 @@ COLOR_RED = '\x1b[1;31m'
 COLOR_YELLOW = '\x1b[1;33m'
 COLOR_GREEN = '\x1b[1;32m'
 
-# DeviceWrapper-related constants.
-DW_LOAD_FAILED, DW_LOAD_SUCCESS = range(2)
-DW_STATUS_UNKNOWN, DW_STATUS_IDLE, DW_STATUS_TEST_IN_PROGRESS = range(3)
-
 MISSING_FIELD = "not found"  # This is what capture() returns if can't find the search string.
+
+# Possible states of a device's history: all past tests were good, one or more were bad, drive has never run a
+#   short or long test, drive has never run a long test (but short ones were all good), drive has no history
+#   because it is not SMART test capable.
+DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_HIST_NOT_TESTABLE = range(5)
+
+# Possible current states of a device: drive is idle, drive is running a short test, drive is running a long test,
+#   drive completed a short test (while this program was running), drive completed a long test (while this program
+#   was running, drive is being wiped, drive wipe is complete, drive status could not be discovered
+DR_STATUS_IDLE, DR_STATUS_SHORT_TEST, DR_STATUS_LONG_TEST, DR_STATUS_SHORT_DONE, DR_STATUS_LONG_DONE, DR_STATUS_WIPE, \
+    DR_STATUS_WIPE_DONE, DR_STATUS_UNKNOWN = range(8)
+
+# Class-related constants.
+DW_LOAD_FAILED, DW_LOAD_SUCCESS = range(2)
+
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_DRIVE_HOURS = 7
@@ -51,7 +62,7 @@ class DeviceWrapper:
         self.name = ""
         self.reallocCount = -1  # Marker value for uninitialized integer.
         self.testProgress = -1  # Marker value for uninitialized integer.
-        self.status = DW_STATUS_UNKNOWN
+        self.status = DR_STATUS_UNKNOWN
 
         self.load(devicePath)
 
@@ -76,12 +87,12 @@ class DeviceWrapper:
             # Call smartctl directly to see if a test is in progress.
             rawResults = terminalCommand("smartctl -s on -c " + self.devicePath)
             if re.search("previous self-test", rawResults):
-                self.status = DW_STATUS_IDLE
+                self.status = DR_STATUS_IDLE
             elif re.search("% of test remaining", rawResults):
-                self.status = DW_STATUS_TEST_IN_PROGRESS
+                self.status = DR_STATUS_TEST_IN_PROGRESS
                 self.testProgress = int(capture(r"(\d+)% of test remaining", rawResults))
             else:
-                self.status = DW_STATUS_UNKNOWN
+                self.status = DR_STATUS_UNKNOWN
 
         return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
 
@@ -139,11 +150,11 @@ class DeviceWrapper:
             whenFailedStatus = COLOR_GREEN + leftColumn("-", CW_WHEN_FAILED_STATUS) + COLOR_DEFAULT
 
         # Describe current testing status.
-        if self.status == DW_STATUS_UNKNOWN:
+        if self.status == DR_STATUS_UNKNOWN:
             testingState = leftColumn("unknown", CW_TESTING_STATE)
-        elif self.status == DW_STATUS_IDLE:
+        elif self.status == DR_STATUS_IDLE:
             testingState = leftColumn("idle", CW_TESTING_STATE)
-        elif self.status == DW_STATUS_TEST_IN_PROGRESS:
+        elif self.status == DR_STATUS_TEST_IN_PROGRESS:
             testingState = COLOR_YELLOW + leftColumn(str(self.testProgress), CW_TESTING_STATE) + "%" + COLOR_DEFAULT
         else:
             # Since these codes are defined in this program this error should never happen...

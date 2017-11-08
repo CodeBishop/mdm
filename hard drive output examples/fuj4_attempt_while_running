@@ -1,0 +1,9 @@
+smartctl 6.4 2015-06-04 r4109 [x86_64-linux-3.18.25-std471-amd64] (local build)
+Copyright (C) 2002-15, Bruce Allen, Christian Franke, www.smartmontools.org
+
+=== START OF ENABLE/DISABLE COMMANDS SECTION ===
+SMART Enabled.
+
+=== START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION ===
+Can't start self-test without aborting current test (70% remaining),
+add '-t force' option to override, or run 'smartctl -X' to abort test.
