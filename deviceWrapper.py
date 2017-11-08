@@ -27,11 +27,10 @@ MISSING_FIELD = "not found"  # This is what capture() returns if can't find the 
 #   because it is not SMART test capable.
 DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_HIST_NOT_TESTABLE = range(5)
 
-# Possible current states of a device: drive is idle, drive is running a short test, drive is running a long test,
-#   drive completed a short test (while this program was running), drive completed a long test (while this program
-#   was running, drive is being wiped, drive wipe is complete, drive status could not be discovered
-DR_STATUS_IDLE, DR_STATUS_SHORT_TEST, DR_STATUS_LONG_TEST, DR_STATUS_SHORT_DONE, DR_STATUS_LONG_DONE, DR_STATUS_WIPE, \
-    DR_STATUS_WIPE_DONE, DR_STATUS_UNKNOWN = range(8)
+# Possible current states of a device: drive is idle, drive is running a test, drive completed a test (while
+#   this program was running), drive is being wiped, drive wipe is complete, drive status could not be discovered
+DR_STATUS_IDLE, DR_STATUS_TESTING, DR_STATUS_TEST_DONE, DR_STATUS_WIPING, DR_STATUS_WIPE_DONE, \
+    DR_STATUS_UNKNOWN = range(6)
 
 # Class-related constants.
 DW_LOAD_FAILED, DW_LOAD_SUCCESS = range(2)
@@ -89,7 +88,7 @@ class DeviceWrapper:
             if re.search("previous self-test", rawResults):
                 self.status = DR_STATUS_IDLE
             elif re.search("% of test remaining", rawResults):
-                self.status = DR_STATUS_TEST_IN_PROGRESS
+                self.status = DR_STATUS_TESTING
                 self.testProgress = int(capture(r"(\d+)% of test remaining", rawResults))
             else:
                 self.status = DR_STATUS_UNKNOWN
@@ -154,7 +153,7 @@ class DeviceWrapper:
             testingState = leftColumn("unknown", CW_TESTING_STATE)
         elif self.status == DR_STATUS_IDLE:
             testingState = leftColumn("idle", CW_TESTING_STATE)
-        elif self.status == DR_STATUS_TEST_IN_PROGRESS:
+        elif self.status == DR_STATUS_TESTING:
             testingState = COLOR_YELLOW + leftColumn(str(self.testProgress) + '%', CW_TESTING_STATE) + COLOR_DEFAULT
         else:
             # Since these codes are defined in this program this error should never happen...
