@@ -37,11 +37,12 @@ DW_LOAD_FAILED, DW_LOAD_SUCCESS = range(2)
 
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
+CW_CONNECTOR = 4
 CW_DRIVE_HOURS = 7
 CW_GSENSE = 5
 CW_HDD_TYPE = 4
 CW_MODEL = 20
-CW_PATH = 9
+CW_PATH = 8
 CW_REALLOC = 7
 CW_SERIAL = 16
 CW_SIZE = 8
@@ -52,6 +53,7 @@ CW_WHEN_FAILED_STATUS = 10
 class DeviceWrapper:
     def __init__(self, devicePath):
         # Declare members of the DeviceWrapper class.
+        self.connector = ""
         self.device = None
         self.devicePath = devicePath
         self.failedAttributes = list()
@@ -80,6 +82,10 @@ class DeviceWrapper:
                 self.model = str(self.device.model)
             if self.device.name is not None:
                 self.name = str(self.device.name)
+            if self.device.interface is not None:
+                self.connector = str(self.device.interface).upper()
+                if self.connector == "SAT":
+                    self.connector = "SATA"
             if self.device.attributes[5] is not None:
                 self.reallocCount = int(self.device.attributes[5].raw)
 
@@ -162,6 +168,7 @@ class DeviceWrapper:
         # Construct one-line summary of drive.
         description = ""
         description += leftColumn(self.devicePath, CW_PATH)
+        description += leftColumn(self.connector, CW_CONNECTOR)
         description += leftColumn(("SSD" if self.device.is_ssd else "HDD"), CW_HDD_TYPE)
         description += leftColumn(str(self.device.capacity), CW_SIZE)
         description += leftColumn(self.model, CW_MODEL)
@@ -183,6 +190,7 @@ class DeviceWrapper:
 #######################################
 def summaryHeader():
     sys.stdout.write(leftColumn("Path", CW_PATH))
+    sys.stdout.write(leftColumn("Conn", CW_CONNECTOR))
     sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
     sys.stdout.write(leftColumn("Size", CW_SIZE))
     sys.stdout.write(leftColumn("Model", CW_MODEL))

@@ -72,6 +72,14 @@
 #   Figure out why the first time this program is run it can't get re-alloc count.
 #   From a PXE environment see if you can copy this program to a directory and remove the USB stick. Does the
 #       file persist? What about if you reboot?
+#   Figure out why the progress column still puts the % to the far right.
+
+# High Priority TO DO
+# -------------------
+# connector column
+# history that flags past failed long scans and tells you if no long scan ever done.
+# ability to long-test all
+
 
 
 from deviceWrapper import *
@@ -183,21 +191,6 @@ def printAllDeviceSummaries(devices):
     for device in devices:
         print device.oneLineSummary()
 
-
-def printDeviceColumnHeader():
-    sys.stdout.write(leftColumn("Path", CW_PATH))
-    sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
-    sys.stdout.write(leftColumn("Size", CW_SIZE))
-    sys.stdout.write(leftColumn("Model", CW_MODEL))
-    sys.stdout.write(leftColumn("Serial", CW_SERIAL))
-    sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
-    sys.stdout.write(leftColumn("Hours", CW_DRIVE_HOURS))
-    sys.stdout.write(leftColumn("GSen", CW_GSENSE))
-    sys.stdout.write(leftColumn("WHENFAIL", CW_WHEN_FAILED_STATUS))
-    sys.stdout.write(leftColumn("TestState", CW_TESTING_STATE))
-    print "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
-                        CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVE_HOURS + 1 +
-                        CW_GSENSE + 1 + CW_WHEN_FAILED_STATUS + 1 + CW_TESTING_STATE)
 
 # Run the program.
 main()
