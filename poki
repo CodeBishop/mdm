@@ -140,16 +140,18 @@ def main():
 
         # Show in-depth information of one device if it's in focus.
         if focusedDevice is not None:
-            print COLOR_CYAN + "\nAdditional information about selected device" + COLOR_GREY
-            print focusedDevice.oneLineSummary()
-            if focusedDevice.device.all_selftests() is not None:
+            print COLOR_CYAN + "\nAdditional information about selected device:" + COLOR_GREY
+            print focusedDevice.oneLineSummary() + '\n'
+            testList = focusedDevice.device.tests
+            if testList is not None and len(testList) > 0:
                 print focusedDevice.device.all_selftests()
             else:
                 print "No record of SMART tests could be found for this device."
+            print
 
         # Show the command interface.
         print COLOR_CYAN + "\nEnter 1 character for command or >1 for search."
-        print "Commands: (q)uit, select (a)ll, (r)efresh" + COLOR_GREY
+        print "Commands: select (a)ll, select (n)one, (r)efresh, (q)uit" + COLOR_GREY
         sys.stdout.write("> ")
 
         # Get user input.
@@ -165,8 +167,12 @@ def main():
                 devices = findAllDrives()
 
             elif userInput == 'a':
-                for i in len(selections):
+                for i in range(len(selections)):
                     selections[i] = True
+
+            elif userInput == 'n':
+                for i in range(len(selections)):
+                    selections[i] = False
 
             else:
                 print COLOR_CYAN + "Unrecognized command." + COLOR_GREY
@@ -182,10 +188,12 @@ def main():
                     selections[i] = False  # De-select/highlight non-matching drives.
             if len(searchMatchingDevices) == 0:
                 print COLOR_CYAN + "No drives matched search string." + COLOR_GREY
-            elif len(searchMatchingDevices) == 1:
+            if len(searchMatchingDevices) == 1:
                 print COLOR_CYAN + "\nSearch matched one drive." + COLOR_GREY
                 focusedDevice = searchMatchingDevices[0]
-            else:
+            if len(searchMatchingDevices) != 1:
+                focusedDevice = None
+            if len(searchMatchingDevices) >= 2:
                 print COLOR_CYAN + "\nSearch matched multiple drives." + COLOR_GREY
 
 
