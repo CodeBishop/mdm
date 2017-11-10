@@ -72,6 +72,9 @@
 #   From a PXE environment see if you can copy this program to a directory and remove the USB stick. Does the
 #       file persist? What about if you reboot?
 #   Figure out why the progress column still puts the % to the far right.
+#   Add a selected column to highlight which drives are selected (for shells that don't support color).
+#   See if there's a way to make sysrescue support background color.
+
 
 # High Priority TO DO
 # -------------------
@@ -151,7 +154,8 @@ def main():
 
         # Show the command interface.
         print COLOR_CYAN + "\nEnter 1 character for command or >1 for search."
-        print "Commands: select (a)ll, select (n)one, (r)efresh, (q)uit" + COLOR_GREY
+        print "Commands: select (a)ll, select (n)one, (r)efresh, (q)uit"
+        print "Selected drive actions: (s)hort test" + COLOR_GREY
         sys.stdout.write("> ")
 
         # Get user input.
@@ -173,6 +177,15 @@ def main():
             elif userInput == 'n':
                 for i in range(len(selections)):
                     selections[i] = False
+
+            elif userInput == 's':
+                if not any(i for i in selections):
+                    print COLOR_RED + "No devices are selected!" + COLOR_GREY
+                else:
+                    for i in range(len(selections)):
+                        if selections[i]:
+                            terminalCommand("smartctl -s on -t short " + devices[i].devicePath)
+                    devices = findAllDrives()  # Refresh the devices to show the initiated scans.
 
             else:
                 print COLOR_CYAN + "Unrecognized command." + COLOR_GREY
