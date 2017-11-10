@@ -15,7 +15,8 @@ DEVNULL = open(os.devnull, 'w')
 
 # ANSI color codes that are both bash (Ubuntu) and zsh compatible (sysrescue).
 # Taken from:  https://en.wikipedia.org/wiki/ANSI_escape_code#3.2F4_bit
-COLOR_DEFAULT = '\x1b[0m'
+COLOR_RESET = '\x1b[0m'
+COLOR_GREY = '\x1b[1;37m'
 COLOR_RED = '\x1b[1;31m'
 COLOR_YELLOW = '\x1b[1;33m'
 COLOR_GREEN = '\x1b[1;32m'
@@ -116,6 +117,7 @@ class DeviceWrapper:
         if re.search(searchString, self.serial, re.IGNORECASE) or \
                 re.search(searchString, self.model, re.IGNORECASE) or \
                 re.search(searchString, self.devicePath, re.IGNORECASE) or \
+                re.search(searchString, self.oneLineSummary(), re.IGNORECASE) or \
                 re.search(searchString, self.name, re.IGNORECASE):
             return True
         else:
@@ -127,11 +129,11 @@ class DeviceWrapper:
 
         # Make a color-coded string of the reallocated sector count.
         if self.reallocCount > 0:
-            reallocText = COLOR_RED + leftColumn(str(self.reallocCount), CW_REALLOC) + COLOR_DEFAULT
+            reallocText = COLOR_RED + leftColumn(str(self.reallocCount), CW_REALLOC) + COLOR_GREY
         elif self.reallocCount < 0:
-            reallocText = COLOR_YELLOW + leftColumn("???", CW_REALLOC) + COLOR_DEFAULT
+            reallocText = COLOR_YELLOW + leftColumn("???", CW_REALLOC) + COLOR_GREY
         else:
-            reallocText = COLOR_GREEN + leftColumn(str(self.reallocCount), CW_REALLOC) + COLOR_DEFAULT
+            reallocText = COLOR_GREEN + leftColumn(str(self.reallocCount), CW_REALLOC) + COLOR_GREY
 
         # Fetch the number of G-Sense errors if smartctl knows it.
         GSenseCount = str(self.device.attributes[191].raw) if self.device.attributes[191] else "???"
@@ -144,15 +146,15 @@ class DeviceWrapper:
                 textColor = COLOR_YELLOW
             else:
                 textColor = COLOR_GREEN
-            driveHours = textColor + leftColumn(str(hours), CW_DRIVE_HOURS) + COLOR_DEFAULT
+            driveHours = textColor + leftColumn(str(hours), CW_DRIVE_HOURS) + COLOR_GREY
         else:
             driveHours = leftColumn("???", CW_DRIVE_HOURS)
 
         # Note whether the device has any failed attributes.
         if self.hasFailedAttributes():
-            whenFailedStatus = COLOR_YELLOW + leftColumn("see below", CW_WHEN_FAILED_STATUS) + COLOR_DEFAULT
+            whenFailedStatus = COLOR_YELLOW + leftColumn("see below", CW_WHEN_FAILED_STATUS) + COLOR_GREY
         else:
-            whenFailedStatus = COLOR_GREEN + leftColumn("-", CW_WHEN_FAILED_STATUS) + COLOR_DEFAULT
+            whenFailedStatus = COLOR_GREEN + leftColumn("-", CW_WHEN_FAILED_STATUS) + COLOR_GREY
 
         # Describe current testing status.
         if self.status == DR_STATUS_UNKNOWN:
@@ -160,10 +162,10 @@ class DeviceWrapper:
         elif self.status == DR_STATUS_IDLE:
             testingState = leftColumn("idle", CW_TESTING_STATE)
         elif self.status == DR_STATUS_TESTING:
-            testingState = COLOR_YELLOW + leftColumn(str(self.testProgress) + '%', CW_TESTING_STATE) + COLOR_DEFAULT
+            testingState = COLOR_YELLOW + leftColumn(str(self.testProgress) + '%', CW_TESTING_STATE) + COLOR_GREY
         else:
             # Since these codes are defined in this program this error should never happen...
-            testingState = COLOR_RED + leftColumn("unknown code:" + str(self.status), CW_TESTING_STATE) + COLOR_DEFAULT
+            testingState = COLOR_RED + leftColumn("unknown code:" + str(self.status), CW_TESTING_STATE) + COLOR_GREY
 
         # Construct one-line summary of drive.
         description = ""

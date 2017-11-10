@@ -53,7 +53,6 @@
 #   Fix crash caused by pushing up-arrow and enter as user input.
 #   For never-tested drives make the individual report say "No history of tests" instead of a column header.
 #   Add drive type and size to searchable fields.
-#   Add connection type (SCSI, SATA, IDE) as a column and as a searchable field.
 #   Cover all 4 of the big indicators: scan errors(198), reallocation count(196), offline reallocation(5) and
 #       probational count (197).
 #   Write an install.sh that will put poki in some appropriate bin folder.
@@ -76,7 +75,6 @@
 
 # High Priority TO DO
 # -------------------
-# connector column
 # history that flags past failed long scans and tells you if no long scan ever done.
 # ability to long-test all
 
@@ -95,11 +93,13 @@ warnings.filterwarnings("default")
 
 # ANSI color codes that are both bash (Ubuntu) and zsh compatible (sysrescue).
 # Taken from:  https://en.wikipedia.org/wiki/ANSI_escape_code#3.2F4_bit
-COLOR_DEFAULT = '\x1b[0m'
+COLOR_RESET = '\x1b[0m'
+COLOR_GREY = '\x1b[1;37m'
 COLOR_RED = '\x1b[1;31m'
 COLOR_YELLOW = '\x1b[1;33m'
 COLOR_GREEN = '\x1b[1;32m'
 COLOR_CYAN = '\x1b[1;36m'
+COLOR_BACK_GREY = '\x1b[1;100m'
 
 # Fetch the null device for dumping unsightly error messages into.
 MISSING_FIELD = ''  # This is what capture() returns if can't find the search string.
@@ -120,56 +120,73 @@ def main():
         print "Only user ID #0 (root) can run this program"
         exit(1)
 
-    print COLOR_CYAN + "Scanning for devices...\n" + COLOR_DEFAULT
+    print COLOR_CYAN + "Scanning for devices...\n" + COLOR_GREY
     devices = findAllDrives()
-
-    # Print column header.
-    print summaryHeader()
-    printAllDeviceSummaries(devices)
-
-    # Show failed attributes for any devices.
-    if any(device.hasFailedAttributes() for device in devices):
-        print attributeHeader()
-        for device in devices:
-            for failedAttribute in device.failedAttributes:
-                print failedAttribute
+    selections = [False for _ in range(len(devices))]
+    focusedDevice = None  # Device that gets longer description.
 
     # Begin interactive mode.
     while True:
-        print COLOR_CYAN + "\nEnter 1 character for command or >1 for search."
-        print "Commands: (q)uit, show (a)ll, (r)efresh" + COLOR_DEFAULT
-        sys.stdout.write("> ")
-        userInput = raw_input()
-        if userInput == 'q':
-            break
-        elif userInput == 'a':
-            print summaryHeader()
-            for device in devices:
-                print device.oneLineSummary()
-        elif userInput == 'r':
-            print COLOR_CYAN + "Refreshing devices!\n" + COLOR_DEFAULT
-            devices = findAllDrives()
-            printDeviceColumnHeader()
-            printAllDeviceSummaries(devices)
+        # Show the drive list.
+        print summaryHeader()
+        printAllDeviceSummaries(devices, selections)
 
-        # Presume user doesn't enter more than one character for anything but a search string.
-        elif len(userInput) < 2:
-            print COLOR_CYAN + "Unrecognized command." + COLOR_DEFAULT
-        else:
-            searchMatchingDevices = list()
+        # Show failed attributes for any devices.
+        if any(device.hasFailedAttributes() for device in devices):
+            print attributeHeader()
             for device in devices:
-                if device.matchSearchString(userInput):
-                    searchMatchingDevices.append(device)
-            if len(searchMatchingDevices) == 0:
-                print COLOR_CYAN + "No drives matched search string." + COLOR_DEFAULT
-            elif len(searchMatchingDevices) == 1:
-                print COLOR_CYAN + "\nSearch matched one drive:" + COLOR_DEFAULT
-                print searchMatchingDevices[0].oneLineSummary()
-                searchMatchingDevices[0].device.all_selftests()
+                for failedAttribute in device.failedAttributes:
+                    print failedAttribute
+
+        # Show in-depth information of one device if it's in focus.
+        if focusedDevice is not None:
+            print COLOR_CYAN + "\nAdditional information about selected device" + COLOR_GREY
+            print focusedDevice.oneLineSummary()
+            if focusedDevice.device.all_selftests() is not None:
+                print focusedDevice.device.all_selftests()
             else:
-                print COLOR_CYAN + "\nSearch matched multiple drives:" + COLOR_DEFAULT
-                for device in searchMatchingDevices:
-                    print device.oneLineSummary()
+                print "No record of SMART tests could be found for this device."
+
+        # Show the command interface.
+        print COLOR_CYAN + "\nEnter 1 character for command or >1 for search."
+        print "Commands: (q)uit, select (a)ll, (r)efresh" + COLOR_GREY
+        sys.stdout.write("> ")
+
+        # Get user input.
+        userInput = raw_input()
+
+        # One character input means command (more means search string).
+        if len(userInput) < 2:
+            if userInput == 'q':
+                break
+
+            elif userInput == 'r':
+                print COLOR_CYAN + "Refreshing devices!\n" + COLOR_GREY
+                devices = findAllDrives()
+
+            elif userInput == 'a':
+                for i in len(selections):
+                    selections[i] = True
+
+            else:
+                print COLOR_CYAN + "Unrecognized command." + COLOR_GREY
+
+        else:
+            # Build a list of search-matching devices and highlight them as selected.
+            searchMatchingDevices = list()
+            for i in range(len(devices)):
+                if devices[i].matchSearchString(userInput):
+                    searchMatchingDevices.append(devices[i])
+                    selections[i] = True  # Select/highlight matching drives.
+                else:
+                    selections[i] = False  # De-select/highlight non-matching drives.
+            if len(searchMatchingDevices) == 0:
+                print COLOR_CYAN + "No drives matched search string." + COLOR_GREY
+            elif len(searchMatchingDevices) == 1:
+                print COLOR_CYAN + "\nSearch matched one drive." + COLOR_GREY
+                focusedDevice = searchMatchingDevices[0]
+            else:
+                print COLOR_CYAN + "\nSearch matched multiple drives." + COLOR_GREY
 
 
 def findAllDrives():
@@ -187,9 +204,12 @@ def findAllDrives():
     return devices
 
 
-def printAllDeviceSummaries(devices):
-    for device in devices:
-        print device.oneLineSummary()
+def printAllDeviceSummaries(devices, selections):
+    for i in range(len(devices)):
+        if selections[i]:
+            print COLOR_BACK_GREY + devices[i].oneLineSummary() + COLOR_RESET
+        else:
+            print devices[i].oneLineSummary()
 
 
 # Run the program.
