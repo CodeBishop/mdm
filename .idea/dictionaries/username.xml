@@ -3,6 +3,7 @@
     <words>
       <w>multiline</w>
       <w>smartctl</w>
+      <w>stdscr</w>
     </words>
   </dictionary>
 </component>

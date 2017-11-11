@@ -80,7 +80,7 @@
 # -------------------
 # history that flags past failed long scans and tells you if no long scan ever done.
 # ability to long-test all
-
+#   Consider going to a full-screen interactive interface. Since nano text editor runs you know it's possible.
 
 
 from deviceWrapper import *

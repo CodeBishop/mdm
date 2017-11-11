@@ -1,13 +1,23 @@
 #!/usr/bin/env python
+import curses
 
 
-import warnings
+def main(stdscr):
+    exitFlag = False
+    while not exitFlag:
+        stdscr.clear()
+        stdscr.border(0)
+        stdscr.addstr(2, 2, "Please enter a number...")
+        stdscr.addstr(4, 4, "1 - Add a user")
+        stdscr.addstr(4, 4, "2 - Restart Apache")
+        stdscr.addstr(6, 4, "3 - Show disk space")
+        stdscr.addstr(7, 4, "4 - Exit")
+        stdscr.refresh()
 
-# Import pySMART but suppress the warning messages about not being root.
-from pySMART import Device
+        x = stdscr.getch()
 
-# Attempt to load device smartctl info (and suppress pySmart warnings).
-device = Device("/dev/sda")
+        if x != '':
+            exitFlag = True
 
-print device.capacity
-result = device.get_selftest_result()
+curses.wrapper(main)
+
