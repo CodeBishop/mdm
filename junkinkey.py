@@ -1,7 +1,12 @@
+#!/usr/bin/env python
+
+# Junk Inkey - A throwaway program for experimenting with non-blocking keypress checking.
+
 import sys
 import select
 import tty
 import termios
+
 
 def isData():
     return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
