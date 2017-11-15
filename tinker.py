@@ -5,9 +5,11 @@ import curses
 POS_BX = 4  # Left side of search/help bar.
 POS_BY = 4  # Top side of search/help bar.
 POS_DLX = 6  # Left side of drive list.
-POS_DLY = 6  # Top side of drive list.
+POS_DLY = 8  # Top side of drive list.
 
 SELECTOR_ABSENT = -1
+
+import time
 
 
 def main(screen):
@@ -25,6 +27,20 @@ def main(screen):
         # Clear the screen
         screen.clear()
         screen.border(0)
+
+        # START DEBUG
+        stopFlag = False
+        y = 2
+        while not stopFlag:
+            start = time.time()
+            if screen.getch() == ord('q'):
+                stopFlag = True
+            end = time.time()
+            screen.addstr(y, 10, str(int((end - start) * 1000.0)))
+            y += 1
+        # print(end-start)
+        exit(0)
+        # END DEBUG
 
         # Draw the program title.
         screen.addstr(2, 2, "Drive Scanner")
