@@ -12,6 +12,7 @@ POS_DLY = 8  # Top side of drive list.
 
 SELECTOR_ABSENT = -1
 
+
 def main(screen):
     curses.curs_set(0)  # Make the terminal cursor invisible.
     screen.nodelay(True)  # Make getch() non-blocking.
