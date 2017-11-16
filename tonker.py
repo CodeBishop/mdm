@@ -16,13 +16,13 @@ SELECTOR_ABSENT = -1
 NO_KEYS_PRESSED = -1
 ESCAPE_KEY = 27
 RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds between two getch() calls for input to be considered user-based.
+SEARCH_PROMPT = "Find: "
 
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
 
 
 def main(screen):
-    curses.curs_set(0)  # Make the terminal cursor invisible.
     screen.nodelay(True)  # Make getch() non-blocking.
     drives = ['drive 1', 'drive 2', 'drive 3']
     selector = 0 if len(drives) > 0 else SELECTOR_ABSENT  # Position the selector on the first listed drive.
@@ -30,46 +30,64 @@ def main(screen):
     searchModeFlag = False
 
     exitFlag = False
+    refreshNeeded = True  # Signals that the program should redraw the screen.
     while not exitFlag:
-        ######################################
-        # Draw the view.                     #
-        ######################################
-        # Clear the screen
-        screen.clear()
-        screen.border(0)
+        # Draw the screen if anything has changed.
+        if refreshNeeded:
+            # Reset the refresh flag.
+            refreshNeeded = False
 
-        # Draw the program title.
-        screen.addstr(2, 2, "Drive Scanner")
+            # Clear the screen
+            screen.clear()
+            screen.border(0)
 
-        # Draw the search bar or help bar.
-        if searchModeFlag:
-            screen.addstr(POS_BY, POS_BX, "Find: " + searchString)
-        else:
-            screen.addstr(POS_BY, POS_BX, "(f)ind (q)uit")
+            # Draw the program title.
+            screen.addstr(2, 2, "Drive Scanner")
 
-        # Draw the drive list.
-        for y in range(len(drives)):
-            screen.addstr(POS_DLY + y, POS_DLX + 4, drives[y])
+            # Draw the search bar or help bar.
+            if searchModeFlag:
+                screen.addstr(POS_BY, POS_BX, SEARCH_PROMPT + searchString)
+            else:
+                screen.addstr(POS_BY, POS_BX, "(f)ind (q)uit")
 
-        # Draw the selector.
-        if selector is not SELECTOR_ABSENT:
-            screen.addstr(POS_DLY + selector, POS_DLX, "-->")
+            # Draw the drive list.
+            for y in range(len(drives)):
+                screen.addstr(POS_DLY + y, POS_DLX + 4, drives[y])
 
-        # Update the view.
-        screen.refresh()
+            # Draw the selector.
+            if selector is not SELECTOR_ABSENT:
+                screen.addstr(POS_DLY + selector, POS_DLX, "-->")
+
+            # Show the cursor when in search mode and hide it the rest of the time.
+            if searchModeFlag:
+                curses.curs_set(1)
+                screen.addstr(POS_BY, POS_BX + len(SEARCH_PROMPT + searchString), "")
+                # curses.setsyx(POS_BY, POS_BX + len(SEARCH_PROMPT + searchString))
+            # Hide the cursor when not in search mode.
+            else:
+                curses.curs_set(0)
+
+            # Update the view.
+            screen.refresh()
 
         # Check for and handle keypresses.
         keypress = screen.getch()
         if keypress is not NO_KEYS_PRESSED:
-            # In search mode keys should be added to the search string until Esc or Enter.
+            # Assume the screen will need to be redrawn anytime a key is pressed.
+            refreshNeeded = True
+
+            # In search mode most keys should be added to the search string until Esc or Enter are pressed.
             if searchModeFlag:
                 if keypress == ESCAPE_KEY:
                     searchString = ""
                     searchModeFlag = False
-                else:
+                elif keypress == curses.KEY_BACKSPACE:
+                    searchString = searchString[:-1]
+                elif keypress < 256:  # ASCII keys get added to search.
                     searchString += curses.keyname(keypress)
+                # All other keys are ignored in search mode.
 
-            # When not in search mode, keys are interpreted as commands.
+            # When not in search mode, all keys are interpreted as commands.
             else:
                 # Pause briefly to see if another keypress happens rapidly enough to imply barcode scanning.
                 millisecondsElapsed = 0
