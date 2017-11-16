@@ -57,8 +57,8 @@ def main(screen):
         keypress = screen.getch()
         if keypress is not NO_KEYS_PRESSED:
             # If there's been a keypress then wait to see if another happens very quickly.
-            startTime = time.time()
             millisecondsElapsed = 0
+            startTime = time.time()
             while millisecondsElapsed < RAPID_KEYPRESS_THRESHOLD:
                 keypress2 = screen.getch()
                 if keypress2 is not NO_KEYS_PRESSED:
