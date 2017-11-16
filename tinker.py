@@ -51,21 +51,40 @@ def main(screen):
         # Update the view.
         screen.refresh()
 
-        # Get user input.
-        userKey = screen.getch()
-        if len(drives) == 0:
-            selector = SELECTOR_ABSENT
-        else:
-            if userKey == curses.KEY_DOWN:
-                selector = (selector + 1) % len(drives)
-            if userKey == curses.KEY_UP:
-                selector = (selector - 1) % len(drives)
+        # Flush user input into temporary buffer.
+        keypressBuffer = list()
+        getchExhausted = False
+        while not getchExhausted:
+            userKey = screen.getch()
+            if userKey == '':
+                getchExhausted = True
+            else:
+                keypressBuffer.append(userKey)
 
-        if userKey == ord('f'):
-            searchModeFlag = True
+        # Start a timer and see if getch() triggers twice in under 30ms. This implies barcode scanning.
+        # TO DO: Write code.
 
-        if userKey == ord('q'):
-            exitFlag = True
+        # Process keypress buffer.
+        keypressIndex = 0
+        while keypressIndex < len(keypressBuffer):
+            # Grab the next keypress in the buffer and increment the buffer index.
+            keypress = keypressBuffer[keypressIndex]
+            keypressIndex += 1
+
+            # Check for cursor keys if there's a drive list to go through.
+            if len(drives) == 0:
+                selector = SELECTOR_ABSENT
+            else:
+                if keypress == curses.KEY_DOWN:
+                    selector = (selector + 1) % len(drives)
+                if keypress == curses.KEY_UP:
+                    selector = (selector - 1) % len(drives)
+
+            if keypress == ord('f'):
+                searchModeFlag = True
+
+            if keypress == ord('q'):
+                exitFlag = True
 
 curses.wrapper(main)
 
