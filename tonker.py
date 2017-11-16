@@ -53,36 +53,40 @@ def main(screen):
         # Update the view.
         screen.refresh()
 
-        # If there's been a keypress then wait to see if another happens very quickly.
+        # Check for and handle keypresses.
         keypress = screen.getch()
-        startTime = time.time()
-        while (time.time() - startTime) < RAPID_KEYPRESS_THRESHOLD:
-            keypress2 = screen.getch()
-            if keypress2 is not NO_KEYS_PRESSED:
-                searchModeFlag = True
-                searchString += curses.keyname(keypress)  # Add the first keypress to the search.
-                keypress = keypress2  # Pass the second keypress forward.
-                break
+        if keypress is not NO_KEYS_PRESSED:
+            # If there's been a keypress then wait to see if another happens very quickly.
+            startTime = time.time()
+            millisecondsElapsed = 0
+            while millisecondsElapsed < RAPID_KEYPRESS_THRESHOLD:
+                keypress2 = screen.getch()
+                if keypress2 is not NO_KEYS_PRESSED:
+                    searchModeFlag = True
+                    searchString += curses.keyname(keypress)  # Add the first keypress to the search.
+                    keypress = keypress2  # Pass the second keypress forward.
+                    break
+                millisecondsElapsed = int((time.time() - startTime) * 1000)
 
-        # If keypresses are very close together then process that input as user commands.
-        if searchModeFlag:
-            searchString += curses.keyname(keypress)
+            # If keypresses are very close together then process that input as user commands.
+            if searchModeFlag:
+                searchString += curses.keyname(keypress)
 
-        else:
-            # Check for cursor keys if there's a drive list to go through.
-            if len(drives) == 0:
-                selector = SELECTOR_ABSENT
             else:
-                if keypress == curses.KEY_DOWN:
-                    selector = (selector + 1) % len(drives)
-                if keypress == curses.KEY_UP:
-                    selector = (selector - 1) % len(drives)
+                # Check for cursor keys if there's a drive list to go through.
+                if len(drives) == 0:
+                    selector = SELECTOR_ABSENT
+                else:
+                    if keypress == curses.KEY_DOWN:
+                        selector = (selector + 1) % len(drives)
+                    if keypress == curses.KEY_UP:
+                        selector = (selector - 1) % len(drives)
 
-            if keypress == ord('f'):
-                searchModeFlag = True
+                if keypress == ord('f'):
+                    searchModeFlag = True
 
-            if keypress == ord('q'):
-                exitFlag = True
+                if keypress == ord('q'):
+                    exitFlag = True
 
 
 curses.wrapper(main)
