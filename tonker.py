@@ -55,16 +55,20 @@ def main(screen):
 
         # If there's been a keypress then wait to see if another happens very quickly.
         keypress = screen.getch()
-        startOfWaitForRapidKeypress = time.time()
-        while (time.time() - startOfWaitForRapidKeypress) < RAPID_KEYPRESS_THRESHOLD:
+        startTime = time.time()
+        while (time.time() - startTime) < RAPID_KEYPRESS_THRESHOLD:
             keypress2 = screen.getch()
             if keypress2 is not NO_KEYS_PRESSED:
                 searchModeFlag = True
-                searchString += ord(keypress) + ord(keypress2)
+                searchString += ord(keypress)  # Add the first keypress to the search.
+                keypress = keypress2  # Pass the second keypress forward.
                 break
 
-        # If keypresses are not very close together then process that input as user commands.
-        if not searchModeFlag:
+        # If keypresses are very close together then process that input as user commands.
+        if searchModeFlag:
+            searchString += ord(keypress)
+
+        else:
             # Check for cursor keys if there's a drive list to go through.
             if len(drives) == 0:
                 selector = SELECTOR_ABSENT
@@ -79,7 +83,6 @@ def main(screen):
 
             if keypress == ord('q'):
                 exitFlag = True
-
 
 
 curses.wrapper(main)
