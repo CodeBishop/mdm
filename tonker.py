@@ -3,6 +3,7 @@
 # Tinker - A temporary program for experimenting with misc features.
 
 import curses
+import os
 import time
 
 # Drawing positions for view layout.
@@ -15,6 +16,9 @@ SELECTOR_ABSENT = -1
 NO_KEYS_PRESSED = -1
 ESCAPE_KEY = 27
 RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds between two getch() calls for input to be considered user-based.
+
+# Before initializing curses, remove the Esc key delay from the OS environment.
+os.environ.setdefault('ESCDELAY', '0')
 
 
 def main(screen):
@@ -57,18 +61,6 @@ def main(screen):
         # Check for and handle keypresses.
         keypress = screen.getch()
         if keypress is not NO_KEYS_PRESSED:
-            # If there's been a keypress then wait to see if another happens very quickly.
-            millisecondsElapsed = 0
-            startTime = time.time()
-            while millisecondsElapsed < RAPID_KEYPRESS_THRESHOLD:
-                keypress2 = screen.getch()
-                if keypress2 is not NO_KEYS_PRESSED:
-                    searchModeFlag = True
-                    searchString += curses.keyname(keypress)  # Add the first keypress to the search.
-                    keypress = keypress2  # Pass the second keypress forward.
-                    break
-                millisecondsElapsed = int((time.time() - startTime) * 1000)
-
             # In search mode keys should be added to the search string until Esc or Enter.
             if searchModeFlag:
                 if keypress == ESCAPE_KEY:
@@ -79,6 +71,19 @@ def main(screen):
 
             # When not in search mode, keys are interpreted as commands.
             else:
+                # Pause briefly to see if another keypress happens rapidly enough to imply barcode scanning.
+                millisecondsElapsed = 0
+                startTime = time.time()
+                while millisecondsElapsed < RAPID_KEYPRESS_THRESHOLD:
+                    # Repeatedly query getch().
+                    keypress2 = screen.getch()
+                    if keypress2 is not NO_KEYS_PRESSED:
+                        searchModeFlag = True
+                        searchString += curses.keyname(keypress)  # Add the first keypress to the search.
+                        keypress = keypress2  # Pass the second keypress forward.
+                        break
+                    millisecondsElapsed = int((time.time() - startTime) * 1000)
+
                 # If a drive list is present then check for cursor keys.
                 if len(drives) > 0:
                     if keypress == curses.KEY_DOWN:
