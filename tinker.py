@@ -11,6 +11,7 @@ POS_DLX = 6  # Left side of drive list.
 POS_DLY = 8  # Top side of drive list.
 
 SELECTOR_ABSENT = -1
+NO_KEYS_PRESSED = -1
 
 
 def main(screen):
@@ -56,7 +57,7 @@ def main(screen):
         getchExhausted = False
         while not getchExhausted:
             userKey = screen.getch()
-            if userKey == '':
+            if userKey == NO_KEYS_PRESSED:
                 getchExhausted = True
             else:
                 keypressBuffer.append(userKey)
