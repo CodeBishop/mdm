@@ -53,57 +53,32 @@ def main(screen):
         # Update the view.
         screen.refresh()
 
-        # Presume user input to be user commands rather than something like barcode scanner input.
-        automatedInputFlag = False
-
-        # Flush user input into temporary buffer.
-        keypressBuffer = list()
-        getchExhausted = False
-        while not getchExhausted:
-            userKey = screen.getch()
-            if userKey == NO_KEYS_PRESSED:
-                getchExhausted = True
-            else:
-                keypressBuffer.append(userKey)
-
-        # Start a timer and see if getch() triggers twice in under 30ms. This implies barcode scanning.
+        # If there's been a keypress then wait to see if another happens very quickly.
+        keypress = screen.getch()
         startOfWaitForRapidKeypress = time.time()
         while (time.time() - startOfWaitForRapidKeypress) < RAPID_KEYPRESS_THRESHOLD:
-            keypress = screen.getch()
-            if keypress is not NO_KEYS_PRESSED:
-                keypressBuffer.append(keypress)
-                automatedInputFlag = True
+            keypress2 = screen.getch()
+            if keypress2 is not NO_KEYS_PRESSED:
+                searchModeFlag = True
+                searchString += ord(keypress) + ord(keypress2)
                 break
-
-        # If two keypresses were very close together then assume the input is coming from a barcode scanner.
-        if automatedInputFlag:
-            for keypress in keypressBuffer:
-                searchString += str(keypress)
-            searchModeFlag = True
 
         # If keypresses are not very close together then process that input as user commands.
         if not searchModeFlag:
-            # Process keypress buffer as commands.
-            keypressIndex = 0
-            while keypressIndex < len(keypressBuffer):
-                # Grab the next keypress in the buffer and increment the buffer index.
-                keypress = keypressBuffer[keypressIndex]
-                keypressIndex += 1
+            # Check for cursor keys if there's a drive list to go through.
+            if len(drives) == 0:
+                selector = SELECTOR_ABSENT
+            else:
+                if keypress == curses.KEY_DOWN:
+                    selector = (selector + 1) % len(drives)
+                if keypress == curses.KEY_UP:
+                    selector = (selector - 1) % len(drives)
 
-                # Check for cursor keys if there's a drive list to go through.
-                if len(drives) == 0:
-                    selector = SELECTOR_ABSENT
-                else:
-                    if keypress == curses.KEY_DOWN:
-                        selector = (selector + 1) % len(drives)
-                    if keypress == curses.KEY_UP:
-                        selector = (selector - 1) % len(drives)
+            if keypress == ord('f'):
+                searchModeFlag = True
 
-                if keypress == ord('f'):
-                    searchModeFlag = True
-
-                if keypress == ord('q'):
-                    exitFlag = True
+            if keypress == ord('q'):
+                exitFlag = True
 
 
 
