@@ -13,6 +13,7 @@ POS_DLY = 8  # Top side of drive list.
 
 SELECTOR_ABSENT = -1
 NO_KEYS_PRESSED = -1
+ESCAPE_KEY = 27
 RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds between two getch() calls for input to be considered user-based.
 
 
@@ -68,19 +69,24 @@ def main(screen):
                     break
                 millisecondsElapsed = int((time.time() - startTime) * 1000)
 
-            # If keypresses are very close together then process that input as user commands.
+            # In search mode keys should be added to the search string until Esc or Enter.
             if searchModeFlag:
-                searchString += curses.keyname(keypress)
-
-            else:
-                # Check for cursor keys if there's a drive list to go through.
-                if len(drives) == 0:
-                    selector = SELECTOR_ABSENT
+                if keypress == ESCAPE_KEY:
+                    searchString = ""
+                    searchModeFlag = False
                 else:
+                    searchString += curses.keyname(keypress)
+
+            # When not in search mode, keys are interpreted as commands.
+            else:
+                # If a drive list is present then check for cursor keys.
+                if len(drives) > 0:
                     if keypress == curses.KEY_DOWN:
                         selector = (selector + 1) % len(drives)
                     if keypress == curses.KEY_UP:
                         selector = (selector - 1) % len(drives)
+                else:
+                    selector = SELECTOR_ABSENT
 
                 if keypress == ord('f'):
                     searchModeFlag = True
