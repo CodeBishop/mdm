@@ -60,13 +60,13 @@ def main(screen):
             keypress2 = screen.getch()
             if keypress2 is not NO_KEYS_PRESSED:
                 searchModeFlag = True
-                searchString += ord(keypress)  # Add the first keypress to the search.
+                searchString += curses.keyname(keypress)  # Add the first keypress to the search.
                 keypress = keypress2  # Pass the second keypress forward.
                 break
 
         # If keypresses are very close together then process that input as user commands.
         if searchModeFlag:
-            searchString += ord(keypress)
+            searchString += curses.keyname(keypress)
 
         else:
             # Check for cursor keys if there's a drive list to go through.
