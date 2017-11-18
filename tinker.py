@@ -37,6 +37,7 @@ def main(screen):
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
     searchString = ""
     searchModeFlag = False
+    testDisplay = False  # Toggles a test of the display properties.
 
     exitFlag = False
     redrawScreen = True  # Signals that the program should redraw the screen.
@@ -67,7 +68,7 @@ def main(screen):
             if searchModeFlag:
                 screen.addstr(POS_BY, POS_BX, SEARCH_PROMPT + searchString)
             else:
-                screen.addstr(POS_BY, POS_BX, "(f)ind (q)uit")
+                screen.addstr(POS_BY, POS_BX, "(f)ind (t)est (q)uit")
 
             # Draw the drive list.
             screen.addstr(POS_DLY - 1, POS_DLX, summaryHeader())
@@ -77,6 +78,16 @@ def main(screen):
             # Draw the selector.
             if selector is not SELECTOR_ABSENT:
                 screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
+
+            # Draw displaying testing stuff if that mode is active.
+            if testDisplay:
+                screen.addstr(10, 10, " NORMAL ")
+                screen.addstr(11, 10, " REVERSE ", curses.A_REVERSE)
+                screen.addstr(12, 10, " BLINK ", curses.A_BLINK)
+                screen.addstr(13, 10, " BOLD ", curses.A_BOLD)
+                screen.addstr(14, 10, " DIM ", curses.A_DIM)
+                screen.addstr(15, 10, " STANDOUT ", curses.A_STANDOUT)
+                screen.addstr(16, 10, " UNDERLINE ", curses.A_UNDERLINE)
 
             # Show the cursor when in search mode and hide it the rest of the time.
             if searchModeFlag:
@@ -134,6 +145,9 @@ def main(screen):
 
                 if keypress == ord('f'):
                     searchModeFlag = True
+
+                if keypress == ord('t'):
+                    testDisplay = not testDisplay
 
                 if keypress == ord('q'):
                     exitFlag = True
