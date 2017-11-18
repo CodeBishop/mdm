@@ -137,6 +137,8 @@ def main(screen):
                 if keypress == ord('q'):
                     exitFlag = True
 
+        time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
+
 
 def findAllDrives():
     # Get a list of all hard drive device paths.
