@@ -7,10 +7,10 @@ import os
 import time
 
 # Drawing positions for view layout.
-POS_BX = 4  # Left side of search/help bar.
-POS_BY = 4  # Top side of search/help bar.
-POS_DLX = 6  # Left side of drive list.
-POS_DLY = 8  # Top side of drive list.
+POS_BX = 1  # Left side of search/help bar.
+POS_BY = 3  # Top side of search/help bar.
+POS_DLX = 2  # Left side of drive list.
+POS_DLY = 5  # Top side of drive list.
 
 SELECTOR_ABSENT = -1
 NO_KEYS_PRESSED = -1
@@ -42,7 +42,7 @@ def main(screen):
             screen.border(0)
 
             # Draw the program title.
-            screen.addstr(2, 2, "Drive Scanner")
+            screen.addstr(1, 1, "Drive Scanner")
 
             # Draw the search bar or help bar.
             if searchModeFlag:
