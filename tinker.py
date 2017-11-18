@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
 # Tinker - An improved version of poki using the ncurses library.
+
+# Summary of sysrescue display differences.
+#   The terminal does not get restored when a curses program ends. The prompt re-appears at the bottom
+#       and the screen remains cluttered with whatever was on display.
+#   Only 8 colors are available and the curses.COLORS constant reflects that fact.
+#   Font effects: dim=underline=normal, reverse=standout(fg/bg color reversal), bold is brighter text.
+#       blink is grey text on dark grey background (no blinking).
+
 from pySMART.utils import admin
 from storageDevice import *
 
@@ -191,5 +199,5 @@ def findAllDrives():
 
     return devices
 
-curses.wrapper(main)
 
+curses.wrapper(main)
