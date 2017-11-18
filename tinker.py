@@ -32,6 +32,7 @@ if not admin():
 
 def main(screen):
     screen.nodelay(True)  # Make getch() non-blocking.
+    curses.start_color()  # DEBUG: I'm not sure this does anything...
     devices = list()
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
     searchString = ""
@@ -60,7 +61,7 @@ def main(screen):
             screen.border(0)
 
             # Draw the program title.
-            screen.addstr(1, 1, "Drive Scanner")
+            screen.addstr(1, 1, "Drive Scanner", curses.A_REVERSE)
 
             # Draw the search bar or help bar.
             if searchModeFlag:
