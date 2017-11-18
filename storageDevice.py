@@ -191,20 +191,19 @@ class StorageDevice:
 # Module functions and static methods #
 #######################################
 def summaryHeader():
-    sys.stdout.write(leftColumn("Path", CW_PATH))
-    sys.stdout.write(leftColumn("Conn", CW_CONNECTOR))
-    sys.stdout.write(leftColumn("Type", CW_HDD_TYPE))
-    sys.stdout.write(leftColumn("Size", CW_SIZE))
-    sys.stdout.write(leftColumn("Model", CW_MODEL))
-    sys.stdout.write(leftColumn("Serial", CW_SERIAL))
-    sys.stdout.write(leftColumn("ReAlloc", CW_REALLOC))
-    sys.stdout.write(leftColumn("Hours", CW_DRIVE_HOURS))
-    sys.stdout.write(leftColumn("GSen", CW_GSENSE))
-    sys.stdout.write(leftColumn("WHENFAIL", CW_WHEN_FAILED_STATUS))
-    sys.stdout.write(leftColumn("TestState", CW_TESTING_STATE))
-    return "\n" + "-" * (CW_PATH + 1 + CW_HDD_TYPE + 1 + CW_SIZE + 1 + CW_MODEL + 1 +
-                         CW_SERIAL + 1 + CW_REALLOC + 1 + CW_DRIVE_HOURS + 1 +
-                         CW_GSENSE + 1 + CW_WHEN_FAILED_STATUS + 1 + CW_TESTING_STATE)
+    header = ""
+    header += leftColumn("Path", CW_PATH)
+    header += leftColumn("Conn", CW_CONNECTOR)
+    header += leftColumn("Type", CW_HDD_TYPE)
+    header += leftColumn("Size", CW_SIZE)
+    header += leftColumn("Model", CW_MODEL)
+    header += leftColumn("Serial", CW_SERIAL)
+    header += leftColumn("ReAlloc", CW_REALLOC)
+    header += leftColumn("Hours", CW_DRIVE_HOURS)
+    header += leftColumn("GSen", CW_GSENSE)
+    header += leftColumn("WHENFAIL", CW_WHEN_FAILED_STATUS)
+    header += leftColumn("TestState", CW_TESTING_STATE)
+    return header
 
 
 def attributeHeader():
