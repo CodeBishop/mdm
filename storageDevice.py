@@ -49,12 +49,13 @@ class StorageDevice:
         self.connector = ""
         self.device = None
         self.devicePath = devicePath
-        self.failedAttributes = list()
+        self.failedAttributes = list()  # Strings, one per WHEN_FAIL attribute.
         self.smartCapable = None
         self.serial = ""
         self.model = ""
         self.name = ""
         self.reallocCount = -1  # Marker value for uninitialized integer.
+        self.testHistory = list()  # Strings, one per test result from SMART test history.
         self.testProgress = -1  # Marker value for uninitialized integer.
         self.status = DR_STATUS_UNKNOWN
 
@@ -69,6 +70,8 @@ class StorageDevice:
         if self.smartCapable:
             # Fill various fields with smartctl info.
             self.buildFailedAttributeList()
+            for testResult in self.device.tests:
+                self.testHistory.append(testResult)
             if self.device.serial is not None:
                 self.serial = str(self.device.serial)
             if self.device.model is not None:

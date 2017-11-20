@@ -122,25 +122,31 @@ def main(screen):
             if selector is not SELECTOR_ABSENT:
                 device = devices[selector]
                 deviceName = device.devicePath  # Refer to the device by its path.
-                posDetailX, posDetailY = 1, POS_DLY + len(devices) + 1  # Text position of detailed info.
+                posX, posY = 1, POS_DLY + len(devices) + 1  # Text position of imaginary cursor.
+
+                # Print the list of failed attributes.
+                if device.hasFailedAttributes():
+                    for failedAttribute in device.failedAttributes:
+                        screen.addstr(posY, posX, failedAttribute)
+                        posY += 1  # Increment vertical cursor
+                else:
+                    screen.addstr(posY, posX, "No WHEN_FAIL attributes found for " + deviceName)
+                    posY += 1  # Increment vertical cursor
+                posY += 1  # Add a blank line before next section of info.
 
                 # Print the test history for the device.
                 # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
                 #       of older tests.
-                posHistX, posHistY = posDetailX, posDetailY  # Text position of test history.
-                testList = device.device.tests
-                if testList is not None and len(testList) > 0:
-                    screen.addstr(posHistY, posHistX, "History of SMART test for " + deviceName)
-                    screen.addstr(posHistY + 1, posHistX, device.all_selftests())
+                if len(device.testHistory) > 0:
+                    screen.addstr(posY, posX, "History of SMART tests for " + deviceName)
+                    posY += 1  # Increment vertical cursor
+                    for testResult in device.testHistory:
+                        screen.addstr(posY + 1, posX, testResult)
+                        posY += 1  # Increment vertical cursor
                 else:
-                    screen.addstr(posHistY, posHistX, "No history of SMART tests found for " + deviceName)
-
-                # # Show failed attributes for any devices.
-                # if any(device.hasFailedAttributes() for device in devices):
-                #     print attributeHeader()
-                #     for device in devices:
-                #         for failedAttribute in device.failedAttributes:
-                #             print failedAttribute
+                    screen.addstr(posY, posX, "No history of SMART tests found for " + deviceName)
+                    posY += 1  # Increment vertical cursor
+                posY += 1  # Add a blank line before next section of info.
 
             # Draw displaying testing stuff if that mode is active.
             if displayTestFlag:
