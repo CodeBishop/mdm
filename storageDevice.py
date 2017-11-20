@@ -13,14 +13,6 @@ warnings.filterwarnings("default")
 # Open the null device for dumping unwanted output into.
 DEVNULL = open(os.devnull, 'w')
 
-# ANSI color codes that are both bash (Ubuntu) and zsh compatible (sysrescue).
-# Taken from:  https://en.wikipedia.org/wiki/ANSI_escape_code#3.2F4_bit
-COLOR_RESET = '\x1b[0m'
-COLOR_GREY = '\x1b[1;37m'
-COLOR_RED = '\x1b[1;31m'
-COLOR_YELLOW = '\x1b[1;33m'
-COLOR_GREEN = '\x1b[1;32m'
-
 MISSING_FIELD = "not found"  # This is what capture() returns if can't find the search string.
 
 # Possible states of a device's history: all past tests were good, one or more were bad, drive has never run a
@@ -129,11 +121,11 @@ class StorageDevice:
 
         # Make a color-coded string of the reallocated sector count.
         if self.reallocCount > 0:
-            reallocText = COLOR_RED + leftColumn(str(self.reallocCount), CW_REALLOC) + COLOR_GREY
+            reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
         elif self.reallocCount < 0:
-            reallocText = COLOR_YELLOW + leftColumn("???", CW_REALLOC) + COLOR_GREY
+            reallocText = leftColumn("???", CW_REALLOC)
         else:
-            reallocText = COLOR_GREEN + leftColumn(str(self.reallocCount), CW_REALLOC) + COLOR_GREY
+            reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
 
         # Fetch the number of G-Sense errors if smartctl knows it.
         GSenseCount = str(self.device.attributes[191].raw) if self.device.attributes[191] else "???"
@@ -142,19 +134,15 @@ class StorageDevice:
         # NOTE: smartctl may output hour-count in scan results yet not have it as an "attribute".
         if self.device.attributes[9] is not None:
             hours = int(re.findall("\d+", self.device.attributes[9].raw)[0])
-            if hours > 10000:
-                textColor = COLOR_YELLOW
-            else:
-                textColor = COLOR_GREEN
-            driveHours = textColor + leftColumn(str(hours), CW_DRIVE_HOURS) + COLOR_GREY
+            driveHours = leftColumn(str(hours), CW_DRIVE_HOURS)
         else:
             driveHours = leftColumn("???", CW_DRIVE_HOURS)
 
         # Note whether the device has any failed attributes.
         if self.hasFailedAttributes():
-            whenFailedStatus = COLOR_YELLOW + leftColumn("see below", CW_WHEN_FAILED_STATUS) + COLOR_GREY
+            whenFailedStatus = leftColumn("see below", CW_WHEN_FAILED_STATUS)
         else:
-            whenFailedStatus = COLOR_GREEN + leftColumn("-", CW_WHEN_FAILED_STATUS) + COLOR_GREY
+            whenFailedStatus = leftColumn("-", CW_WHEN_FAILED_STATUS)
 
         # Describe current testing status.
         if self.status == DR_STATUS_UNKNOWN:
@@ -162,10 +150,10 @@ class StorageDevice:
         elif self.status == DR_STATUS_IDLE:
             testingState = leftColumn("idle", CW_TESTING_STATE)
         elif self.status == DR_STATUS_TESTING:
-            testingState = COLOR_YELLOW + leftColumn(str(self.testProgress) + '%', CW_TESTING_STATE) + COLOR_GREY
+            testingState = leftColumn(str(self.testProgress) + '%', CW_TESTING_STATE)
         else:
             # Since these codes are defined in this program this error should never happen...
-            testingState = COLOR_RED + leftColumn("unknown code:" + str(self.status), CW_TESTING_STATE) + COLOR_GREY
+            testingState = leftColumn("unknown code:" + str(self.status), CW_TESTING_STATE)
 
         # Construct one-line summary of drive.
         description = ""

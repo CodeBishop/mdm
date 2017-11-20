@@ -38,7 +38,8 @@ if not admin():
     exit(1)
 
 
-def main(stdscr):
+# DEBUG: a junk function for playing with color rendering.
+def main2(stdscr):
     # curses.start_color()
     curses.use_default_colors()
     for i in range(0, curses.COLORS):
@@ -60,18 +61,26 @@ def main(stdscr):
     stdscr.getch()
 
 
-def main2(screen):
+# DEBUG: This should be moved below main().
+# Initialize Curses (set various parameters, etc).
+def initCurses(screen):
     screen.nodelay(True)  # Make getch() non-blocking.
     curses.start_color()  # DEBUG: I'm not sure this does anything...
+    curses.use_default_colors()
+    # curses.init_pair(1, curses.COLOR_RED, -1)
+
+
+def main(screen):
+    initCurses(screen)  # Set parameters of curses environment.
     devices = list()
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
     searchString = ""
-    searchModeFlag = False
-    testDisplay = False  # Toggles a test of the display properties.
+    searchModeFlag = False  # Toggle search mode (as versus command mode).
+    displayTestFlag = True  # Toggle a display properties test.
+    redrawScreen = True  # Signal a screen redraw/refresh.
+    refreshDevices = True  # Signal a rescan of all the drives.
 
     exitFlag = False
-    redrawScreen = True  # Signals that the program should redraw the screen.
-    refreshDevices = True  # Signals that the program should rescan all the drives.
     while not exitFlag:
         # Rescan the drives if signaled to.
         if refreshDevices:
@@ -110,7 +119,7 @@ def main2(screen):
                 screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
 
             # Draw displaying testing stuff if that mode is active.
-            if testDisplay:
+            if displayTestFlag:
                 screen.addstr(10, 10, " NORMAL ")
                 screen.addstr(11, 10, " REVERSE ", curses.A_REVERSE)
                 screen.addstr(12, 10, " BLINK ", curses.A_BLINK)
@@ -118,6 +127,7 @@ def main2(screen):
                 screen.addstr(14, 10, " DIM ", curses.A_DIM)
                 screen.addstr(15, 10, " STANDOUT ", curses.A_STANDOUT)
                 screen.addstr(16, 10, " UNDERLINE ", curses.A_UNDERLINE)
+                screen.addstr(17, 10, " COLOR! ", curses.color_pair(1))
 
             # Show the cursor when in search mode and hide it the rest of the time.
             if searchModeFlag:
@@ -177,7 +187,7 @@ def main2(screen):
                     searchModeFlag = True
 
                 if keypress == ord('t'):
-                    testDisplay = not testDisplay
+                    displayTestFlag = not displayTestFlag
 
                 if keypress == ord('q'):
                     exitFlag = True
