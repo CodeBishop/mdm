@@ -120,14 +120,25 @@ def main(screen):
 
             # Draw the detailed info for the currently selected device.
             if selector is not SELECTOR_ABSENT:
-                posHistX, posHistY = 1, POS_DLY + len(devices) + 1
                 device = devices[selector]
-                screen.addstr(posHistY, posHistX, "SMART test history of " + device.devicePath)
+                deviceName = device.devicePath  # Refer to the device by its path.
+                posDetailX, posDetailY = 1, POS_DLY + len(devices) + 1  # Text position of detailed info.
+
+                # Print the test history for the device.
+                posHistX, posHistY = posDetailX, posDetailY  # Text position of test history.
                 testList = device.device.tests
                 if testList is not None and len(testList) > 0:
+                    screen.addstr(posHistY, posHistX, "History of SMART test for " + deviceName)
                     screen.addstr(posHistY + 1, posHistX, device.all_selftests())
                 else:
-                    screen.addstr(posHistY + 1, posHistX, "No history of SMART tests found.")
+                    screen.addstr(posHistY, posHistX, "No history of SMART tests found for " + deviceName)
+
+                # # Show failed attributes for any devices.
+                # if any(device.hasFailedAttributes() for device in devices):
+                #     print attributeHeader()
+                #     for device in devices:
+                #         for failedAttribute in device.failedAttributes:
+                #             print failedAttribute
 
             # Draw displaying testing stuff if that mode is active.
             if displayTestFlag:
