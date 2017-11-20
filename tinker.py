@@ -76,7 +76,7 @@ def main(screen):
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
     searchString = ""
     searchModeFlag = False  # Toggle search mode (as versus command mode).
-    displayTestFlag = True  # Toggle a display properties test.
+    displayTestFlag = False  # Toggle a display properties test.
     redrawScreen = True  # Signal a screen redraw/refresh.
     refreshDevices = True  # Signal a rescan of all the drives.
 
@@ -117,6 +117,17 @@ def main(screen):
             # Draw the selector.
             if selector is not SELECTOR_ABSENT:
                 screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
+
+            # Draw the detailed info for the currently selected device.
+            if selector is not SELECTOR_ABSENT:
+                posHistX, posHistY = 1, POS_DLY + len(devices) + 1
+                device = devices[selector]
+                screen.addstr(posHistY, posHistX, "SMART test history of " + device.devicePath)
+                testList = device.device.tests
+                if testList is not None and len(testList) > 0:
+                    screen.addstr(posHistY + 1, posHistX, device.all_selftests())
+                else:
+                    screen.addstr(posHistY + 1, posHistX, "No history of SMART tests found.")
 
             # Draw displaying testing stuff if that mode is active.
             if displayTestFlag:
