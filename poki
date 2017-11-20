@@ -24,6 +24,8 @@
 #   Test operations on a drive that short and long smartctl tests in-progress.
 #   Test that you can start a long test, quit this program, re-run this program and check the current testing status.
 #   Test that the history enumerator sensibly interprets incomplete tests in the drive history (mid-test shutdowns).
+#   Run 21 short tests on a drive to max out the test history, then check that everything still renders okay. Probably
+#       best to do this on a drive with lots of attribute WHEN_FAILs in order to max out printing.
 
 
 # TO DO

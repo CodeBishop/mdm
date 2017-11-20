@@ -100,31 +100,33 @@ def main(screen):
             screen.clear()
             screen.border(0)
 
-            # Draw the program title.
+            # Print the program title.
             screen.addstr(1, 1, "Drive Scanner", curses.A_REVERSE)
 
-            # Draw the search bar or help bar.
+            # Print the search bar or help bar.
             if searchModeFlag:
                 screen.addstr(POS_BY, POS_BX, SEARCH_PROMPT + searchString)
             else:
                 screen.addstr(POS_BY, POS_BX, "(f)ind (t)est (q)uit")
 
-            # Draw the drive list.
+            # Print the drive list.
             screen.addstr(POS_DLY - 1, POS_DLX, summaryHeader())
             for y in range(len(devices)):
                 screen.addstr(POS_DLY + y, POS_DLX, devices[y].oneLineSummary())
 
-            # Draw the selector.
+            # Print the selector.
             if selector is not SELECTOR_ABSENT:
                 screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
 
-            # Draw the detailed info for the currently selected device.
+            # Print detailed info for the currently selected device.
             if selector is not SELECTOR_ABSENT:
                 device = devices[selector]
                 deviceName = device.devicePath  # Refer to the device by its path.
                 posDetailX, posDetailY = 1, POS_DLY + len(devices) + 1  # Text position of detailed info.
 
                 # Print the test history for the device.
+                # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
+                #       of older tests.
                 posHistX, posHistY = posDetailX, posDetailY  # Text position of test history.
                 testList = device.device.tests
                 if testList is not None and len(testList) > 0:
