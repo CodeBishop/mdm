@@ -72,15 +72,6 @@ def main2(stdscr):
     stdscr.getch()
 
 
-# DEBUG: This should be moved below main().
-# Initialize Curses (set various parameters, etc).
-def initCurses(screen):
-    screen.nodelay(True)  # Make getch() non-blocking.
-    curses.start_color()  # DEBUG: I'm not sure this does anything...
-    curses.use_default_colors()
-    # curses.init_pair(1, curses.COLOR_RED, -1)
-
-
 def main(screen):
     initCurses(screen)  # Set parameters of curses environment.
     devices = list()
@@ -253,6 +244,14 @@ def main(screen):
         time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
 
 
+# Initialize Curses (set various parameters, etc).
+def initCurses(screen):
+    screen.nodelay(True)  # Make getch() non-blocking.
+    curses.start_color()  # DEBUG: I'm not sure this does anything...
+    curses.use_default_colors()
+    # curses.init_pair(1, curses.COLOR_RED, -1)
+
+
 def searchDevices(searchString, devices):
     message = ""  # Default to no message.
     selector = SELECTOR_ABSENT  # Default to hiding the selector.
@@ -287,4 +286,4 @@ def findAllDrives():
     return devices
 
 
-curses.wrapper(main)
+curses.wrapper(main2)
