@@ -142,6 +142,7 @@ def main(screen):
                     posY += 1  # Increment vertical cursor
                 posY += 1  # Add a blank line before next section of info.
 
+
                 # Print the test history for the device.
                 # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
                 #       of older tests.
@@ -150,7 +151,7 @@ def main(screen):
                     posY += 1  # Increment vertical cursor
                     for testResult in device.testHistory:
                         screen.addstr(posY + 1, posX, testResult)
-                        posY += 1  # Increment vertical cursor
+                        posY += 1  # Increment vertical cursorc
                 else:
                     screen.addstr(posY, posX, "No history of SMART tests found for " + deviceName)
                     posY += 1  # Increment vertical cursor
@@ -195,7 +196,8 @@ def main(screen):
                     searchString = searchString[:-1]
                 elif keypress < 256:  # ASCII keys get added to search.
                     searchString += curses.keyname(keypress)
-                # All other keys are ignored in search mode.
+                else:
+                    pass  # All other keys are ignored in search mode.
 
             # When not in search mode, all keys are interpreted as commands.
             else:

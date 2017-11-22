@@ -70,8 +70,9 @@ class StorageDevice:
         if self.smartCapable:
             # Fill various fields with smartctl info.
             self.buildFailedAttributeList()
-            for testResult in self.device.tests:
-                self.testHistory.append(testResult)
+            if self.device.tests is not None:
+                for testResult in self.device.tests:
+                    self.testHistory.append(str(testResult))
             if self.device.serial is not None:
                 self.serial = str(self.device.serial)
             if self.device.model is not None:
