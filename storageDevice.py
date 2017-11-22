@@ -200,8 +200,7 @@ def summaryHeader():
 
 def attributeHeader():
     # Print out any WHEN_FAILED attributes that were found.
-    return "\nPATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE" +\
-           "\n-----------------------------------------------------------------------------------------"
+    return "PATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE"
 
 
 def leftColumn(someString, width):

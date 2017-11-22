@@ -28,12 +28,15 @@ import time
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
 POS_BY = 3  # Top side of search/help bar.
-POS_DLX = 6  # Left side of drive list.
-POS_DLY = 6  # Top side of drive list.
+POS_MX = 1  # Left side of message bar.
+POS_MY = 5  # Top side of message bar.
+POS_DLX = 8  # Left side of drive list.
+POS_DLY = 8  # Top side of drive list.
 
 SELECTOR_ABSENT = -1
 NO_KEYS_PRESSED = -1
 ESCAPE_KEY = 27
+ENTER_KEY = 10
 RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds between two getch() calls for input to be considered user-based.
 SEARCH_PROMPT = "Find: "
 
@@ -87,6 +90,7 @@ def main(screen):
     displayTestFlag = False  # Toggle a display properties test.
     redrawScreen = True  # Signal a screen redraw/refresh.
     refreshDevices = True  # Signal a rescan of all the drives.
+    messageBarContents = "Messages go here"
 
     exitFlag = False
     while not exitFlag:
@@ -117,23 +121,25 @@ def main(screen):
             else:
                 screen.addstr(POS_BY, POS_BX, "(f)ind (t)est (q)uit")
 
+            # Print the message bar.
+            screen.addstr(POS_MY, POS_MX, messageBarContents)
+
             # Print the drive list.
             screen.addstr(POS_DLY - 1, POS_DLX, summaryHeader())
             for y in range(len(devices)):
                 screen.addstr(POS_DLY + y, POS_DLX, devices[y].oneLineSummary())
 
-            # Print the selector.
-            if selector is not SELECTOR_ABSENT:
-                screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
-
             # Print detailed info for the currently selected device.
             if selector is not SELECTOR_ABSENT:
+                screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
                 device = devices[selector]
                 deviceName = device.devicePath  # Refer to the device by its path.
                 posX, posY = 1, POS_DLY + len(devices) + 1  # Text position of imaginary cursor.
 
                 # Print the list of failed attributes.
                 if device.hasFailedAttributes():
+                    screen.addstr(posY, posX, attributeHeader())
+                    posY += 1
                     for failedAttribute in device.failedAttributes:
                         screen.addstr(posY, posX, failedAttribute)
                         posY += 1  # Increment vertical cursor
@@ -141,7 +147,6 @@ def main(screen):
                     screen.addstr(posY, posX, "No WHEN_FAIL attributes found for " + deviceName)
                     posY += 1  # Increment vertical cursor
                 posY += 1  # Add a blank line before next section of info.
-
 
                 # Print the test history for the device.
                 # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
@@ -192,6 +197,9 @@ def main(screen):
                 if keypress == ESCAPE_KEY:
                     searchString = ""
                     searchModeFlag = False
+                elif keypress == ENTER_KEY:
+                    selector, messageBarContents = searchDevices(searchString, devices)
+                    searchModeFlag = False
                 elif keypress == curses.KEY_BACKSPACE:
                     searchString = searchString[:-1]
                 elif keypress < 256:  # ASCII keys get added to search.
@@ -233,6 +241,25 @@ def main(screen):
                     exitFlag = True
 
         time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
+
+
+def searchDevices(searchString, devices):
+    message = ""  # Default to no message.
+    selector = SELECTOR_ABSENT  # Default to hiding the selector.
+    # Build a list of search-matching devices and highlight them as selected.
+    matchingDevices = list()
+    for i in range(len(devices)):
+        if devices[i].matchSearchString(searchString):
+            matchingDevices.append(devices[i])
+            selector = i  # Set selector to matching drive.
+    if len(matchingDevices) == 0:
+        message = "No drives matched search string."
+    if len(matchingDevices) >= 2:
+        message = "Search matched multiple drives:"
+        for device in matchingDevices:
+            message += " " + device.devicePath
+            selector = SELECTOR_ABSENT  # Hide the selector if >1 device matched search.
+    return selector, message
 
 
 def findAllDrives():
