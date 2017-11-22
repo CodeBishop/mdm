@@ -1,13 +1,21 @@
 #!/usr/bin/env python
 
-# Tinker - An improved version of poki using the ncurses library.
+# Welcome to dm, aka Drive Monkey.
+# An improved version of poki using the ncurses library.
 
+# Misc Notes
 # Summary of sysrescue display differences.
 #   The terminal does not get restored when a curses program ends. The prompt re-appears at the bottom
 #       and the screen remains cluttered with whatever was on display.
 #   Only 8 colors are available and the curses.COLORS constant reflects that fact.
 #   Font effects: dim=underline=normal, reverse=standout(fg/bg color reversal), bold is brighter text.
 #       blink is grey text on dark grey background (no blinking).
+
+# To Do:
+# Figure out why running on sysrescue isn't returning values for smartctl queries on the first pass.
+# Clear the screen after the program exits so that it's obvious the program has ended. Restoring the terminal
+#   on a sysrescue machine seems unlikely since Nano doesn't pull it off.
+
 
 from pySMART.utils import admin
 from storageDevice import *
