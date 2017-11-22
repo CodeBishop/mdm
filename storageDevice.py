@@ -98,6 +98,10 @@ class StorageDevice:
 
         return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
 
+    def runShortTest(self):
+        # Call smartctl directly to run a short test.
+        rawResults = terminalCommand("smartctl -s on -t short " + self.devicePath)
+
     def buildFailedAttributeList(self):
         for attribute in self.device.attributes:
             if attribute and attribute.when_failed != "-":

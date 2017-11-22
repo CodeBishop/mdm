@@ -90,7 +90,7 @@ def main(screen):
     displayTestFlag = False  # Toggle a display properties test.
     redrawScreen = True  # Signal a screen redraw/refresh.
     refreshDevices = True  # Signal a rescan of all the drives.
-    messageBarContents = "Messages go here"
+    messageBarContents = ""  #
 
     exitFlag = False
     while not exitFlag:
@@ -119,7 +119,7 @@ def main(screen):
             if searchModeFlag:
                 screen.addstr(POS_BY, POS_BX, SEARCH_PROMPT + searchString)
             else:
-                screen.addstr(POS_BY, POS_BX, "(f)ind (t)est (q)uit")
+                screen.addstr(POS_BY, POS_BX, "(f)ind (d)isplay test (r)efresh (s)hort test (q)uit")
 
             # Print the message bar.
             screen.addstr(POS_MY, POS_MX, messageBarContents)
@@ -200,6 +200,7 @@ def main(screen):
                 elif keypress == ENTER_KEY:
                     selector, messageBarContents = searchDevices(searchString, devices)
                     searchModeFlag = False
+                    searchString = ""  # Clear the search string after each search.
                 elif keypress == curses.KEY_BACKSPACE:
                     searchString = searchString[:-1]
                 elif keypress < 256:  # ASCII keys get added to search.
@@ -234,8 +235,17 @@ def main(screen):
                 if keypress == ord('f'):
                     searchModeFlag = True
 
-                if keypress == ord('t'):
+                if keypress == ord('d'):
                     displayTestFlag = not displayTestFlag
+
+                if keypress == ord('s'):
+                    if selector is not SELECTOR_ABSENT:
+                        devices[selector].runShortTest()
+                    refreshDevices = redrawScreen = True
+
+                if keypress == ord('r'):
+                    refreshDevices = redrawScreen = True
+
 
                 if keypress == ord('q'):
                     exitFlag = True
