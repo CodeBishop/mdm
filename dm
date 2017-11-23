@@ -87,12 +87,14 @@ def main(screen):
     while not exitFlag:
         # Rescan the drives if signaled to.
         if refreshDevices:
+            currentDeviceSerial = devices[selector].serial
             # Reset the signal flag.
             refreshDevices = False
             # Rescan the drives
             devices = findAllDrives()
-            # Reset the selector position.
-            selector = 0 if len(devices) > 0 else SELECTOR_ABSENT
+            # Reset the selector position if it no longer points a the same device.
+            if selector >= len(devices) or currentDeviceSerial != devices[selector].serial:
+                selector = 0 if len(devices) > 0 else SELECTOR_ABSENT
 
         # Draw the screen if anything has changed.
         if redrawScreen:
@@ -286,4 +288,4 @@ def findAllDrives():
     return devices
 
 
-curses.wrapper(main2)
+curses.wrapper(main)

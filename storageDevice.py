@@ -26,7 +26,7 @@ DR_STATUS_IDLE, DR_STATUS_TESTING, DR_STATUS_TEST_DONE, DR_STATUS_WIPING, DR_STA
     DR_STATUS_UNKNOWN = range(6)
 
 # Class-related constants.
-DW_LOAD_FAILED, DW_LOAD_SUCCESS = range(2)
+DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
 
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
@@ -96,7 +96,7 @@ class StorageDevice:
             else:
                 self.status = DR_STATUS_UNKNOWN
 
-        return DW_LOAD_SUCCESS if self.smartCapable else DW_LOAD_FAILED
+        return DR_LOAD_SUCCESS if self.smartCapable else DR_LOAD_FAILED
 
     def runShortTest(self):
         # Call smartctl directly to run a short test.
