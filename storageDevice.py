@@ -65,9 +65,9 @@ class StorageDevice:
     def load2(self, devicePath):
         name = devicePath
         interface = None
-        """Instantiates and initializes the `pySMART.device.Device`."""
-        assert interface is None or interface.lower() in [
-            'ata', 'csmi', 'sas', 'sat', 'sata', 'scsi']
+        # """Instantiates and initializes the `pySMART.device.Device`."""
+        # assert interface is None or interface.lower() in [
+        #     'ata', 'csmi', 'sas', 'sat', 'sata', 'scsi']
         name = name.replace('/dev/', '')
         """
         **(str):** Device's hardware ID, without the '/dev/' prefix.
