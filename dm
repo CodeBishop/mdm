@@ -124,10 +124,15 @@ def main(screen):
 
             # Print detailed info for the currently selected device.
             if selector is not SELECTOR_ABSENT:
+                # Draw the selector.
                 screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
+
+                # Note the device the selector is pointed at.
                 device = devices[selector]
                 deviceName = device.devicePath  # Refer to the device by its path.
-                posX, posY = 1, POS_DLY + len(devices) + 1  # Text position of imaginary cursor.
+
+                # Position an invisible cursor to begin displaying detailed device data.
+                posX, posY = 1, POS_DLY + len(devices) + 1
 
                 # Print the list of failed attributes.
                 if device.hasFailedAttributes():
@@ -149,7 +154,7 @@ def main(screen):
                     posY += 1  # Increment vertical cursor
                     for testResult in device.testHistory:
                         screen.addstr(posY + 1, posX, testResult)
-                        posY += 1  # Increment vertical cursorc
+                        posY += 1  # Increment vertical cursor.
                 else:
                     screen.addstr(posY, posX, "No history of SMART tests found for " + deviceName)
                     posY += 1  # Increment vertical cursor
