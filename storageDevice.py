@@ -23,7 +23,7 @@ DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_H
 # Possible current states of a device: drive is idle, drive is running a test, drive completed a test (while
 #   this program was running), drive is being wiped, drive wipe is complete, drive status could not be discovered
 DR_STATUS_IDLE, DR_STATUS_TESTING, DR_STATUS_TEST_DONE, DR_STATUS_WIPING, DR_STATUS_WIPE_DONE, \
-    DR_STATUS_UNKNOWN = range(6)
+    DR_STATUS_UNKNOWN, DR_STATUS_QUERYING = range(7)
 
 # Class-related constants.
 DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
@@ -33,12 +33,13 @@ DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
 CW_CONNECTOR = 4
 CW_DRIVE_HOURS = 7
 CW_GSENSE = 5
-CW_HDD_TYPE = 4
+CW_DRIVE_TYPE = 4
+CW_HOURS = 6
 CW_MODEL = 20
 CW_PATH = 8
 CW_REALLOC = 7
 CW_SERIAL = 16
-CW_SIZE = 8
+CW_CAPACITY = 8
 CW_TESTING_STATE = 22
 CW_WHEN_FAILED_STATUS = 10
 
@@ -46,124 +47,48 @@ CW_WHEN_FAILED_STATUS = 10
 class StorageDevice:
     def __init__(self, devicePath):
         # Declare the members of this class.
+        self.capacity = ""  # Drive size in MB, GB or TB as a string.
         self.connector = ""
         self.device = None
         self.devicePath = devicePath
+        self.driveType = ""  # SSD or HDD.
         self.failedAttributes = list()  # Strings, one per WHEN_FAIL attribute.
+        self.GSenseCount = ""
+        self.hours = -1
         self.smartCapable = None
+        self.smartctlOutput = ""
         self.serial = ""
         self.model = ""
-        self.name = ""
+        self.name = devicePath  # Device is referred to by its path.
         self.smartctlProcess = None  # Separate process allows non-blocking call to smartctl.
         self.reallocCount = -1  # Marker value for uninitialized integer.
         self.testHistory = list()  # Strings, one per test result from SMART test history.
         self.testProgress = -1  # Marker value for uninitialized integer.
         self.status = DR_STATUS_UNKNOWN
 
-        self.load(devicePath)
+        # Start a smartctl process so the device fields can be filled.
+        # self.initiateQuery()
+        self.load(devicePath)  # DEBUG: Old way of doing things by using PySmart.
 
-    def load2(self, devicePath):
-        name = devicePath
-        interface = None
-        # """Instantiates and initializes the `pySMART.device.Device`."""
-        # assert interface is None or interface.lower() in [
-        #     'ata', 'csmi', 'sas', 'sat', 'sata', 'scsi']
-        name = name.replace('/dev/', '')
-        """
-        **(str):** Device's hardware ID, without the '/dev/' prefix.
-        (ie: sda (Linux), pd0 (Windows))
-        """
-        if name[:2].lower() == 'pd':
-            name = pd_to_sd(name[2:])
-        model = None
-        """**(str):** Device's model number."""
-        serial = None
-        """**(str):** Device's serial number."""
-        interface = interface
-        """
-        **(str):** Device's interface type. Must be one of:
-            * **ATA** - Advanced Technology Attachment
-            * **SATA** - Serial ATA
-            * **SCSI** - Small Computer Systems Interface
-            * **SAS** - Serial Attached SCSI
-            * **SAT** - SCSI-to-ATA Translation (SATA device plugged into a
-            SAS port)
-            * **CSMI** - Common Storage Management Interface (Intel ICH /
-            Matrix RAID)
-        Generally this should not be specified to allow auto-detection to occur.
-        Otherwise, this value overrides the auto-detected type and could
-        produce unexpected or no data.
-        """
-        capacity = None
-        """**(str):** Device's user capacity."""
-        firmware = None
-        """**(str):** Device's firmware version."""
-        supports_smart = False
-        """
-        **(bool):** True if the device supports SMART (or SCSI equivalent) and
-        has the feature set enabled. False otherwise.
-        """
-        assessment = None
-        """**(str):** SMART health self-assessment as reported by the device."""
-        messages = []
-        """
-        **(list of str):** Contains any SMART warnings or other error messages
-        reported by the device (ie: ASCQ codes).
-        """
-        is_ssd = None
-        """
-        **(bool):** True if this device is a Solid State Drive.
-        False otherwise.
-        """
-        attributes = [None] * 256
-        """
-        **(list of `Attribute`):** Contains the complete SMART table information
-        for this device, as provided by smartctl. Indexed by attribute #,
-        values are set to 'None' for attributes not suported by this device.
-        """
-        tests = []
-        """
-        **(list of `Log_Entry`):** Contains the complete SMART self-test log
-        for this device, as provided by smartctl. If no SMART self-tests have
-        been recorded, contains a `None` type instead.
-        """
-        _test_running = False
-        """
-        **(bool):** True if a self-test is currently being run. False otherwise.
-        """
-        _test_ECD = None
-        """
-        **(str):** Estimated completion time of the running SMART selftest.
-        Not provided by SAS/SCSI devices.
-        """
-        diags = {}
-        """
-        **(dict of str):** Contains parsed and processed diagnostic information
-        extracted from the SMART information. Currently only populated for
-        SAS and SCSI devices, since ATA/SATA SMART attributes are manufacturer
-        proprietary.
-        """
-        if name is None:
-            warnings.warn("\nDevice '{0}' does not exist! "
-                          "This object should be destroyed.".format(name))
-            return
-        # If no interface type was provided, scan for the device
-        elif interface is None:
-            _grep = 'find' if OS == 'Windows' else 'grep'
-            cmd = Popen('smartctl --scan-open | {0} "{1}"'.format(
-                _grep, name), shell=True, stdout=PIPE, stderr=PIPE)
-            _stdout, _stderr = cmd.communicate()
-            if _stdout != '':
-                interface = _stdout.split(' ')[2]
-                # Disambiguate the generic interface to a specific type
-                _classify()
-            else:
-                warnings.warn("\nDevice '{0}' does not exist! "
-                              "This object should be destroyed.".format(name))
-                return
-        # If a valid device was detected, populate its information
-        if interface is not None:
-            update()
+    # Run a smartctl process to get latest device info.
+    def initiateQuery(self):
+        self.smartctlProcess = subprocess.Popen("smartctl -a /dev/sda".split(), stdout=subprocess.PIPE, stderr=DEVNULL)
+        self.status = DR_STATUS_QUERYING
+
+    # Test if a smartctl query-in-progress has completed.
+    def queryIsDone(self):
+        status = self.smartctlProcess.poll()
+
+        if status is not None:
+            self.smartctlOutput, _ = proc.communicate()
+            self.interpretSmartctlOutput()
+            return True
+        else:
+            return False
+
+    # Interpret the current stored raw output of smartctl to fill device fields.
+    def interpretSmartctlOutput(self):
+        pass  # DEBUG: Not written yet.
 
     def load(self, devicePath):
         warnings.filterwarnings("ignore")
@@ -228,8 +153,8 @@ class StorageDevice:
             return False
 
     def oneLineSummary(self):
-        if not self.smartCapable:
-            return self.devicePath + " does not respond to smartctl enquiries."
+        # if self.status = not self.smartCapable:
+        #     return self.devicePath + " does not respond to smartctl enquiries."
 
         # Make a color-coded string of the reallocated sector count.
         if self.reallocCount > 0:
@@ -238,17 +163,6 @@ class StorageDevice:
             reallocText = leftColumn("???", CW_REALLOC)
         else:
             reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
-
-        # Fetch the number of G-Sense errors if smartctl knows it.
-        GSenseCount = str(self.device.attributes[191].raw) if self.device.attributes[191] else "???"
-
-        # Fetch the number of hours if smartctl knows it.
-        # NOTE: smartctl may output hour-count in scan results yet not have it as an "attribute".
-        if self.device.attributes[9] is not None:
-            hours = int(re.findall("\d+", self.device.attributes[9].raw)[0])
-            driveHours = leftColumn(str(hours), CW_DRIVE_HOURS)
-        else:
-            driveHours = leftColumn("???", CW_DRIVE_HOURS)
 
         # Note whether the device has any failed attributes.
         if self.hasFailedAttributes():
@@ -271,13 +185,13 @@ class StorageDevice:
         description = ""
         description += leftColumn(self.devicePath, CW_PATH)
         description += leftColumn(self.connector, CW_CONNECTOR)
-        description += leftColumn(("SSD" if self.device.is_ssd else "HDD"), CW_HDD_TYPE)
-        description += leftColumn(str(self.device.capacity), CW_SIZE)
+        description += leftColumn(self.driveType, CW_DRIVE_TYPE)
+        description += leftColumn(self.capacity, CW_CAPACITY)
         description += leftColumn(self.model, CW_MODEL)
-        description += leftColumn(self.device.serial, CW_SERIAL)
+        description += leftColumn(self.serial, CW_SERIAL)
         description += reallocText
-        description += driveHours
-        description += leftColumn(GSenseCount, CW_GSENSE)
+        description += leftColumn(str(self.hours), CW_HOURS)
+        description += leftColumn(str(self.GSenseCount), CW_GSENSE)
         description += whenFailedStatus
         description += testingState
 
@@ -294,8 +208,8 @@ def summaryHeader():
     header = ""
     header += leftColumn("Path", CW_PATH)
     header += leftColumn("Conn", CW_CONNECTOR)
-    header += leftColumn("Type", CW_HDD_TYPE)
-    header += leftColumn("Size", CW_SIZE)
+    header += leftColumn("Type", CW_DRIVE_TYPE)
+    header += leftColumn("Size", CW_CAPACITY)
     header += leftColumn("Model", CW_MODEL)
     header += leftColumn("Serial", CW_SERIAL)
     header += leftColumn("ReAlloc", CW_REALLOC)

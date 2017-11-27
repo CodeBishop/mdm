@@ -76,6 +76,7 @@ def main(screen):
     initCurses(screen)  # Set parameters of curses environment.
     devices = list()
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
+    selectorSerial = None  # Serial number of device pointed to by selector.
     searchString = ""
     searchModeFlag = False  # Toggle search mode (as versus command mode).
     displayTestFlag = False  # Toggle a display properties test.
@@ -87,14 +88,14 @@ def main(screen):
     while not exitFlag:
         # Rescan the drives if signaled to.
         if refreshDevices:
-            currentDeviceSerial = devices[selector].serial
             # Reset the signal flag.
             refreshDevices = False
             # Rescan the drives
             devices = findAllDrives()
-            # Reset the selector position if it no longer points a the same device.
-            if selector >= len(devices) or currentDeviceSerial != devices[selector].serial:
-                selector = 0 if len(devices) > 0 else SELECTOR_ABSENT
+            # Reset the selector position to the device of matching serial number
+            # if selector >= len(devices) or currentDeviceSerial != devices[selector].serial:
+            #     selector = 0 if len(devices) > 0 else SELECTOR_ABSENT
+            selector = SELECTOR_ABSENT  # DEBUG: refresh just removes the selector for now.
 
         # Draw the screen if anything has changed.
         if redrawScreen:
@@ -106,7 +107,7 @@ def main(screen):
             screen.border(0)
 
             # Print the program title.
-            screen.addstr(1, 1, "Drive Scanner", curses.A_REVERSE)
+            screen.addstr(1, 1, "Drive Monkey!", curses.A_REVERSE)
 
             # Print the search bar or help bar.
             if searchModeFlag:
