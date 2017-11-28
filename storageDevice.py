@@ -21,7 +21,7 @@ DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_H
 # Possible current states of a device: drive is idle, drive is running a test, drive completed a test (while
 #   this program was running), drive is being wiped, drive wipe is complete, drive status could not be discovered
 DR_STATUS_IDLE, DR_STATUS_TESTING, DR_STATUS_TEST_DONE, DR_STATUS_WIPING, DR_STATUS_WIPE_DONE, \
-    DR_STATUS_UNKNOWN, DR_STATUS_QUERYING = range(7)
+    DR_STATUS_UNKNOWN, DR_STATUS_QUERYING, DR_STATUS_QUERY_DONE = range(8)
 
 # Class-related constants.
 DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
@@ -74,7 +74,8 @@ class StorageDevice:
 
     # Test if a smartctl query-in-progress has completed.
     def queryIsDone(self):
-        if self.smartctlProcess.poll() is not None:
+        if self.status == DR_STATUS_QUERYING and self.smartctlProcess.poll() is not None:
+            self.status = DR_STATUS_QUERY_DONE  # Prevents communicate() from ever being called twice.
             self.smartctlOutput, _ = self.smartctlProcess.communicate()
             self.interpretSmartctlOutput()
             return True
@@ -84,11 +85,18 @@ class StorageDevice:
     # Interpret the current stored raw output of smartctl to fill device fields.
     def interpretSmartctlOutput(self):
         self.serial = capture(r"Serial Number:\s*(\w+)", self.smartctlOutput)
-        if self.serial == "":
-            self.serial = "???"
+        self.model = capture(r"Device Model:\s*(\w+)", self.smartctlOutput)
+        # self.serial = capture(r"Serial Number:\s*(\w+)", self.smartctlOutput)
+
+        # Determine if a smartctl test is in progress.
+        testStateCode = int(capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput))
+        if testStateCode == 0:
+            self.status = DR_STATUS_IDLE
+        elif testStateCode == 249:
+            self.status = DR_STATUS_TESTING
+            self.testProgress = int(capture(r"(\d+)% of test remaining", self.smartctlOutput))
         else:
-            self.serial = "MATCH!"
-        self.status = DR_STATUS_UNKNOWN  # DEBUG: Anything that's not DR_STATUS_QUERYING for now.
+            self.status = DR_STATUS_UNKNOWN
 
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
