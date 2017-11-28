@@ -13,8 +13,6 @@ warnings.filterwarnings("default")
 # Open the null device for dumping unwanted output into.
 DEVNULL = open(os.devnull, 'w')
 
-MISSING_FIELD = "not found"  # This is what capture() returns if can't find the search string.
-
 # Possible states of a device's history: all past tests were good, one or more were bad, drive has never run a
 #   short or long test, drive has never run a long test (but short ones were all good), drive has no history
 #   because it is not SMART test capable.
@@ -31,7 +29,6 @@ DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
-CW_DRIVE_HOURS = 7
 CW_GSENSE = 5
 CW_DRIVE_TYPE = 4
 CW_HOURS = 6
@@ -54,7 +51,7 @@ class StorageDevice:
         self.driveType = ""  # SSD or HDD.
         self.failedAttributes = list()  # Strings, one per WHEN_FAIL attribute.
         self.GSenseCount = ""
-        self.hours = -1
+        self.hours = 0
         self.smartCapable = None
         self.smartctlOutput = ""
         self.serial = ""
@@ -67,8 +64,8 @@ class StorageDevice:
         self.status = DR_STATUS_UNKNOWN
 
         # Start a smartctl process so the device fields can be filled.
-        # self.initiateQuery()
-        self.load(devicePath)  # DEBUG: Old way of doing things by using PySmart.
+        self.initiateQuery()
+        # self.load(devicePath)  # DEBUG: Old way of doing things by using PySmart.
 
     # Run a smartctl process to get latest device info.
     def initiateQuery(self):
@@ -77,10 +74,8 @@ class StorageDevice:
 
     # Test if a smartctl query-in-progress has completed.
     def queryIsDone(self):
-        status = self.smartctlProcess.poll()
-
-        if status is not None:
-            self.smartctlOutput, _ = proc.communicate()
+        if self.smartctlProcess.poll() is not None:
+            self.smartctlOutput, _ = self.smartctlProcess.communicate()
             self.interpretSmartctlOutput()
             return True
         else:
@@ -88,8 +83,14 @@ class StorageDevice:
 
     # Interpret the current stored raw output of smartctl to fill device fields.
     def interpretSmartctlOutput(self):
-        pass  # DEBUG: Not written yet.
+        self.serial = capture(r"Serial Number:\s*(\w+)", self.smartctlOutput)
+        if self.serial == "":
+            self.serial = "???"
+        else:
+            self.serial = "MATCH!"
+        self.status = DR_STATUS_UNKNOWN  # DEBUG: Anything that's not DR_STATUS_QUERYING for now.
 
+    # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
         warnings.filterwarnings("ignore")
         self.device = Device(devicePath)
@@ -175,6 +176,8 @@ class StorageDevice:
             testingState = leftColumn("unknown", CW_TESTING_STATE)
         elif self.status == DR_STATUS_IDLE:
             testingState = leftColumn("idle", CW_TESTING_STATE)
+        elif self.status == DR_STATUS_QUERYING:
+            testingState = leftColumn("querying", CW_TESTING_STATE)
         elif self.status == DR_STATUS_TESTING:
             testingState = leftColumn(str(self.testProgress) + '%', CW_TESTING_STATE)
         else:
@@ -213,7 +216,7 @@ def summaryHeader():
     header += leftColumn("Model", CW_MODEL)
     header += leftColumn("Serial", CW_SERIAL)
     header += leftColumn("ReAlloc", CW_REALLOC)
-    header += leftColumn("Hours", CW_DRIVE_HOURS)
+    header += leftColumn("Hours", CW_HOURS)
     header += leftColumn("GSen", CW_GSENSE)
     header += leftColumn("WHENFAIL", CW_WHEN_FAILED_STATUS)
     header += leftColumn("TestState", CW_TESTING_STATE)
@@ -251,4 +254,4 @@ def capture(pattern, text):
     if result and result.group(1):
         return result.group(1)
     else:
-        return MISSING_FIELD
+        return ""

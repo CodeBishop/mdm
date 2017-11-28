@@ -82,7 +82,7 @@ def main(screen):
     displayTestFlag = False  # Toggle a display properties test.
     redrawScreen = True  # Signal a screen redraw/refresh.
     refreshDevices = True  # Signal a rescan of all the drives.
-    messageBarContents = ""  #
+    messageBarContents = ""
 
     exitFlag = False
     while not exitFlag:
@@ -245,9 +245,14 @@ def main(screen):
                 if keypress == ord('r'):
                     refreshDevices = redrawScreen = True
 
-
                 if keypress == ord('q'):
                     exitFlag = True
+
+        # Check if any drives have a smartctl query in progress.
+        for device in devices:
+            if device.status == DR_STATUS_QUERYING and device.queryIsDone():
+                device.interpretSmartctlOutput()  # Process smartctl output.
+                redrawScreen = True  # Show outcome by redrawing screen.
 
         time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
 
