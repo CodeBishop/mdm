@@ -17,14 +17,24 @@ DEVNULL = open(os.devnull, 'w')
 #   because it is not SMART test capable.
 DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_HIST_NOT_TESTABLE = range(5)
 
-# Possible current states of a device: drive is idle, drive is running a test, drive completed a test (while
-#   this program was running), drive is being wiped, drive wipe is complete, drive status could not be discovered
-DR_STATUS_IDLE, DR_STATUS_TESTING, DR_STATUS_TEST_DONE, DR_STATUS_WIPING, DR_STATUS_WIPE_DONE, \
-    DR_STATUS_UNKNOWN, DR_STATUS_QUERYING, DR_STATUS_QUERY_DONE = range(8)
+# Possible drive states of an instance of this class.
+numberOfPossibleDriveStates = 7
+DR_STATE_UNKNOWN, DR_STATE_IDLE, DR_STATE_QUERYING, DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING,\
+    DR_STATE_WIPING = range(numberOfPossibleDriveStates)
+DR_STATE_MSG = [None] * numberOfPossibleDriveStates  # Create empty list of given size.
+DR_STATE_MSG[DR_STATE_UNKNOWN] = "Unknown"
+DR_STATE_MSG[DR_STATE_IDLE] = "Idle"
+DR_STATE_MSG[DR_STATE_QUERYING] = "Querying"
+DR_STATE_MSG[DR_STATE_SHORT_TESTING] = "Short testing"
+DR_STATE_MSG[DR_STATE_LONG_TESTING] = "Long testing"
+DR_STATE_MSG[DR_STATE_TESTING] = "Testing"  # Type of testing (short/long) is not known.
+DR_STATE_MSG[DR_STATE_WIPING] = "Wiping"
 
 # Class-related constants.
 DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
-
+NOT_INITIALIZED = -1
+SMARTCTL_TEST_CODE_NOT_AVAILABLE = -1
+SMARTCTL_TEST_STATE_MSG_NOT_AVAILABLE = "Smartctl has not reported a self-test execution status."
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
@@ -36,7 +46,7 @@ CW_PATH = 8
 CW_REALLOC = 7
 CW_SERIAL = 16
 CW_CAPACITY = 8
-CW_TESTING_STATE = 22
+CW_STATE = 15
 CW_WHEN_FAILED_STATUS = 10
 
 
@@ -44,23 +54,25 @@ class StorageDevice:
     def __init__(self, devicePath):
         # Declare the members of this class.
         self.capacity = ""  # Drive size in MB, GB or TB as a string.
-        self.connector = ""
+        self.connector = ""  # SATA, SCSI, USB, etc.
         self.device = None
         self.devicePath = devicePath
         self.driveType = ""  # SSD or HDD.
         self.failedAttributes = list()  # Strings, one per WHEN_FAIL attribute.
         self.GSenseCount = ""
         self.hours = 0
-        self.smartCapable = None
-        self.smartctlOutput = ""
-        self.serial = ""
         self.model = ""
         self.name = devicePath  # Device is referred to by its path.
-        self.smartctlProcess = None  # Separate process allows non-blocking call to smartctl.
         self.reallocCount = -1  # Marker value for uninitialized integer.
+        self.serial = ""
+        self.smartCapable = None
+        self.smartctlOutput = ""
+        self.smartctlTestStateCode = SMARTCTL_TEST_CODE_NOT_AVAILABLE
+        self.smartctlTestStateMsg = SMARTCTL_TEST_STATE_MSG_NOT_AVAILABLE
+        self.state = DR_STATE_UNKNOWN
+        self.smartctlProcess = None  # Separate process allows non-blocking call to smartctl.
         self.testHistory = list()  # Strings, one per test result from SMART test history.
-        self.testProgress = -1  # Marker value for uninitialized integer.
-        self.status = DR_STATUS_UNKNOWN
+        self.testProgress = NOT_INITIALIZED
 
         # Start a smartctl process so the device fields can be filled.
         self.initiateQuery()
@@ -68,41 +80,48 @@ class StorageDevice:
 
     # Run a smartctl process to get latest device info.
     def initiateQuery(self):
-        self.smartctlProcess = subprocess.Popen("smartctl -a /dev/sda".split(), stdout=subprocess.PIPE, stderr=DEVNULL)
-        self.status = DR_STATUS_QUERYING
+        command = "smartctl -a " + self.devicePath
+        self.smartctlProcess = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=DEVNULL)
+        self.state = DR_STATE_QUERYING
 
     # Test if a smartctl query-in-progress has completed.
     def queryIsDone(self):
-        if self.status == DR_STATUS_QUERYING and self.smartctlProcess.poll() is not None:
-            self.status = DR_STATUS_QUERY_DONE  # Prevents communicate() from ever being called twice.
-            self.smartctlOutput, _ = self.smartctlProcess.communicate()
-            self.interpretSmartctlOutput()
-            return True
+        if self.state == DR_STATE_QUERYING:
+            if self.smartctlProcess.poll() is not None:
+                self.smartctlOutput, _ = self.smartctlProcess.communicate()
+                self.state = DR_STATE_UNKNOWN
+                return True  # Query has just completed.
+            else:
+                return False  # Querying but smartctl has not completed.
         else:
-            return False
+            return True  # Not querying.
 
     # Interpret the current stored raw output of smartctl to fill device fields.
     def interpretSmartctlOutput(self):
+        if re.search("Unknown USB bridge", self.smartctlOutput):
+            self.connector = "USB"
+            return  # Don't bother reading smartctl output if it's a USB device.
+
         self.serial = capture(r"Serial Number:\s*(\w+)", self.smartctlOutput)
         self.model = capture(r"Device Model:\s*(\w+)", self.smartctlOutput)
-        # self.serial = capture(r"Serial Number:\s*(\w+)", self.smartctlOutput)
 
-        # Determine if a smartctl test is in progress.
-        testStateString = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
-        # If a drive can't even say its test status then it's obviously idle.
-        if testStateString == "":
-            self.status = DR_STATUS_IDLE
+        testStateCodeString = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
 
-        # Otherwise it's test status code should be interpreted.
+        # If smartctl reports test status then record that status.
+        if testStateCodeString is not "":
+            self.smartctlTestStateCode = int(testStateCodeString)
+            testStateMsg = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)(.*)", self.smartctlOutput)
+            self.smartctlTestStateMsg = testStateMsg
+            # If the type of test being run is not already known then just record it as generic.
+            if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING]:
+                self.state = DR_STATE_TESTING
+        # If smartctl does not report test status then make a note of it.
         else:
-            testStateCode = int(testStateString)
-            if testStateCode == 0:
-                self.status = DR_STATUS_IDLE
-            elif testStateCode == 249:
-                self.status = DR_STATUS_TESTING
-                self.testProgress = int(capture(r"(\d+)% of test remaining", self.smartctlOutput))
-            else:
-                self.status = DR_STATUS_UNKNOWN
+            self.smartctlTestStateCode = SMARTCTL_TEST_CODE_NOT_AVAILABLE
+            self.smartctlTestStateMsg = SMARTCTL_TEST_STATE_MSG_NOT_AVAILABLE
+            # If the smartctl does not report testing and drive is not being wiped then presume the drive is idle.
+            if self.state is not DR_STATE_WIPING:
+                self.state = DR_STATE_IDLE
 
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
@@ -131,14 +150,14 @@ class StorageDevice:
                 self.reallocCount = int(self.device.attributes[5].raw)
 
             # Call smartctl directly to see if a test is in progress.
-            rawResults = terminalCommand("smartctl -s on -c " + self.devicePath)
-            if re.search("previous self-test", rawResults):
-                self.status = DR_STATUS_IDLE
-            elif re.search("% of test remaining", rawResults):
-                self.status = DR_STATUS_TESTING
-                self.testProgress = int(capture(r"(\d+)% of test remaining", rawResults))
-            else:
-                self.status = DR_STATUS_UNKNOWN
+            # rawResults = terminalCommand("smartctl -s on -c " + self.devicePath)
+            # if re.search("previous self-test", rawResults):
+            #     self.status = DR_STATUS_IDLE
+            # elif re.search("% of test remaining", rawResults):
+            #     self.status = DR_STATUS_TESTING
+            #     self.testProgress = int(capture(r"(\d+)% of test remaining", rawResults))
+            # else:
+            #     self.status = DR_STATUS_UNKNOWN
 
         return DR_LOAD_SUCCESS if self.smartCapable else DR_LOAD_FAILED
 
@@ -168,9 +187,6 @@ class StorageDevice:
             return False
 
     def oneLineSummary(self):
-        # if self.status = not self.smartCapable:
-        #     return self.devicePath + " does not respond to smartctl enquiries."
-
         # Make a color-coded string of the reallocated sector count.
         if self.reallocCount > 0:
             reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
@@ -185,19 +201,6 @@ class StorageDevice:
         else:
             whenFailedStatus = leftColumn("-", CW_WHEN_FAILED_STATUS)
 
-        # Describe current testing status.
-        if self.status == DR_STATUS_UNKNOWN:
-            testingState = leftColumn("unknown", CW_TESTING_STATE)
-        elif self.status == DR_STATUS_IDLE:
-            testingState = leftColumn("idle", CW_TESTING_STATE)
-        elif self.status == DR_STATUS_QUERYING:
-            testingState = leftColumn("querying", CW_TESTING_STATE)
-        elif self.status == DR_STATUS_TESTING:
-            testingState = leftColumn(str(self.testProgress) + '%', CW_TESTING_STATE)
-        else:
-            # Since these codes are defined in this program this error should never happen...
-            testingState = leftColumn("unknown code:" + str(self.status), CW_TESTING_STATE)
-
         # Construct one-line summary of drive.
         description = ""
         description += leftColumn(self.devicePath, CW_PATH)
@@ -210,7 +213,7 @@ class StorageDevice:
         description += leftColumn(str(self.hours), CW_HOURS)
         description += leftColumn(str(self.GSenseCount), CW_GSENSE)
         description += whenFailedStatus
-        description += testingState
+        description += leftColumn(DR_STATE_MSG[self.state], CW_STATE)
 
         return description
 
@@ -233,7 +236,7 @@ def summaryHeader():
     header += leftColumn("Hours", CW_HOURS)
     header += leftColumn("GSen", CW_GSENSE)
     header += leftColumn("WHENFAIL", CW_WHEN_FAILED_STATUS)
-    header += leftColumn("TestState", CW_TESTING_STATE)
+    header += leftColumn("State", CW_STATE)
     return header
 
 
@@ -252,8 +255,6 @@ def leftColumn(someString, width):
         return someString + ' ' * (width - length + 1)
     else:
         return someString[:width-3] + "... "
-    # Non-ellipsis version.
-    # return someString.ljust(width)[:width] + ' '
 
 
 # Get the output from a terminal command and block any error messages from appearing.

@@ -17,7 +17,9 @@
 #   on a sysrescue machine seems unlikely since Nano doesn't pull it off.
 # Add long tests.
 # Finish extracting.
-# Add an RPM column that eliminates the type column as both an extra-information thing and a ssd/hdd divider.
+# Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
+# Make it clear the screen after it runs on the sysrescue machine. It looks weird when this program (like nano) just
+#   poops all over the terminal and walks away.
 
 
 from pySMART.utils import admin
@@ -126,7 +128,7 @@ def main(screen):
             for y in range(len(devices)):
                 screen.addstr(POS_DLY + y, POS_DLX, devices[y].oneLineSummary())
 
-            # Print detailed info for the currently selected device.
+            # If a drive is currently selected.
             if selector is not SELECTOR_ABSENT:
                 # Draw the selector.
                 screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
@@ -135,8 +137,19 @@ def main(screen):
                 device = devices[selector]
                 deviceName = device.devicePath  # Refer to the device by its path.
 
-                # Position an invisible cursor to begin displaying detailed device data.
+                # Print detailed info for the currently selected device starting from a position below the drive list.
                 posX, posY = 1, POS_DLY + len(devices) + 1
+
+                # Print the current smartctl testing status.
+                if device.connector == "USB":
+                    screen.addstr(posY, posX, "Smartctl firmware was not reachable through USB device.")
+                else:
+                    smartTestState = ""
+                    if device.smartctlTestStateCode is not SMARTCTL_TEST_CODE_NOT_AVAILABLE:
+                        smartTestState = "Smart test state " + str(device.smartctlTestStateCode) + ". "
+                    smartTestState += device.smartctlTestStateMsg
+                    screen.addstr(posY, posX, smartTestState)
+                posY += 2  # Increment vertical cursor and add blank line.
 
                 # Print the list of failed attributes.
                 if device.hasFailedAttributes():
@@ -253,7 +266,7 @@ def main(screen):
 
         # Check if any drives have a smartctl query in progress.
         for device in devices:
-            if device.status == DR_STATUS_QUERYING and device.queryIsDone():
+            if device.state == DR_STATE_QUERYING and device.queryIsDone():
                 device.interpretSmartctlOutput()  # Process smartctl output.
                 redrawScreen = True  # Show outcome by redrawing screen.
 
