@@ -142,7 +142,7 @@ def main(screen):
 
                 # Print the current smartctl testing status.
                 if device.connector == "USB":
-                    screen.addstr(posY, posX, "Smartctl firmware was not reachable through USB device.")
+                    screen.addstr(posY, posX, "Smartctl firmware was not reachable through USB interface.")
                 else:
                     smartTestState = ""
                     if device.smartctlTestStateCode is not SMARTCTL_TEST_CODE_NOT_AVAILABLE:
