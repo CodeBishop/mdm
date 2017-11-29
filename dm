@@ -15,6 +15,9 @@
 # Figure out why running on sysrescue isn't returning values for smartctl queries on the first pass.
 # Clear the screen after the program exits so that it's obvious the program has ended. Restoring the terminal
 #   on a sysrescue machine seems unlikely since Nano doesn't pull it off.
+# Add long tests.
+# Finish extracting.
+# Add an RPM column that eliminates the type column as both an extra-information thing and a ssd/hdd divider.
 
 
 from pySMART.utils import admin

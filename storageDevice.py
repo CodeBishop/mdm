@@ -4,7 +4,6 @@ import subprocess
 import sys
 import warnings
 
-
 # Import pySMART but suppress the warning messages about not being root.
 warnings.filterwarnings("ignore")
 from pySMART import Device
@@ -89,14 +88,21 @@ class StorageDevice:
         # self.serial = capture(r"Serial Number:\s*(\w+)", self.smartctlOutput)
 
         # Determine if a smartctl test is in progress.
-        testStateCode = int(capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput))
-        if testStateCode == 0:
+        testStateString = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
+        # If a drive can't even say its test status then it's obviously idle.
+        if testStateString == "":
             self.status = DR_STATUS_IDLE
-        elif testStateCode == 249:
-            self.status = DR_STATUS_TESTING
-            self.testProgress = int(capture(r"(\d+)% of test remaining", self.smartctlOutput))
+
+        # Otherwise it's test status code should be interpreted.
         else:
-            self.status = DR_STATUS_UNKNOWN
+            testStateCode = int(testStateString)
+            if testStateCode == 0:
+                self.status = DR_STATUS_IDLE
+            elif testStateCode == 249:
+                self.status = DR_STATUS_TESTING
+                self.testProgress = int(capture(r"(\d+)% of test remaining", self.smartctlOutput))
+            else:
+                self.status = DR_STATUS_UNKNOWN
 
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
