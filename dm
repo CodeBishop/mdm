@@ -15,6 +15,7 @@
 # Figure out why running on sysrescue isn't returning values for smartctl queries on the first pass.
 # Check if calling screen.clear() at the end of main() worked if a refresh() call is needed too.
 # Add long tests.
+# Test that the (r)efresh command can relocate the selector to a different device path if the serial number matches.
 # Finish extracting.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
 # Make it clear the screen after it runs on the sysrescue machine. It looks weird when this program (like nano) just
@@ -96,10 +97,17 @@ def main(screen):
             refreshDevices = False
             # Rescan the drives
             devices = findAllDrives()
-            # Reset the selector position to the device of matching serial number
-            # if selector >= len(devices) or currentDeviceSerial != devices[selector].serial:
-            #     selector = 0 if len(devices) > 0 else SELECTOR_ABSENT
-            selector = SELECTOR_ABSENT  # DEBUG: refresh just removes the selector for now.
+            # Remove the selector if the device list is now empty.
+            if len(devices) == 0:
+                selector = SELECTOR_ABSENT
+            # If the device list is not empty then check the selector position.
+            else:
+                # Bump selector to the end of the device list if it was pointing beyond it.
+                if selector >= len(devices):
+                    selector = len(devices) - 1
+                # Place the selector on the first item if the selector is currently absent.
+                if selector == SELECTOR_ABSENT:
+                    selector = 0
 
         # Draw the screen if anything has changed.
         if redrawScreen:
