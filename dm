@@ -13,8 +13,7 @@
 
 # To Do:
 # Figure out why running on sysrescue isn't returning values for smartctl queries on the first pass.
-# Clear the screen after the program exits so that it's obvious the program has ended. Restoring the terminal
-#   on a sysrescue machine seems unlikely since Nano doesn't pull it off.
+# Check if calling screen.clear() at the end of main() worked if a refresh() call is needed too.
 # Add long tests.
 # Finish extracting.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
@@ -271,6 +270,7 @@ def main(screen):
                 redrawScreen = True  # Show outcome by redrawing screen.
 
         time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
+    screen.clear()
 
 
 # Initialize Curses (set various parameters, etc).
