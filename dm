@@ -13,9 +13,8 @@
 
 # To Do:
 # Figure out why running on sysrescue isn't returning values for smartctl queries on the first pass.
-# Check if calling screen.clear() at the end of main() worked if a refresh() call is needed too.
 # Add long tests.
-# Test that the (r)efresh command can relocate the selector to a different device path if the serial number matches.
+# Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
 # Finish extracting.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
 # Make it clear the screen after it runs on the sysrescue machine. It looks weird when this program (like nano) just
@@ -278,7 +277,10 @@ def main(screen):
                 redrawScreen = True  # Show outcome by redrawing screen.
 
         time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
+
+    # Clear the screen so that curses doesn't leave it's junk on the terminal (only happens on sysrescue machine).
     screen.clear()
+    screen.refresh()
 
 
 # Initialize Curses (set various parameters, etc).
