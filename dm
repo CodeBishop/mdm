@@ -12,13 +12,14 @@
 #       blink is grey text on dark grey background (no blinking).
 
 # To Do:
-# Figure out why running on sysrescue isn't returning values for smartctl queries on the first pass.
 # Add long tests.
 # Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
 # Finish extracting.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
 # Make it clear the screen after it runs on the sysrescue machine. It looks weird when this program (like nano) just
 #   poops all over the terminal and walks away.
+# Figure out why drives are being shown as in "testing" state when they're not.
+# Figure out why barcode scanning isn't returning no match.
 
 
 from pySMART.utils import admin
@@ -80,7 +81,6 @@ def main(screen):
     initCurses(screen)  # Set parameters of curses environment.
     devices = list()
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
-    selectorSerial = None  # Serial number of device pointed to by selector.
     searchString = ""
     searchModeFlag = False  # Toggle search mode (as versus command mode).
     displayTestFlag = False  # Toggle a display properties test.
@@ -173,7 +173,7 @@ def main(screen):
                 # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
                 #       of older tests.
                 if len(device.testHistory) > 0:
-                    screen.addstr(posY, posX, "History of SMART tests for " + deviceName)
+                    screen.addstr(posY, posX, device.testHistoryHeader)
                     posY += 1  # Increment vertical cursor
                     for testResult in device.testHistory:
                         screen.addstr(posY + 1, posX, testResult)

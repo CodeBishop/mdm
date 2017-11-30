@@ -36,6 +36,9 @@ NOT_INITIALIZED = -1
 SMARTCTL_TEST_CODE_NOT_AVAILABLE = -1
 SMARTCTL_TEST_STATE_MSG_NOT_AVAILABLE = "Smartctl has not reported a self-test execution status."
 
+# Helper function constants.
+SEARCH_FAILED = -1
+
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
 CW_GSENSE = 5
@@ -44,7 +47,7 @@ CW_HOURS = 6
 CW_MODEL = 20
 CW_PATH = 8
 CW_REALLOC = 7
-CW_SERIAL = 16
+CW_SERIAL = 18
 CW_CAPACITY = 8
 CW_STATE = 15
 CW_WHEN_FAILED_STATUS = 10
@@ -72,6 +75,7 @@ class StorageDevice:
         self.state = DR_STATE_UNKNOWN
         self.smartctlProcess = None  # Separate process allows non-blocking call to smartctl.
         self.testHistory = list()  # Strings, one per test result from SMART test history.
+        self.testHistoryHeader = ""  # Test history column header as given by smartctl.
         self.testProgress = NOT_INITIALIZED
 
         # Start a smartctl process so the device fields can be filled.
@@ -110,11 +114,15 @@ class StorageDevice:
         # If smartctl reports test status then record that status.
         if testStateCodeString is not "":
             self.smartctlTestStateCode = int(testStateCodeString)
-            testStateMsg = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)(.*)", self.smartctlOutput)
-            self.smartctlTestStateMsg = testStateMsg
-            # If the type of test being run is not already known then just record it as generic.
-            if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING]:
-                self.state = DR_STATE_TESTING
+            # If smartctl reports a non-zero test-state code then note that a test is occurring.
+            if self.smartctlTestStateCode is not 0:
+                testStateMsg = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)(.*)", self.smartctlOutput)
+                self.smartctlTestStateMsg = testStateMsg
+                # If the type of test being run is not already known then just record it as generic.
+                if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING]:
+                    self.state = DR_STATE_TESTING
+            else:
+                self.state = DR_STATE_IDLE
         # If smartctl does not report test status then make a note of it.
         else:
             self.smartctlTestStateCode = SMARTCTL_TEST_CODE_NOT_AVAILABLE
@@ -122,6 +130,16 @@ class StorageDevice:
             # If the smartctl does not report testing and drive is not being wiped then presume the drive is idle.
             if self.state is not DR_STATE_WIPING:
                 self.state = DR_STATE_IDLE
+
+        # Look for self-test log.
+        startOfTestHistory = firstMatchPosition("SMART Self-test log structure", self.smartctlOutput)
+        if startOfTestHistory is not SEARCH_FAILED:
+            linesFromTestLogStart = self.smartctlOutput[startOfTestHistory:].split('\n')
+            self.testHistoryHeader = linesFromTestLogStart[1]  # Header is first line after search match.
+            for line in linesFromTestLogStart:
+                if len(line) > 0 and line[0] == '#':  # Test result lines start with a pound sign.
+                    self.testHistory.append(line)
+
 
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
@@ -243,6 +261,14 @@ def summaryHeader():
 def attributeHeader():
     # Print out any WHEN_FAILED attributes that were found.
     return "PATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE"
+
+
+def firstMatchPosition(searchString, text):
+    searchResult = re.search(searchString, text)
+    if searchResult is None:
+        return SEARCH_FAILED
+    else:
+        return searchResult.start()
 
 
 def leftColumn(someString, width):
