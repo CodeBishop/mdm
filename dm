@@ -18,8 +18,8 @@
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
 # Make it clear the screen after it runs on the sysrescue machine. It looks weird when this program (like nano) just
 #   poops all over the terminal and walks away.
-# Figure out why drives are being shown as in "testing" state when they're not.
-# Figure out why barcode scanning isn't returning no match.
+# Add the ability to abort a test-in-progress.
+# Figure out why barcode scanning isn't matching when serial number are scanned (though it works if you type them in).
 
 
 from pySMART.utils import admin
@@ -240,35 +240,37 @@ def main(screen):
                     if keypress2 is not NO_KEYS_PRESSED:
                         searchModeFlag = True
                         searchString += curses.keyname(keypress)  # Add the first keypress to the search.
-                        keypress = keypress2  # Pass the second keypress forward.
+                        searchString += curses.keyname(keypress2)  # Add the first keypress to the search.
                         break
                     millisecondsElapsed = int((time.time() - startTime) * 1000)
 
-                # If a drive list is present then check for cursor keys.
-                if len(devices) > 0:
-                    if keypress == curses.KEY_DOWN:
-                        selector = (selector + 1) % len(devices)
-                    if keypress == curses.KEY_UP:
-                        selector = (selector - 1) % len(devices)
-                else:
-                    selector = SELECTOR_ABSENT
+                # Check again that search mode has not been triggered by rapid keypresses.
+                if not searchModeFlag:
+                    # If a drive list is present then check for cursor keys.
+                    if len(devices) > 0:
+                        if keypress == curses.KEY_DOWN:
+                            selector = (selector + 1) % len(devices)
+                        if keypress == curses.KEY_UP:
+                            selector = (selector - 1) % len(devices)
+                    else:
+                        selector = SELECTOR_ABSENT
 
-                if keypress == ord('f'):
-                    searchModeFlag = True
+                    if keypress == ord('f'):
+                        searchModeFlag = True
 
-                if keypress == ord('d'):
-                    displayTestFlag = not displayTestFlag
+                    if keypress == ord('d'):
+                        displayTestFlag = not displayTestFlag
 
-                if keypress == ord('s'):
-                    if selector is not SELECTOR_ABSENT:
-                        devices[selector].runShortTest()
-                    refreshDevices = redrawScreen = True
+                    if keypress == ord('s'):
+                        if selector is not SELECTOR_ABSENT:
+                            devices[selector].runShortTest()
+                        refreshDevices = redrawScreen = True
 
-                if keypress == ord('r'):
-                    refreshDevices = redrawScreen = True
+                    if keypress == ord('r'):
+                        refreshDevices = redrawScreen = True
 
-                if keypress == ord('q'):
-                    exitFlag = True
+                    if keypress == ord('q'):
+                        exitFlag = True
 
         # Check if any drives have a smartctl query in progress.
         for device in devices:

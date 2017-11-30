@@ -39,6 +39,10 @@ SMARTCTL_TEST_STATE_MSG_NOT_AVAILABLE = "Smartctl has not reported a self-test e
 # Helper function constants.
 SEARCH_FAILED = -1
 
+# Smart test status codes.
+SMART_IDLE = 0  # Drive is not smart testing.
+SMART_INTERRUPTED = 33  # Drive is idle and most recent test was interrupted before completion.
+
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
 CW_GSENSE = 5
@@ -114,15 +118,15 @@ class StorageDevice:
         # If smartctl reports test status then record that status.
         if testStateCodeString is not "":
             self.smartctlTestStateCode = int(testStateCodeString)
-            # If smartctl reports a non-zero test-state code then note that a test is occurring.
-            if self.smartctlTestStateCode is not 0:
+            # Determine device state based on whether smartctl reports a test-in-progress.
+            if self.smartctlTestStateCode in [SMART_IDLE, SMART_INTERRUPTED]:
+                self.state = DR_STATE_IDLE
+            else:
                 testStateMsg = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)(.*)", self.smartctlOutput)
                 self.smartctlTestStateMsg = testStateMsg
                 # If the type of test being run is not already known then just record it as generic.
                 if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING]:
                     self.state = DR_STATE_TESTING
-            else:
-                self.state = DR_STATE_IDLE
         # If smartctl does not report test status then make a note of it.
         else:
             self.smartctlTestStateCode = SMARTCTL_TEST_CODE_NOT_AVAILABLE
