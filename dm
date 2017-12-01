@@ -17,6 +17,7 @@
 # Show progress of currently running scan.
 
 # Moderate Priority To Do:
+# Make shift+s be a way to order all idle drives to short-test themselves. Same for long tests.
 # Add functionality to extrapolate test completion within 1% (rather than 10%) based on smartctl reporting and time.
 # Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
