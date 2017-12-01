@@ -11,15 +11,13 @@
 #   Font effects: dim=underline=normal, reverse=standout(fg/bg color reversal), bold is brighter text.
 #       blink is grey text on dark grey background (no blinking).
 
-# To Do:
+# High Priority To Do:
 # Add long tests.
+
+# Normal Priority To Do:
 # Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
-# Finish extracting.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
-# Make it clear the screen after it runs on the sysrescue machine. It looks weird when this program (like nano) just
-#   poops all over the terminal and walks away.
 # Add the ability to abort a test-in-progress.
-# Figure out why barcode scanning isn't matching when serial number are scanned (though it works if you type them in).
 
 
 from pySMART.utils import admin
