@@ -15,9 +15,12 @@
 # Add long tests.
 # Show gsense and number of hours.
 # Show progress of currently running scan.
+# Remove the print-beeps commands at the start of this code if they don't actually produce a beep on sysrescue.
 
 # Moderate Priority To Do:
 # Make shift+s be a way to order all idle drives to short-test themselves. Same for long tests.
+# Make it beep when a drive completes a scan and triple beep when all drives become idle.
+#   Maybe even make it triple-beep on a decreasing time-scale (up to 3 times?) and show a flashing message window.
 # Add functionality to extrapolate test completion within 1% (rather than 10%) based on smartctl reporting and time.
 # Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
@@ -28,6 +31,9 @@
 # Make the program work under Windows and Mac OS.
 # Turn the StorageDevice class into a clean library suitable for general-purpose use and GPL release it.
 
+# DEBUG: Try making system beep (might work on sysrescue machines?).
+print '\a'
+print('\007')
 
 from pySMART.utils import admin
 from storageDevice import *

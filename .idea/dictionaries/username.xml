@@ -5,6 +5,7 @@
       <w>multiline</w>
       <w>smartctl</w>
       <w>stdscr</w>
+      <w>sysrescue</w>
     </words>
   </dictionary>
 </component>
