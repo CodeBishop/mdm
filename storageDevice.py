@@ -135,6 +135,9 @@ class StorageDevice:
             if self.state is not DR_STATE_WIPING:
                 self.state = DR_STATE_IDLE
 
+        # Look for drive size.
+        self.capacity = capture(r"User Capacity:[\d,\w\s]*\[([\w\s]+)\]", self.smartctlOutput)
+
         # Look for self-test log.
         startOfTestHistory = firstMatchPosition("SMART Self-test log structure", self.smartctlOutput)
         if startOfTestHistory is not SEARCH_FAILED:
@@ -143,7 +146,6 @@ class StorageDevice:
             for line in linesFromTestLogStart:
                 if len(line) > 0 and line[0] == '#':  # Test result lines start with a pound sign.
                     self.testHistory.append(line)
-
 
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
