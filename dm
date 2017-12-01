@@ -240,7 +240,7 @@ def main(screen):
                     if keypress2 is not NO_KEYS_PRESSED:
                         searchModeFlag = True
                         searchString += curses.keyname(keypress)  # Add the first keypress to the search.
-                        searchString += curses.keyname(keypress2)  # Add the first keypress to the search.
+                        searchString += curses.keyname(keypress2)  # Add the second keypress to the search.
                         break
                     millisecondsElapsed = int((time.time() - startTime) * 1000)
 
