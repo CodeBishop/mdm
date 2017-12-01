@@ -16,11 +16,16 @@
 # Show gsense and number of hours.
 # Show progress of currently running scan.
 
-# Normal Priority To Do:
+# Moderate Priority To Do:
 # Add functionality to extrapolate test completion within 1% (rather than 10%) based on smartctl reporting and time.
 # Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
 # Add the ability to abort a test-in-progress.
+
+# Low (long-term) Priority To Do:
+# Make the program detect if smartmontools is not installed so it can advise the user to install it.
+# Make the program work under Windows and Mac OS.
+# Turn the StorageDevice class into a clean library suitable for general-purpose use and GPL release it.
 
 
 from pySMART.utils import admin
