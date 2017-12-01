@@ -13,7 +13,7 @@
 
 # High Priority To Do:
 # Add long tests.
-# Show realloc sectors, gsense and number of hours.
+# Show gsense and number of hours.
 # Show progress of currently running scan.
 
 # Normal Priority To Do:

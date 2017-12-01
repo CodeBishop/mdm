@@ -138,6 +138,9 @@ class StorageDevice:
         # Look for drive size.
         self.capacity = capture(r"User Capacity:[\d,\w\s]*\[([\w\s]+)\]", self.smartctlOutput)
 
+        # Look for reallocated sector count.
+        self.reallocCount = capture(r"Reallocated_Sector_Ct.*(\d)+", self.smartctlOutput)
+
         # Look for self-test log.
         startOfTestHistory = firstMatchPosition("SMART Self-test log structure", self.smartctlOutput)
         if startOfTestHistory is not SEARCH_FAILED:
