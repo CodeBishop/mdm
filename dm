@@ -11,6 +11,10 @@
 #   Font effects: dim=underline=normal, reverse=standout(fg/bg color reversal), bold is brighter text.
 #       blink is grey text on dark grey background (no blinking).
 
+# Possible name ideas:
+# mdr - Multi-Drive Recycler (mdr does not appear to be a linux CLI tool name in use yet).
+# mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
+
 # High Priority To Do:
 # Add long tests.
 # Show gsense and number of hours of total runtime.
@@ -139,7 +143,7 @@ def main(screen):
             screen.border(0)
 
             # Print the program title.
-            screen.addstr(1, 1, "Drive Monkey!", curses.A_REVERSE)
+            screen.addstr(1, 1, "Drive Manager", curses.A_REVERSE)
 
             # Print the search bar or help bar.
             if searchModeFlag:
@@ -171,11 +175,12 @@ def main(screen):
                 if device.connector == "USB":
                     screen.addstr(posY, posX, "Smartctl firmware was not reachable through USB interface.")
                 else:
-                    smartTestState = ""
-                    if device.smartctlTestStateCode is not SMARTCTL_TEST_CODE_NOT_AVAILABLE:
-                        smartTestState = "Smart test state " + str(device.smartctlTestStateCode) + ". "
-                    smartTestState += device.smartctlTestStateMsg
-                    screen.addstr(posY, posX, smartTestState)
+                    if device.smartStatusCode == SMART_STATUS_CODE_NOT_INITIALIZED:
+                        smartTestStateMsg = SMART_STATUS_CODE_NOT_FOUND_MSG
+                    else:
+                        smartTestStateMsg = "SMART status code " + str(device.smartStatusCode) + ": "
+                        smartTestStateMsg += device.smartStatusDescription
+                    screen.addstr(posY, posX, smartTestStateMsg)
                 posY += 2  # Increment vertical cursor and add blank line.
 
                 # Print the list of failed attributes.

@@ -1,7 +1,6 @@
 import os
 import re
 import subprocess
-import sys
 import warnings
 
 # Import pySMART but suppress the warning messages about not being root.
@@ -33,15 +32,18 @@ DR_STATE_MSG[DR_STATE_WIPING] = "Wiping"
 # Class-related constants.
 DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
 NOT_INITIALIZED = -1
-SMARTCTL_TEST_CODE_NOT_AVAILABLE = -1
-SMARTCTL_TEST_STATE_MSG_NOT_AVAILABLE = "Smartctl has not reported a self-test execution status."
+SMART_STATUS_CODE_NOT_INITIALIZED = -1
+SMART_STATUS_CODE_NOT_INITIALIZED_MSG = "Smarctl status code not initialized."
+SMART_STATUS_CODE_NOT_FOUND = -2
+SMART_STATUS_CODE_NOT_FOUND_MSG = "Smartctl status code not found in smartctl output."
+NUMBER_OF_SMARTCTL_STATE_CODES = 256
 
 # Helper function constants.
 SEARCH_FAILED = -1
 
 # Smart test status codes.
-SMART_IDLE = 0  # Drive is not smart testing.
-SMART_INTERRUPTED = 33  # Drive is idle and most recent test was interrupted before completion.
+SMART_CODE_IDLE = 0  # Drive is not smart testing.
+SMART_CODE_INTERRUPTED = 33  # Drive is idle and most recent test was interrupted before completion.
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
@@ -74,8 +76,8 @@ class StorageDevice:
         self.serial = ""
         self.smartCapable = None
         self.smartctlOutput = ""
-        self.smartctlTestStateCode = SMARTCTL_TEST_CODE_NOT_AVAILABLE
-        self.smartctlTestStateMsg = SMARTCTL_TEST_STATE_MSG_NOT_AVAILABLE
+        self.smartStatusCode = SMART_STATUS_CODE_NOT_INITIALIZED
+        self.smartStatusDescription = SMART_STATUS_CODE_NOT_INITIALIZED_MSG
         self.state = DR_STATE_UNKNOWN
         self.smartctlProcess = None  # Separate process allows non-blocking call to smartctl.
         self.testHistory = list()  # Strings, one per test result from SMART test history.
@@ -113,27 +115,32 @@ class StorageDevice:
         self.serial = capture(r"Serial Number:\s*(\w+)", self.smartctlOutput)
         self.model = capture(r"Device Model:\s*(\w+)", self.smartctlOutput)
 
-        testStateCodeString = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
+        # Search for SMART status code in smartctl output.
+        smartStatusCodeSearch = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
 
-        # If smartctl reports test status then record that status.
-        if testStateCodeString is not "":
-            self.smartctlTestStateCode = int(testStateCodeString)
+        # If smart status code wasn't found in smartctl output then.
+        if smartStatusCodeSearch is "":
+            self.smartStatusCode = SMART_STATUS_CODE_NOT_INITIALIZED
+            self.smartStatusDescription = SMART_STATUS_CODE_NOT_FOUND_MSG
+            # If smart status code is unavailable and drive is not being wiped then presume drive is idle.
+            if self.state is not DR_STATE_WIPING:
+                self.state = DR_STATE_IDLE
+        # If SMART status code was found then record that status.
+        else:
+            self.smartStatusCode = int(smartStatusCodeSearch)
             # Determine device state based on whether smartctl reports a test-in-progress.
-            if self.smartctlTestStateCode in [SMART_IDLE, SMART_INTERRUPTED]:
+            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED]:
                 self.state = DR_STATE_IDLE
             else:
-                testStateMsg = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)(.*)", self.smartctlOutput)
-                self.smartctlTestStateMsg = testStateMsg
                 # If the type of test being run is not already known then just record it as generic.
                 if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING]:
                     self.state = DR_STATE_TESTING
-        # If smartctl does not report test status then make a note of it.
-        else:
-            self.smartctlTestStateCode = SMARTCTL_TEST_CODE_NOT_AVAILABLE
-            self.smartctlTestStateMsg = SMARTCTL_TEST_STATE_MSG_NOT_AVAILABLE
-            # If the smartctl does not report testing and drive is not being wiped then presume the drive is idle.
-            if self.state is not DR_STATE_WIPING:
-                self.state = DR_STATE_IDLE
+            # Search for SMART status message in smartctl output.
+            smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)(.*)", self.smartctlOutput)
+            if smartStatusDescSearch is "":
+                self.smartStatusDescription = "SMART status description could not be found in smartctl output."
+            else:
+                self.smartStatusDescription = smartStatusDescSearch
 
         # Look for drive size.
         self.capacity = capture(r"User Capacity:[\d,\w\s]*\[([\w\s]+)\]", self.smartctlOutput)
@@ -196,10 +203,6 @@ class StorageDevice:
         for attribute in self.device.attributes:
             if attribute and attribute.when_failed != "-":
                 self.failedAttributes.append(self.devicePath + " " + str(attribute))
-
-    def refresh(self):
-        outcome = self.load(self.devicePath)
-        return outcome
 
     # Test if a given string matches any device field as a substring.
     def matchSearchString(self, searchString):
