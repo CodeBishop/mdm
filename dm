@@ -13,11 +13,19 @@
 
 # High Priority To Do:
 # Add long tests.
-# Show gsense and number of hours.
+# Show gsense and number of hours of total runtime.
+#   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
+#       Some Maxtor's record attribute #9 in minutes not hours (correctable by '-v 9,minutes').
+#       Some Fujitsu's record attribute #9 in seconds not hours (correctable by '-v 9,seconds').
+#   Look for discrepancies in drive hours. Isn't there a bunch of ridiculously low-hour Fujitsu's? Do their logged
+#       tests show different hours from their attribute #9?
+#   Check if drives' hours in the test logs and attribute #9 are consistent.
 # Show progress of currently running scan.
 # Remove the print-beeps commands at the start of this code if they don't actually produce a beep on sysrescue.
 
 # Moderate Priority To Do:
+# Add a test that if the number of hours is less than a 1000 then the program warns you that smartctl may be
+#   misinterpreting minutes into hours when hours was what the manufacturer actually meant.
 # Make shift+s be a way to order all idle drives to short-test themselves. Same for long tests.
 # Make it beep when a drive completes a scan and triple beep when all drives become idle.
 #   Maybe even make it triple-beep on a decreasing time-scale (up to 3 times?) and show a flashing message window.
