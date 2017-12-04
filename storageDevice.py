@@ -33,9 +33,9 @@ DR_STATE_MSG[DR_STATE_WIPING] = "Wiping"
 DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
 NOT_INITIALIZED = -1
 SMART_STATUS_CODE_NOT_INITIALIZED = -1
-SMART_STATUS_CODE_NOT_INITIALIZED_MSG = "Smarctl status code not initialized."
+SMART_STATUS_CODE_NOT_INITIALIZED_MSG = "SMART status code not initialized."
 SMART_STATUS_CODE_NOT_FOUND = -2
-SMART_STATUS_CODE_NOT_FOUND_MSG = "Smartctl status code not found in smartctl output."
+SMART_STATUS_CODE_NOT_FOUND_MSG = "SMART status code not found in smartctl output."
 NUMBER_OF_SMARTCTL_STATE_CODES = 256
 
 # Helper function constants.
