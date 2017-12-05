@@ -17,7 +17,10 @@
 
 # High Priority To Do:
 # Add long tests.
-# Show gsense and number of hours of total runtime.
+# Add abort test option.
+# Fix the status message capturing to capture and de-whitespace multiline messages.
+# Show number of hours.
+# Show gsense.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
 #       Some Maxtor's record attribute #9 in minutes not hours (correctable by '-v 9,minutes').
 #       Some Fujitsu's record attribute #9 in seconds not hours (correctable by '-v 9,seconds').
@@ -25,9 +28,9 @@
 #       tests show different hours from their attribute #9?
 #   Check if drives' hours in the test logs and attribute #9 are consistent.
 # Show progress of currently running scan.
-# Remove the print-beeps commands at the start of this code if they don't actually produce a beep on sysrescue.
 
 # Moderate Priority To Do:
+# Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
 # Add a test that if the number of hours is less than a 1000 then the program warns you that smartctl may be
 #   misinterpreting minutes into hours when hours was what the manufacturer actually meant.
 # Make shift+s be a way to order all idle drives to short-test themselves. Same for long tests.
@@ -42,10 +45,6 @@
 # Make the program detect if smartmontools is not installed so it can advise the user to install it.
 # Make the program work under Windows and Mac OS.
 # Turn the StorageDevice class into a clean library suitable for general-purpose use and GPL release it.
-
-# DEBUG: Try making system beep (might work on sysrescue machines?).
-print '\a'
-print('\007')
 
 from pySMART.utils import admin
 from storageDevice import *
