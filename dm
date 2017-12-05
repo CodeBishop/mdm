@@ -16,6 +16,7 @@
 # mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
 
 # High Priority To Do:
+# Add code 32 as a reset state (same as code 33 it seems).
 # Show number of hours.
 # Show gsense.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
