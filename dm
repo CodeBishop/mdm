@@ -52,7 +52,6 @@ import glob
 import os
 import time
 
-
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
 POS_BY = 3  # Top side of search/help bar.

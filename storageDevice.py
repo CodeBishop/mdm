@@ -44,7 +44,8 @@ SEARCH_FAILED = -1
 # Smart test status codes.
 SMART_CODE_IDLE = 0  # Drive is not smart testing.
 SMART_CODE_INTERRUPTED = 33  # Drive is idle and most recent test was interrupted before completion.
-SMART_CODE_ABORTED = 25  # Drive is idel and most recent test was aborted by user.
+SMART_CODE_ABORTED = 24  # Drive is idle and most recent test was aborted by user.
+SMART_CODE_ABORTED2 = 25  # Drive is idle and most recent test was aborted by user.
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
@@ -130,11 +131,15 @@ class StorageDevice:
         else:
             self.smartStatusCode = int(smartStatusCodeSearch)
             # Determine device state based on whether smartctl reports a test-in-progress.
-            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED, SMART_CODE_ABORTED]:
+            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED, SMART_CODE_ABORTED, SMART_CODE_ABORTED2]:
                 self.state = DR_STATE_IDLE
             else:
-                # If the type of test being run is not already known then just record it as generic.
-                if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING]:
+                # If the type of test being run is not already known then just record it state unknown.
+                if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING] and \
+                                self.smartStatusCode not in range(241, 250):  # Range of SMART testing codes = 241-249.
+                    self.state = DR_STATE_UNKNOWN
+                # Otherwise record it as testing.
+                else:
                     self.state = DR_STATE_TESTING
             # Search for SMART status message in smartctl output.
             smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)\s*(.*)", self.smartctlOutput)
