@@ -16,7 +16,6 @@
 # mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
 
 # High Priority To Do:
-# Fix the status message capturing to capture and de-whitespace multiline messages.
 # Add long tests.
 # Add abort test option.
 # Show number of hours.
@@ -150,7 +149,7 @@ def main(screen):
             if searchModeFlag:
                 screen.addstr(POS_BY, POS_BX, SEARCH_PROMPT + searchString)
             else:
-                screen.addstr(POS_BY, POS_BX, "(f)ind (d)isplay test (r)efresh (s)hort test (q)uit")
+                screen.addstr(POS_BY, POS_BX, "(f)ind (d)isplay test (r)efresh (s)hort test (l)ong test (a)bort test (q)uit")
 
             # Print the message bar.
             screen.addstr(POS_MY, POS_MX, messageBarContents)
@@ -291,6 +290,16 @@ def main(screen):
                     if keypress == ord('s'):
                         if selector is not SELECTOR_ABSENT:
                             devices[selector].runShortTest()
+                        refreshDevices = redrawScreen = True
+
+                    if keypress == ord('l'):
+                        if selector is not SELECTOR_ABSENT:
+                            devices[selector].runLongTest()
+                        refreshDevices = redrawScreen = True
+
+                    if keypress == ord('a'):
+                        if selector is not SELECTOR_ABSENT:
+                            devices[selector].abortTest()
                         refreshDevices = redrawScreen = True
 
                     if keypress == ord('r'):

@@ -44,6 +44,7 @@ SEARCH_FAILED = -1
 # Smart test status codes.
 SMART_CODE_IDLE = 0  # Drive is not smart testing.
 SMART_CODE_INTERRUPTED = 33  # Drive is idle and most recent test was interrupted before completion.
+SMART_CODE_ABORTED = 25  # Drive is idel and most recent test was aborted by user.
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
@@ -129,7 +130,7 @@ class StorageDevice:
         else:
             self.smartStatusCode = int(smartStatusCodeSearch)
             # Determine device state based on whether smartctl reports a test-in-progress.
-            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED]:
+            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED, SMART_CODE_ABORTED]:
                 self.state = DR_STATE_IDLE
             else:
                 # If the type of test being run is not already known then just record it as generic.
@@ -223,6 +224,14 @@ class StorageDevice:
     def runShortTest(self):
         # Call smartctl directly to run a short test.
         rawResults = terminalCommand("smartctl -s on -t short " + self.devicePath)
+
+    def runLongTest(self):
+        # Call smartctl directly to run a long test.
+        rawResults = terminalCommand("smartctl -s on -t long " + self.devicePath)
+
+    def abortTest(self):
+        # Call smartctl directly to abort currently running test.
+        rawResults = terminalCommand("smartctl -X " + self.devicePath)
 
     def buildFailedAttributeList(self):
         for attribute in self.device.attributes:
