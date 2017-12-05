@@ -55,52 +55,6 @@ import glob
 import os
 import time
 
-# START OF EXPERIMENTAL SECTION FOR DEBUGGING SOME REGEXES ################
-testData = """
-Offline data collection status:  (0x02)	Offline data collection activity
-					was completed without error.
-					Auto Offline Data Collection: Disabled.
-Self-test execution status:      (   0)	The previous self-test routine completed
-					without error or no self-test has ever 
-					been run.
-Total time to complete Offline 
-data collection: 		(    0) seconds.
-Offline data collection
-capabilities: 			 (0x79) SMART execute Offline immediate.
-					No Auto Offline data collection support.
-					Suspend Offline collection upon new
-"""
-# smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)\s*(.*)", testData)
-# # If status description wasn't found then report that fact.
-# if smartStatusDescSearch is "":
-#     selfSmartStatusDescription = "SMART status description could not be found in smartctl output."
-# # If status description was found then use it.
-# else:
-#     # Capture status description and then look for subsequent lines if it's a multiline description.
-#     selfSmartStatusDescription = smartStatusDescSearch
-#     # Find the start of the description line.
-#     smartStatusDescLineStartPos = firstMatchPosition(r"Self-test execution status:", testData)
-#     # Get a string from start of description onwards.
-#     smartStatusLineOnwards = testData[smartStatusDescLineStartPos:]
-#     while True:
-#         # Find the end of the current description line.
-#         smartStatusDescEndOfLine = firstMatchPosition(r"\n", smartStatusLineOnwards)
-#         # Get a string from the end of the current line onwards.
-#         smartStatusDescNextLineOnwards = smartStatusLineOnwards[smartStatusDescEndOfLine + 1:]
-#         # Search for whitespace at start of next line (ie, indentation).
-#         smartStatusDescNextLinePos = firstMatchPosition(r"^\s", smartStatusDescNextLineOnwards)
-#         # If next line is indented.
-#         if smartStatusDescNextLinePos is not SEARCH_FAILED:
-#             # Capture the next line of multiline description.
-#             smartStatusDescSearch = capture(r"\s*(.*)", smartStatusDescNextLineOnwards)
-#             selfSmartStatusDescription += " " + smartStatusDescSearch
-#             # Get a string from position in description onwards.
-#             smartStatusLineOnwards = smartStatusDescNextLineOnwards[smartStatusDescNextLinePos:]
-#         else:
-#             break
-# print selfSmartStatusDescription
-# exit()
-# END OF DEBUGGING SECTION ################################################
 
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
