@@ -16,7 +16,9 @@
 # mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
 
 # High Priority To Do:
-# Add code 32 as a reset state (same as code 33 it seems).
+# Identify WHEN_FAIL attributes and compile list of them.
+# Make the program auto-refresh every 5 minutes or so.
+# See if there's a quick way to make the program reverse color text on things devices that just finished a test.
 # Show number of hours.
 # Show gsense.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
@@ -30,6 +32,7 @@
 # Highlight drives that have completed a test.
 # Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
 # Show progress of currently running scan.
+# Refactor StorageDevice class. It's sprawling and has some huge methods that should be broken down.
 # Add a test that if the number of hours is less than a 1000 then the program warns you that smartctl may be
 #   misinterpreting minutes into hours when hours was what the manufacturer actually meant.
 # Make shift+s be a way to order all idle drives to short-test themselves. Same for long tests.

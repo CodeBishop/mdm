@@ -65,6 +65,7 @@ CW_WHEN_FAILED_STATUS = 10
 class StorageDevice:
     def __init__(self, devicePath):
         # Declare the members of this class.
+        self.attributes = list()
         self.capacity = ""  # Drive size in MB, GB or TB as a string.
         self.connector = ""  # SATA, SCSI, USB, etc.
         self.device = None
