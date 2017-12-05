@@ -136,11 +136,36 @@ class StorageDevice:
                 if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING]:
                     self.state = DR_STATE_TESTING
             # Search for SMART status message in smartctl output.
-            smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)(.*)", self.smartctlOutput)
+            smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)\s*(.*)", self.smartctlOutput)
+            # If status description wasn't found then report that fact.
             if smartStatusDescSearch is "":
                 self.smartStatusDescription = "SMART status description could not be found in smartctl output."
+            # If status description was found then use it.
             else:
+                # Capture status description and then look for subsequent lines if it's a multiline description.
                 self.smartStatusDescription = smartStatusDescSearch
+                # Find the start of the description line.
+                smartStatusDescLineStartPos = firstMatchPosition(r"Self-test execution status:", self.smartctlOutput)
+                # Get a string from start of description onwards.
+                smartStatusLineOnwards = self.smartctlOutput[smartStatusDescLineStartPos:]
+                while True:
+                    # Find the end of the current description line.
+                    smartStatusDescEndOfLine = firstMatchPosition(r"\n", smartStatusLineOnwards)
+                    # Get a string from the end of the current line onwards.
+                    smartStatusDescNextLineOnwards = smartStatusLineOnwards[smartStatusDescEndOfLine + 1:]
+                    # Search for whitespace at start of next line (ie, indentation).
+                    smartStatusDescNextLinePos = firstMatchPosition(r"^\s", smartStatusDescNextLineOnwards)
+                    # If next line is indented.
+                    if smartStatusDescNextLinePos is not SEARCH_FAILED:
+                        # Capture the next line of multiline description and ensure appended line has a space.
+                        smartStatusDescSearch = capture(r"\s*(.*)", smartStatusDescNextLineOnwards)
+                        self.smartStatusDescription += " " + smartStatusDescSearch
+                        # Remove any double-spaces introduced by spaces at end of lines and appended spaces.
+                        self.smartStatusDescription = ' '.join(self.smartStatusDescription.split())
+                        # Get a string from position in description onwards.
+                        smartStatusLineOnwards = smartStatusDescNextLineOnwards[smartStatusDescNextLinePos:]
+                    else:
+                        break
 
         # Look for drive size.
         self.capacity = capture(r"User Capacity:[\d,\w\s]*\[([\w\s]+)\]", self.smartctlOutput)

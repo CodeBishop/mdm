@@ -16,9 +16,9 @@
 # mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
 
 # High Priority To Do:
+# Fix the status message capturing to capture and de-whitespace multiline messages.
 # Add long tests.
 # Add abort test option.
-# Fix the status message capturing to capture and de-whitespace multiline messages.
 # Show number of hours.
 # Show gsense.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
@@ -27,10 +27,11 @@
 #   Look for discrepancies in drive hours. Isn't there a bunch of ridiculously low-hour Fujitsu's? Do their logged
 #       tests show different hours from their attribute #9?
 #   Check if drives' hours in the test logs and attribute #9 are consistent.
-# Show progress of currently running scan.
 
 # Moderate Priority To Do:
+# Highlight drives that have completed a test.
 # Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
+# Show progress of currently running scan.
 # Add a test that if the number of hours is less than a 1000 then the program warns you that smartctl may be
 #   misinterpreting minutes into hours when hours was what the manufacturer actually meant.
 # Make shift+s be a way to order all idle drives to short-test themselves. Same for long tests.
@@ -53,6 +54,53 @@ import curses
 import glob
 import os
 import time
+
+# START OF EXPERIMENTAL SECTION FOR DEBUGGING SOME REGEXES ################
+testData = """
+Offline data collection status:  (0x02)	Offline data collection activity
+					was completed without error.
+					Auto Offline Data Collection: Disabled.
+Self-test execution status:      (   0)	The previous self-test routine completed
+					without error or no self-test has ever 
+					been run.
+Total time to complete Offline 
+data collection: 		(    0) seconds.
+Offline data collection
+capabilities: 			 (0x79) SMART execute Offline immediate.
+					No Auto Offline data collection support.
+					Suspend Offline collection upon new
+"""
+# smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)\s*(.*)", testData)
+# # If status description wasn't found then report that fact.
+# if smartStatusDescSearch is "":
+#     selfSmartStatusDescription = "SMART status description could not be found in smartctl output."
+# # If status description was found then use it.
+# else:
+#     # Capture status description and then look for subsequent lines if it's a multiline description.
+#     selfSmartStatusDescription = smartStatusDescSearch
+#     # Find the start of the description line.
+#     smartStatusDescLineStartPos = firstMatchPosition(r"Self-test execution status:", testData)
+#     # Get a string from start of description onwards.
+#     smartStatusLineOnwards = testData[smartStatusDescLineStartPos:]
+#     while True:
+#         # Find the end of the current description line.
+#         smartStatusDescEndOfLine = firstMatchPosition(r"\n", smartStatusLineOnwards)
+#         # Get a string from the end of the current line onwards.
+#         smartStatusDescNextLineOnwards = smartStatusLineOnwards[smartStatusDescEndOfLine + 1:]
+#         # Search for whitespace at start of next line (ie, indentation).
+#         smartStatusDescNextLinePos = firstMatchPosition(r"^\s", smartStatusDescNextLineOnwards)
+#         # If next line is indented.
+#         if smartStatusDescNextLinePos is not SEARCH_FAILED:
+#             # Capture the next line of multiline description.
+#             smartStatusDescSearch = capture(r"\s*(.*)", smartStatusDescNextLineOnwards)
+#             selfSmartStatusDescription += " " + smartStatusDescSearch
+#             # Get a string from position in description onwards.
+#             smartStatusLineOnwards = smartStatusDescNextLineOnwards[smartStatusDescNextLinePos:]
+#         else:
+#             break
+# print selfSmartStatusDescription
+# exit()
+# END OF DEBUGGING SECTION ################################################
 
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
