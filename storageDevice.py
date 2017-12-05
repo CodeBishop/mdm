@@ -91,7 +91,7 @@ class StorageDevice:
 
     # Run a smartctl process to get latest device info.
     def initiateQuery(self):
-        command = "smartctl -a " + self.devicePath
+        command = "smartctl -s on -a " + self.devicePath
         self.smartctlProcess = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=DEVNULL)
         self.state = DR_STATE_QUERYING
 
@@ -231,7 +231,7 @@ class StorageDevice:
 
     def abortTest(self):
         # Call smartctl directly to abort currently running test.
-        rawResults = terminalCommand("smartctl -X " + self.devicePath)
+        rawResults = terminalCommand("smartctl -s on -X " + self.devicePath)
 
     def buildFailedAttributeList(self):
         for attribute in self.device.attributes:

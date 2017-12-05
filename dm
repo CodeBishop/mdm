@@ -16,8 +16,6 @@
 # mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
 
 # High Priority To Do:
-# Add long tests.
-# Add abort test option.
 # Show number of hours.
 # Show gsense.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
