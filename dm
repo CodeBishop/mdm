@@ -48,12 +48,12 @@ print '\a'
 print('\007')
 
 from pySMART.utils import admin
-from storageDevice import *
-
 import curses
 import glob
 import os
 import time
+
+from storageDevice import *
 
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
