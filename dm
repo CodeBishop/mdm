@@ -10,6 +10,8 @@
 #   Only 8 colors are available and the curses.COLORS constant reflects that fact.
 #   Font effects: dim=underline=normal, reverse=standout(fg/bg color reversal), bold is brighter text.
 #       blink is grey text on dark grey background (no blinking).
+#   Characters known to appear in smartctl output:
+#       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
 # Possible name ideas:
 # mdr - Multi-Drive Recycler (mdr does not appear to be a linux CLI tool name in use yet).
