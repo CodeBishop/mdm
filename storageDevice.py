@@ -43,7 +43,10 @@ SEARCH_FAILED = -1
 
 # Smart test status codes.
 SMART_CODE_IDLE = 0  # Drive is not smart testing.
-SMART_CODE_INTERRUPTED = 33  # Drive is idle and most recent test was interrupted before completion.
+SMART_CODE_INTERRUPTED = 32  # Drive is idle and most recent test was interrupted before completion.
+SMART_CODE_INTERRUPTED2 = 33  # Drive is idle and most recent test was interrupted before completion.
+SMART_CODE_ABORTED = 24  # Drive is idle and most recent test was aborted by user.
+SMART_CODE_ABORTED2 = 25  # Drive is idle and most recent test was aborted by user.
 
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
@@ -62,6 +65,7 @@ CW_WHEN_FAILED_STATUS = 10
 class StorageDevice:
     def __init__(self, devicePath):
         # Declare the members of this class.
+        self.attributes = list()
         self.capacity = ""  # Drive size in MB, GB or TB as a string.
         self.connector = ""  # SATA, SCSI, USB, etc.
         self.device = None
@@ -90,7 +94,7 @@ class StorageDevice:
 
     # Run a smartctl process to get latest device info.
     def initiateQuery(self):
-        command = "smartctl -a " + self.devicePath
+        command = "smartctl -s on -a " + self.devicePath
         self.smartctlProcess = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=DEVNULL)
         self.state = DR_STATE_QUERYING
 
@@ -129,18 +133,48 @@ class StorageDevice:
         else:
             self.smartStatusCode = int(smartStatusCodeSearch)
             # Determine device state based on whether smartctl reports a test-in-progress.
-            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED]:
+            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED, SMART_CODE_INTERRUPTED2,
+                                        SMART_CODE_ABORTED, SMART_CODE_ABORTED2]:
                 self.state = DR_STATE_IDLE
             else:
-                # If the type of test being run is not already known then just record it as generic.
-                if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING]:
+                # If the type of test being run is not already known then just record it state unknown.
+                if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING] and \
+                                self.smartStatusCode not in range(241, 250):  # Range of SMART testing codes = 241-249.
+                    self.state = DR_STATE_UNKNOWN
+                # Otherwise record it as testing.
+                else:
                     self.state = DR_STATE_TESTING
             # Search for SMART status message in smartctl output.
-            smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)(.*)", self.smartctlOutput)
+            smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)\s*(.*)", self.smartctlOutput)
+            # If status description wasn't found then report that fact.
             if smartStatusDescSearch is "":
                 self.smartStatusDescription = "SMART status description could not be found in smartctl output."
+            # If status description was found then use it.
             else:
+                # Capture status description and then look for subsequent lines if it's a multiline description.
                 self.smartStatusDescription = smartStatusDescSearch
+                # Find the start of the description line.
+                smartStatusDescLineStartPos = firstMatchPosition(r"Self-test execution status:", self.smartctlOutput)
+                # Get a string from start of description onwards.
+                smartStatusLineOnwards = self.smartctlOutput[smartStatusDescLineStartPos:]
+                while True:
+                    # Find the end of the current description line.
+                    smartStatusDescEndOfLine = firstMatchPosition(r"\n", smartStatusLineOnwards)
+                    # Get a string from the end of the current line onwards.
+                    smartStatusDescNextLineOnwards = smartStatusLineOnwards[smartStatusDescEndOfLine + 1:]
+                    # Search for whitespace at start of next line (ie, indentation).
+                    smartStatusDescNextLinePos = firstMatchPosition(r"^\s", smartStatusDescNextLineOnwards)
+                    # If next line is indented.
+                    if smartStatusDescNextLinePos is not SEARCH_FAILED:
+                        # Capture the next line of multiline description and ensure appended line has a space.
+                        smartStatusDescSearch = capture(r"\s*(.*)", smartStatusDescNextLineOnwards)
+                        self.smartStatusDescription += " " + smartStatusDescSearch
+                        # Remove any double-spaces introduced by spaces at end of lines and appended spaces.
+                        self.smartStatusDescription = ' '.join(self.smartStatusDescription.split())
+                        # Get a string from position in description onwards.
+                        smartStatusLineOnwards = smartStatusDescNextLineOnwards[smartStatusDescNextLinePos:]
+                    else:
+                        break
 
         # Look for drive size.
         self.capacity = capture(r"User Capacity:[\d,\w\s]*\[([\w\s]+)\]", self.smartctlOutput)
@@ -198,6 +232,14 @@ class StorageDevice:
     def runShortTest(self):
         # Call smartctl directly to run a short test.
         rawResults = terminalCommand("smartctl -s on -t short " + self.devicePath)
+
+    def runLongTest(self):
+        # Call smartctl directly to run a long test.
+        rawResults = terminalCommand("smartctl -s on -t long " + self.devicePath)
+
+    def abortTest(self):
+        # Call smartctl directly to abort currently running test.
+        rawResults = terminalCommand("smartctl -s on -X " + self.devicePath)
 
     def buildFailedAttributeList(self):
         for attribute in self.device.attributes:

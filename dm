@@ -16,18 +16,23 @@
 # mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
 
 # High Priority To Do:
-# Add long tests.
-# Show gsense and number of hours of total runtime.
+# Identify WHEN_FAIL attributes and compile list of them.
+# Make the program auto-refresh every 5 minutes or so.
+# See if there's a quick way to make the program reverse color text on things devices that just finished a test.
+# Show number of hours.
+# Show gsense.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
 #       Some Maxtor's record attribute #9 in minutes not hours (correctable by '-v 9,minutes').
 #       Some Fujitsu's record attribute #9 in seconds not hours (correctable by '-v 9,seconds').
 #   Look for discrepancies in drive hours. Isn't there a bunch of ridiculously low-hour Fujitsu's? Do their logged
 #       tests show different hours from their attribute #9?
 #   Check if drives' hours in the test logs and attribute #9 are consistent.
-# Show progress of currently running scan.
-# Remove the print-beeps commands at the start of this code if they don't actually produce a beep on sysrescue.
 
 # Moderate Priority To Do:
+# Highlight drives that have completed a test.
+# Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
+# Show progress of currently running scan.
+# Refactor StorageDevice class. It's sprawling and has some huge methods that should be broken down.
 # Add a test that if the number of hours is less than a 1000 then the program warns you that smartctl may be
 #   misinterpreting minutes into hours when hours was what the manufacturer actually meant.
 # Make shift+s be a way to order all idle drives to short-test themselves. Same for long tests.
@@ -42,10 +47,6 @@
 # Make the program detect if smartmontools is not installed so it can advise the user to install it.
 # Make the program work under Windows and Mac OS.
 # Turn the StorageDevice class into a clean library suitable for general-purpose use and GPL release it.
-
-# DEBUG: Try making system beep (might work on sysrescue machines?).
-print '\a'
-print('\007')
 
 from pySMART.utils import admin
 import curses
@@ -149,7 +150,7 @@ def main(screen):
             if searchModeFlag:
                 screen.addstr(POS_BY, POS_BX, SEARCH_PROMPT + searchString)
             else:
-                screen.addstr(POS_BY, POS_BX, "(f)ind (d)isplay test (r)efresh (s)hort test (q)uit")
+                screen.addstr(POS_BY, POS_BX, "(f)ind (d)isplay test (r)efresh (s)hort test (l)ong test (a)bort test (q)uit")
 
             # Print the message bar.
             screen.addstr(POS_MY, POS_MX, messageBarContents)
@@ -290,6 +291,16 @@ def main(screen):
                     if keypress == ord('s'):
                         if selector is not SELECTOR_ABSENT:
                             devices[selector].runShortTest()
+                        refreshDevices = redrawScreen = True
+
+                    if keypress == ord('l'):
+                        if selector is not SELECTOR_ABSENT:
+                            devices[selector].runLongTest()
+                        refreshDevices = redrawScreen = True
+
+                    if keypress == ord('a'):
+                        if selector is not SELECTOR_ABSENT:
+                            devices[selector].abortTest()
                         refreshDevices = redrawScreen = True
 
                     if keypress == ord('r'):
