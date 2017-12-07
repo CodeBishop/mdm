@@ -360,7 +360,7 @@ def terminalCommand(command):
     return output
 
 
-# Use a regular expression to capture part of a string or return MISSING_FIELD if unable.
+# Use a regular expression to capture part of a string.
 def capture(pattern, text):
     result = re.search(pattern, text)
     if result and result.group(1):
