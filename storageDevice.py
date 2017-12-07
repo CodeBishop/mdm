@@ -179,8 +179,11 @@ class StorageDevice:
         # Look for drive size.
         self.capacity = capture(r"User Capacity:[\d,\w\s]*\[([\w\s]+)\]", self.smartctlOutput)
 
-        # Look for reallocated sector count.
-        self.reallocCount = capture(r"Reallocated_Sector_Ct.*(\d)+", self.smartctlOutput)
+        # Search for a reallocated sector count entry from the SMART attributes list.
+        line = capture(r"(Reallocated_Sector_Ct.*)", self.smartctlOutput)
+        # If a reallocated sector count entry was found then extract the last number in that line.
+        if line is not None:
+            self.reallocCount = capture(r"(\d+)(?!.*\d)", line)
 
         # Look for self-test log.
         startOfTestHistory = firstMatchPosition("SMART Self-test log structure", self.smartctlOutput)
@@ -190,6 +193,20 @@ class StorageDevice:
             for line in linesFromTestLogStart:
                 if len(line) > 0 and line[0] == '#':  # Test result lines start with a pound sign.
                     self.testHistory.append(line)
+
+        # Look for attributes.
+        smartAttrStartPos = firstMatchPosition(r"ID# ATTRIBUTE_NAME", self.smartctlOutput)
+        # Get a string from start of attribute table onwards.
+        remainingOutput = self.smartctlOutput[smartAttrStartPos:]
+        while True:
+            # Capture the next line.
+            attributeString = capture(r"\n.*", remainingOutput)
+            if attributeString == "":
+                break
+            else:
+                self.attributes.append(attributeString)
+                # Reduce the remaining text.
+                remainingOutput = remainingOutput[len(attributeString):]
 
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):

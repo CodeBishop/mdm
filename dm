@@ -10,6 +10,8 @@
 #   Only 8 colors are available and the curses.COLORS constant reflects that fact.
 #   Font effects: dim=underline=normal, reverse=standout(fg/bg color reversal), bold is brighter text.
 #       blink is grey text on dark grey background (no blinking).
+#   Characters known to appear in smartctl output:
+#       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
 # Possible name ideas:
 # mdr - Multi-Drive Recycler (mdr does not appear to be a linux CLI tool name in use yet).
@@ -18,9 +20,9 @@
 # High Priority To Do:
 # Identify WHEN_FAIL attributes and compile list of them.
 # Make the program auto-refresh every 5 minutes or so.
-# See if there's a quick way to make the program reverse color text on things devices that just finished a test.
+#
+# See if there's a quick way to make the program reverse color text on devices that just finished a test.
 # Show number of hours.
-# Show gsense.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
 #       Some Maxtor's record attribute #9 in minutes not hours (correctable by '-v 9,minutes').
 #       Some Fujitsu's record attribute #9 in seconds not hours (correctable by '-v 9,seconds').
@@ -29,6 +31,7 @@
 #   Check if drives' hours in the test logs and attribute #9 are consistent.
 
 # Moderate Priority To Do:
+# Show gsense.
 # Highlight drives that have completed a test.
 # Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
 # Show progress of currently running scan.
@@ -209,6 +212,11 @@ def main(screen):
                     screen.addstr(posY, posX, "No history of SMART tests found for " + deviceName)
                     posY += 1  # Increment vertical cursor
                 posY += 1  # Add a blank line before next section of info.
+
+                # Print the attributes with WHEN_FAIL conditions.
+                for attribute in device.attributes:  #DEBUG: change this to device.failedAttributes
+                    screen.addstr(posY, posX, attribute)
+                    posY += 1
 
             # Draw displaying testing stuff if that mode is active.
             if displayTestFlag:
