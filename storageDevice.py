@@ -194,6 +194,20 @@ class StorageDevice:
                 if len(line) > 0 and line[0] == '#':  # Test result lines start with a pound sign.
                     self.testHistory.append(line)
 
+        # Look for attributes.
+        smartAttrStartPos = firstMatchPosition(r"ID# ATTRIBUTE_NAME", self.smartctlOutput)
+        # Get a string from start of attribute table onwards.
+        remainingOutput = self.smartctlOutput[smartAttrStartPos:]
+        while True:
+            # Capture the next line.
+            attributeString = capture(r"\n.*", remainingOutput)
+            if attributeString == "":
+                break
+            else:
+                self.attributes.append(attributeString)
+                # Reduce the remaining text.
+                remainingOutput = remainingOutput[len(attributeString):]
+
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
         warnings.filterwarnings("ignore")
