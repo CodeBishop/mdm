@@ -26,7 +26,7 @@ DR_STATE_MSG[DR_STATE_IDLE] = "Idle"
 DR_STATE_MSG[DR_STATE_QUERYING] = "Querying"
 DR_STATE_MSG[DR_STATE_SHORT_TESTING] = "Short testing"
 DR_STATE_MSG[DR_STATE_LONG_TESTING] = "Long testing"
-DR_STATE_MSG[DR_STATE_TESTING] = "Testing"  # Type of testing (short/long) is not known.
+DR_STATE_MSG[DR_STATE_TESTING] = "Testing"  # Drive is testing but type of test is unknown.
 DR_STATE_MSG[DR_STATE_WIPING] = "Wiping"
 
 # Class-related constants.
@@ -79,7 +79,8 @@ class StorageDevice:
         self.reallocCount = -1  # Marker value for uninitialized integer.
         self.serial = ""
         self.smartCapable = None
-        self.smartctlOutput = ""
+        self.smartctlOutput = ""  # All smartctl output as a single string.
+        self.smartctlLines = list()  # All smartctl output as a list of strings, one per line.
         self.smartStatusCode = SMART_STATUS_CODE_NOT_INITIALIZED
         self.smartStatusDescription = SMART_STATUS_CODE_NOT_INITIALIZED_MSG
         self.state = DR_STATE_UNKNOWN
@@ -103,6 +104,7 @@ class StorageDevice:
         if self.state == DR_STATE_QUERYING:
             if self.smartctlProcess.poll() is not None:
                 self.smartctlOutput, _ = self.smartctlProcess.communicate()
+                self.smartctlLines = self.smartctlOutput.split('\n')
                 self.state = DR_STATE_UNKNOWN
                 return True  # Query has just completed.
             else:
@@ -179,12 +181,6 @@ class StorageDevice:
         # Look for drive size.
         self.capacity = capture(r"User Capacity:[\d,\w\s]*\[([\w\s]+)\]", self.smartctlOutput)
 
-        # Search for a reallocated sector count entry from the SMART attributes list.
-        line = capture(r"(Reallocated_Sector_Ct.*)", self.smartctlOutput)
-        # If a reallocated sector count entry was found then extract the last number in that line.
-        if line is not None:
-            self.reallocCount = capture(r"(\d+)(?!.*\d)", line)
-
         # Look for self-test log.
         startOfTestHistory = firstMatchPosition("SMART Self-test log structure", self.smartctlOutput)
         if startOfTestHistory is not SEARCH_FAILED:
@@ -205,8 +201,16 @@ class StorageDevice:
                 break
             else:
                 self.attributes.append(attributeString)
-                # Reduce the remaining text.
+                # Reduce the remaining text to be read.
                 remainingOutput = remainingOutput[len(attributeString):]
+
+        # DEBUG: This should be rewritten to be pulled by attribute number. This search string is not reliable but the
+        #         desired value is always attribute #5.
+        # Search for a reallocated sector count entry from the SMART attributes list.
+        # line = capture(r"(Reallocated_Sector_Ct.*)", self.smartctlOutput)
+        # # If a reallocated sector count entry was found then extract the last number in that line.
+        # if line is not None:
+        #     self.reallocCount = capture(r"(\d+)(?!.*\d)", line)
 
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
@@ -276,7 +280,7 @@ class StorageDevice:
             return False
 
     def oneLineSummary(self):
-        # Make a color-coded string of the reallocated sector count.
+        # Make a color-coded string of the reallocated sector count.  #DEBUG: Color not implemented yet.
         if self.reallocCount > 0:
             reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
         elif self.reallocCount < 0:
@@ -362,7 +366,7 @@ def terminalCommand(command):
 
 # Use a regular expression to capture part of a string.
 def capture(pattern, text):
-    result = re.search(pattern, text)
+    result = re.search(pattern, text, re.IGNORECASE)
     if result and result.group(1):
         return result.group(1)
     else:

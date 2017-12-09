@@ -18,7 +18,10 @@
 # mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
 
 # High Priority To Do:
+# Create an Attribute class and use StorageDevice.smartctlLines to build StrageDevice.attributes.
 # Identify WHEN_FAIL attributes and compile list of them.
+# Switch over to identifying attributes by their ID number, not their text description (which varies even for
+#   reallocated sector count).
 # Make the program auto-refresh every 5 minutes or so.
 #
 # See if there's a quick way to make the program reverse color text on devices that just finished a test.
@@ -32,6 +35,7 @@
 
 # Moderate Priority To Do:
 # Show gsense.
+# See if StorageDevice.smartctlLines can simplify some of the stuff you're doing with StorageDevice.smartctlOutput.
 # Highlight drives that have completed a test.
 # Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
 # Show progress of currently running scan.
@@ -58,6 +62,30 @@ import os
 import time
 
 from storageDevice import *
+
+
+# START DEBUG TEST SECTION ***********************************************************
+selfsmartctlOutput = """
+
+"""
+selfattributes = list()
+
+# Look for attributes.
+smartAttrStartPos = firstMatchPosition(r"ID# ATTRIBUTE_NAME", selfsmartctlOutput)
+# Get a string from start of attribute table onwards.
+remainingOutput = selfsmartctlOutput[smartAttrStartPos:]
+while True:
+    # Capture the next line.
+    attributeString = capture(r"\n.*", remainingOutput)
+    if attributeString == "":
+        break
+    else:
+        selfattributes.append(attributeString)
+        # Reduce the remaining text to be read.
+        remainingOutput = remainingOutput[len(attributeString):]
+
+# END DEBUG **************************************************************************
+
 
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
@@ -187,6 +215,12 @@ def main(screen):
                     screen.addstr(posY, posX, smartTestStateMsg)
                 posY += 2  # Increment vertical cursor and add blank line.
 
+                #DEBUG: Try printing all attributes.
+                for attribute in device.attributes:
+                    screen.addstr(posY, posX, attribute)
+                    posY += 1
+                #END DEBUG
+
                 # Print the list of failed attributes.
                 if device.hasFailedAttributes():
                     screen.addstr(posY, posX, attributeHeader())
@@ -212,11 +246,6 @@ def main(screen):
                     screen.addstr(posY, posX, "No history of SMART tests found for " + deviceName)
                     posY += 1  # Increment vertical cursor
                 posY += 1  # Add a blank line before next section of info.
-
-                # Print the attributes with WHEN_FAIL conditions.
-                for attribute in device.attributes:  #DEBUG: change this to device.failedAttributes
-                    screen.addstr(posY, posX, attribute)
-                    posY += 1
 
             # Draw displaying testing stuff if that mode is active.
             if displayTestFlag:
