@@ -57,33 +57,10 @@
 
 import curses
 import glob
-import os
 import time
 
-from mdmSMART.Device import *
+from mdmSMART.Drive import *
 from pySMART.utils import admin
-
-# START DEBUG TEST SECTION ***********************************************************
-selfsmartctlOutput = """
-
-"""
-selfattributes = list()
-
-# Look for attributes.
-smartAttrStartPos = firstMatchPosition(r"ID# ATTRIBUTE_NAME", selfsmartctlOutput)
-# Get a string from start of attribute table onwards.
-remainingOutput = selfsmartctlOutput[smartAttrStartPos:]
-while True:
-    # Capture the next line.
-    attributeString = capture(r"\n.*", remainingOutput)
-    if attributeString == "":
-        break
-    else:
-        selfattributes.append(attributeString)
-        # Reduce the remaining text to be read.
-        remainingOutput = remainingOutput[len(attributeString):]
-
-# END DEBUG **************************************************************************
 
 
 # Drawing positions for view layout.
@@ -394,7 +371,7 @@ def findAllDrives():
     # Load each device and print a summary of it.
     for devicePath in sorted(devicePaths):
         # Attempt to load device smartctl info (and suppress pySmart warnings).
-        device = StorageDevice(devicePath)
+        device = Drive(devicePath)
         devices.append(device)
 
     return devices

@@ -62,7 +62,7 @@ CW_STATE = 15
 CW_WHEN_FAILED_STATUS = 10
 
 
-class StorageDevice:
+class Drive(object):
     def __init__(self, devicePath):
         # Declare the members of this class.
         self.attributes = list()
@@ -215,7 +215,7 @@ class StorageDevice:
     # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
     def load(self, devicePath):
         warnings.filterwarnings("ignore")
-        self.device = Device(devicePath)
+        self.device = Drive(devicePath)
         warnings.filterwarnings("default")
         self.smartCapable = False if (self.device.name is None or self.device.interface is None) else True
 
