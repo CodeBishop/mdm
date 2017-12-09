@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# Welcome to dm, aka Drive Monkey.
-# An improved version of poki using the ncurses library.
+# Multi-Drive Manager (mdm)
+# A utility for managing the simultaneous S.M.A.R.T. testing and secure wiping of multiple data storage devices.
 
 # Misc Notes
 # Summary of sysrescue display differences.
@@ -55,14 +55,13 @@
 # Make the program work under Windows and Mac OS.
 # Turn the StorageDevice class into a clean library suitable for general-purpose use and GPL release it.
 
-from pySMART.utils import admin
 import curses
 import glob
 import os
 import time
 
-from storageDevice import *
-
+from mdmSMART.Device import *
+from pySMART.utils import admin
 
 # START DEBUG TEST SECTION ***********************************************************
 selfsmartctlOutput = """
