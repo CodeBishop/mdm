@@ -191,6 +191,11 @@ class Drive(object):
                     self.testHistory.append(line)
 
         # Look for attributes.
+        for i in range(len(self.smartctlLines)):
+            if self.smartctlLines[i] == "Vendor Specific SMART Attributes with Thresholds:":
+                for j in range(i + 2, len(self.smartctlLines)):
+                    if len(self.smartctlLines[j]) <
+
         smartAttrStartPos = firstMatchPosition(r"ID# ATTRIBUTE_NAME", self.smartctlOutput)
         # Get a string from start of attribute table onwards.
         remainingOutput = self.smartctlOutput[smartAttrStartPos:]
