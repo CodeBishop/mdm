@@ -210,7 +210,9 @@ class Drive(object):
         if self.attributes[5]:
             self.reallocCount = int(self.attributes[5].rawValue)
         if self.attributes[9]:
-            self.hours = int(capture(r"\d+", self.attributes[9]).rawValue)
+            hoursString = capture(r"([0-9]+)", self.attributes[9].rawValue)
+            if hoursString is not "":
+                self.hours = int(hoursString)
 
         # DEBUG: This should be rewritten to be pulled by attribute number. This search string is not reliable but the
         #         desired value is always attribute #5.
@@ -375,7 +377,7 @@ def terminalCommand(command):
 # Use a regular expression to capture part of a string.
 def capture(pattern, text):
     result = re.search(pattern, text, re.IGNORECASE)
-    if result and result.group and result.lastgroup > 0:
-            return result.group(1)
+    if result and result.group:
+        return result.group(1)
     else:
         return ""

@@ -63,8 +63,6 @@ import time
 from mdmSMART.Drive import *
 from pySMART.utils import admin
 
-print int(capture(r"\d+", "1396h+51m+06.370s"))
-exit()
 
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
