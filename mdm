@@ -51,6 +51,7 @@
 # Add the ability to abort a test-in-progress.
 
 # Low (long-term) Priority To Do:
+# Rewrite the section of code that reads the attribute table. It's a pair of for-loops right now and clunky.
 # Make the program detect if smartmontools is not installed so it can advise the user to install it.
 # Make the program work under Windows and Mac OS.
 # Turn the StorageDevice class into a clean library suitable for general-purpose use and GPL release it.
@@ -193,7 +194,7 @@ def main(screen):
 
                 #DEBUG: Try printing all attributes.
                 for attribute in device.attributes:
-                    screen.addstr(posY, posX, attribute)
+                    screen.addstr(posY, posX, str(attribute.rawValue))
                     posY += 1
                 #END DEBUG
 

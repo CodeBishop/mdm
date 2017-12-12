@@ -3,6 +3,8 @@ import re
 import subprocess
 import warnings
 
+from Attribute import Attribute
+
 # Import pySMART but suppress the warning messages about not being root.
 warnings.filterwarnings("ignore")
 from pySMART import Device
@@ -190,24 +192,16 @@ class Drive(object):
                 if len(line) > 0 and line[0] == '#':  # Test result lines start with a pound sign.
                     self.testHistory.append(line)
 
-        # Look for attributes.
+        # Get the drive attributes.
         for i in range(len(self.smartctlLines)):
+            # Look for the start of the attributes section.
             if self.smartctlLines[i] == "Vendor Specific SMART Attributes with Thresholds:":
+                # Read in each line of the input.
                 for j in range(i + 2, len(self.smartctlLines)):
-                    if len(self.smartctlLines[j]) <
-
-        smartAttrStartPos = firstMatchPosition(r"ID# ATTRIBUTE_NAME", self.smartctlOutput)
-        # Get a string from start of attribute table onwards.
-        remainingOutput = self.smartctlOutput[smartAttrStartPos:]
-        while True:
-            # Capture the next line.
-            attributeString = capture(r"\n.*", remainingOutput)
-            if attributeString == "":
-                break
-            else:
-                self.attributes.append(attributeString)
-                # Reduce the remaining text to be read.
-                remainingOutput = remainingOutput[len(attributeString):]
+                    if len(self.smartctlLines[j]) > 2:
+                        self.attributes.append(Attribute(self.smartctlLines[j]))
+                    else:
+                        break
 
         # DEBUG: This should be rewritten to be pulled by attribute number. This search string is not reliable but the
         #         desired value is always attribute #5.
