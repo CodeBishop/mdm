@@ -13,10 +13,6 @@
 #   Characters known to appear in smartctl output:
 #       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
-# Possible name ideas:
-# mdr - Multi-Drive Recycler (mdr does not appear to be a linux CLI tool name in use yet).
-# mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
-
 # High Priority To Do:
 # Create an Attribute class and use StorageDevice.smartctlLines to build StrageDevice.attributes.
 # Identify WHEN_FAIL attributes and compile list of them.
