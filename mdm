@@ -13,6 +13,10 @@
 #   Characters known to appear in smartctl output:
 #       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
+# Possible name ideas:
+# mdr - Multi-Drive Recycler (mdr does not appear to be a linux CLI tool name in use yet).
+# mdm - Multi-Drive Manager (mdm does not appear to be a linux CLI tool name in use yet).
+
 # High Priority To Do:
 # Create an Attribute class and use StorageDevice.smartctlLines to build StrageDevice.attributes.
 # Identify WHEN_FAIL attributes and compile list of them.
@@ -187,12 +191,6 @@ def main(screen):
                         smartTestStateMsg += device.smartStatusDescription
                     screen.addstr(posY, posX, smartTestStateMsg)
                 posY += 2  # Increment vertical cursor and add blank line.
-
-                #DEBUG: Try printing all attributes.
-                for attribute in device.attributes:
-                    screen.addstr(posY, posX, str(attribute.rawValue))
-                    posY += 1
-                #END DEBUG
 
                 # Print the list of failed attributes.
                 if device.hasFailedAttributes():

@@ -67,7 +67,7 @@ CW_WHEN_FAILED_STATUS = 10
 class Drive(object):
     def __init__(self, devicePath):
         # Declare the members of this class.
-        self.attributes = list()
+        self.attributes = [None] * 256  # Create list of unfilled attributes.
         self.capacity = ""  # Drive size in MB, GB or TB as a string.
         self.connector = ""  # SATA, SCSI, USB, etc.
         self.device = None
@@ -75,7 +75,7 @@ class Drive(object):
         self.driveType = ""  # SSD or HDD.
         self.failedAttributes = list()  # Strings, one per WHEN_FAIL attribute.
         self.GSenseCount = ""
-        self.hours = 0
+        self.hours = NOT_INITIALIZED
         self.model = ""
         self.name = devicePath  # Device is referred to by its path.
         self.reallocCount = -1  # Marker value for uninitialized integer.
@@ -199,9 +199,16 @@ class Drive(object):
                 # Read in each line of the input.
                 for j in range(i + 2, len(self.smartctlLines)):
                     if len(self.smartctlLines[j]) > 2:
-                        self.attributes.append(Attribute(self.smartctlLines[j]))
+                        attribute = Attribute(self.smartctlLines[j])
+                        self.attributes[attribute.idNumber] = attribute
+                        if not re.search(r"\w*-\w*", attribute.whenFailed):
+                            self.failedAttributes.append(attribute.smartctlLine)
                     else:
                         break
+
+        # Extract particular data from the attributes if available.
+        if self.attributes[5]:
+            self.reallocCount = int(self.attributes[5].rawValue)
 
         # DEBUG: This should be rewritten to be pulled by attribute number. This search string is not reliable but the
         #         desired value is always attribute #5.
@@ -334,7 +341,7 @@ def summaryHeader():
 
 def attributeHeader():
     # Print out any WHEN_FAILED attributes that were found.
-    return "PATH     ID# ATTRIBUTE_NAME          VAL WST THR TYPE     UPDATED WHEN_FAILED RAW_VALUE"
+    return "ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE"
 
 
 def firstMatchPosition(searchString, text):
