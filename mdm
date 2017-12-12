@@ -14,11 +14,8 @@
 #       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
 # High Priority To Do:
-# Create an Attribute class and use StorageDevice.smartctlLines to build StrageDevice.attributes.
-# Identify WHEN_FAIL attributes and compile list of them.
-# Switch over to identifying attributes by their ID number, not their text description (which varies even for
-#   reallocated sector count).
 # Make the program auto-refresh every 5 minutes or so.
+# Figure out why there's a blank line after the test history header. Is the first item in the list blank?
 #
 # See if there's a quick way to make the program reverse color text on devices that just finished a test.
 # Show number of hours.
@@ -189,12 +186,13 @@ def main(screen):
                 posY += 2  # Increment vertical cursor and add blank line.
 
                 # Print the list of important attributes.
-                screen.addstr(posY, posX, attributeHeader())
-                posY += 1
-                for attribute in device.importantAttributes:
-                    screen.addstr(posY, posX, attribute.smartctlLine)
-                    posY += 1  # Increment vertical cursor
-                posY += 1  # Add a blank line before next section of info.
+                if len(device.importantAttributes) > 0:
+                    screen.addstr(posY, posX, attributeHeader())
+                    posY += 1
+                    for attribute in device.importantAttributes:
+                        screen.addstr(posY, posX, attribute.smartctlLine)
+                        posY += 1  # Increment vertical cursor
+                    posY += 1  # Add a blank line before next section of info.
 
                 # Print the test history for the device.
                 # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
