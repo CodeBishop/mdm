@@ -50,6 +50,10 @@ SMART_CODE_INTERRUPTED2 = 33  # Drive is idle and most recent test was interrupt
 SMART_CODE_ABORTED = 24  # Drive is idle and most recent test was aborted by user.
 SMART_CODE_ABORTED2 = 25  # Drive is idle and most recent test was aborted by user.
 
+# Attribute ID numbers.
+ATTR_REALLOC = 5
+ATTR_HOURS = 9
+
 # Define column widths for displaying drive summaries (doesn't include one-space separator).
 CW_CONNECTOR = 4
 CW_GSENSE = 5
@@ -73,9 +77,9 @@ class Drive(object):
         self.device = None
         self.devicePath = devicePath
         self.driveType = ""  # SSD or HDD.
-        self.failedAttributes = list()  # Strings, one per WHEN_FAIL attribute.
         self.GSenseCount = ""
         self.hours = NOT_INITIALIZED
+        self.importantAttributes = list()  # Attributes that should always be shown (like WHEN_FAILs).
         self.model = ""
         self.name = devicePath  # Device is referred to by its path.
         self.reallocCount = -1  # Marker value for uninitialized integer.
@@ -199,16 +203,23 @@ class Drive(object):
                 # Read in each line of the input.
                 for j in range(i + 2, len(self.smartctlLines)):
                     if len(self.smartctlLines[j]) > 2:
+                        # Build an Attribute object.
                         attribute = Attribute(self.smartctlLines[j])
                         self.attributes[attribute.idNumber] = attribute
-                        if not re.search(r"\w*-\w*", attribute.whenFailed):
-                            self.failedAttributes.append(attribute.smartctlLine)
+                        # Add it to the list of important attributes if it's one that should always be shown.
+                        if attribute.idNumber in [ATTR_REALLOC, ATTR_HOURS]:
+                            self.importantAttributes.append(attribute)
+                        # Add it to the list of important attributes if it has a WHEN_FAIL entry.
+                        elif not re.search(r"\w*-\w*", attribute.whenFailed):
+                            self.importantAttributes.append(attribute)
                     else:
                         break
 
         # Extract particular data from the attributes if available.
         if self.attributes[5]:
-            self.reallocCount = int(self.attributes[5].rawValue)
+            reallocString = capture(r"([0-9]+)", self.attributes[5].rawValue)
+            if reallocString is not "":
+                self.reallocCount = int(reallocString)
         if self.attributes[9]:
             hoursString = capture(r"([0-9]+)", self.attributes[9].rawValue)
             if hoursString is not "":
@@ -231,7 +242,6 @@ class Drive(object):
 
         if self.smartCapable:
             # Fill various fields with smartctl info.
-            self.buildFailedAttributeList()
             if self.device.tests is not None:
                 for testResult in self.device.tests:
                     self.testHistory.append(str(testResult))
@@ -271,11 +281,6 @@ class Drive(object):
     def abortTest(self):
         # Call smartctl directly to abort currently running test.
         rawResults = terminalCommand("smartctl -s on -X " + self.devicePath)
-
-    def buildFailedAttributeList(self):
-        for attribute in self.device.attributes:
-            if attribute and attribute.when_failed != "-":
-                self.failedAttributes.append(self.devicePath + " " + str(attribute))
 
     # Test if a given string matches any device field as a substring.
     def matchSearchString(self, searchString):
@@ -321,7 +326,10 @@ class Drive(object):
         return description
 
     def hasFailedAttributes(self):
-        return len(self.failedAttributes) > 0
+        for attribute in self.attributes:
+            if attribute and not re.search(r"\w*-\w*", attribute.whenFailed):
+                return True
+        return False
 
 
 #######################################

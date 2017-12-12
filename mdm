@@ -192,15 +192,11 @@ def main(screen):
                     screen.addstr(posY, posX, smartTestStateMsg)
                 posY += 2  # Increment vertical cursor and add blank line.
 
-                # Print the list of failed attributes.
-                if device.hasFailedAttributes():
-                    screen.addstr(posY, posX, attributeHeader())
-                    posY += 1
-                    for failedAttribute in device.failedAttributes:
-                        screen.addstr(posY, posX, failedAttribute)
-                        posY += 1  # Increment vertical cursor
-                else:
-                    screen.addstr(posY, posX, "No WHEN_FAIL attributes found for " + deviceName)
+                # Print the list of important attributes.
+                screen.addstr(posY, posX, attributeHeader())
+                posY += 1
+                for attribute in device.importantAttributes:
+                    screen.addstr(posY, posX, attribute.smartctlLine)
                     posY += 1  # Increment vertical cursor
                 posY += 1  # Add a blank line before next section of info.
 
