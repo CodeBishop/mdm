@@ -19,9 +19,9 @@ DEVNULL = open(os.devnull, 'w')
 DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_HIST_NOT_TESTABLE = range(5)
 
 # Possible drive states of an instance of this class.
-numberOfPossibleDriveStates = 7
+numberOfPossibleDriveStates = 8
 DR_STATE_UNKNOWN, DR_STATE_IDLE, DR_STATE_QUERYING, DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING,\
-    DR_STATE_WIPING = range(numberOfPossibleDriveStates)
+    DR_STATE_WIPING, DR_STATE_FAILED = range(numberOfPossibleDriveStates)
 DR_STATE_MSG = [None] * numberOfPossibleDriveStates  # Create empty list of given size.
 DR_STATE_MSG[DR_STATE_UNKNOWN] = "Unknown"
 DR_STATE_MSG[DR_STATE_IDLE] = "Idle"
@@ -30,6 +30,8 @@ DR_STATE_MSG[DR_STATE_SHORT_TESTING] = "Short testing"
 DR_STATE_MSG[DR_STATE_LONG_TESTING] = "Long testing"
 DR_STATE_MSG[DR_STATE_TESTING] = "Testing"  # Drive is testing but type of test is unknown.
 DR_STATE_MSG[DR_STATE_WIPING] = "Wiping"
+DR_STATE_MSG[DR_STATE_FAILED] = "Failed"
+
 
 # Class-related constants.
 DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
@@ -49,6 +51,7 @@ SMART_CODE_INTERRUPTED = 32  # Drive is idle and most recent test was interrupte
 SMART_CODE_INTERRUPTED2 = 33  # Drive is idle and most recent test was interrupted before completion.
 SMART_CODE_ABORTED = 24  # Drive is idle and most recent test was aborted by user.
 SMART_CODE_ABORTED2 = 25  # Drive is idle and most recent test was aborted by user.
+SMART_CODE_READ_FAILURE = 118  # Drive failed most recent test with read failure.
 
 # Attribute ID numbers.
 ATTR_REALLOC = 5

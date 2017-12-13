@@ -16,7 +16,6 @@
 # High Priority To Do:
 # Make the program auto-refresh every 5 minutes or so.
 # Figure out why there's a blank line after the test history header. Is the first item in the list blank?
-#
 # See if there's a quick way to make the program reverse color text on devices that just finished a test.
 # Show number of hours.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
@@ -28,6 +27,7 @@
 
 # Moderate Priority To Do:
 # Show gsense.
+# Make F5 work for refresh also.
 # See if StorageDevice.smartctlLines can simplify some of the stuff you're doing with StorageDevice.smartctlOutput.
 # Highlight drives that have completed a test.
 # Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
@@ -278,6 +278,9 @@ def main(screen):
                         if keypress == curses.KEY_UP:
                             selector = (selector - 1) % len(devices)
                     else:
+                        selector = SELECTOR_ABSENT
+
+                    if keypress == ESCAPE_KEY:
                         selector = SELECTOR_ABSENT
 
                     if keypress == ord('f'):
