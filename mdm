@@ -28,6 +28,8 @@
 # Moderate Priority To Do:
 # Show gsense.
 # Make F5 work for refresh also.
+# Search for "SMART Self-test Log not supported" and differentiate reporting that from reporting a drive that
+#   supports selt-test logging but no tests have ever been run on it.
 # See if StorageDevice.smartctlLines can simplify some of the stuff you're doing with StorageDevice.smartctlOutput.
 # Highlight drives that have completed a test.
 # Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.

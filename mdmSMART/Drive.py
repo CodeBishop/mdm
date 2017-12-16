@@ -4,6 +4,8 @@ import subprocess
 import warnings
 
 from Attribute import Attribute
+from utils import *
+
 
 # Import pySMART but suppress the warning messages about not being root.
 warnings.filterwarnings("ignore")
@@ -41,9 +43,6 @@ SMART_STATUS_CODE_NOT_INITIALIZED_MSG = "SMART status code not initialized."
 SMART_STATUS_CODE_NOT_FOUND = -2
 SMART_STATUS_CODE_NOT_FOUND_MSG = "SMART status code not found in smartctl output."
 NUMBER_OF_SMARTCTL_STATE_CODES = 256
-
-# Helper function constants.
-SEARCH_FAILED = -1
 
 # Smart test status codes.
 SMART_CODE_IDLE = 0  # Drive is not smart testing.
@@ -275,15 +274,15 @@ class Drive(object):
 
     def runShortTest(self):
         # Call smartctl directly to run a short test.
-        rawResults = terminalCommand("smartctl -s on -t short " + self.devicePath)
+        terminalCommand("smartctl -s on -t short " + self.devicePath)
 
     def runLongTest(self):
         # Call smartctl directly to run a long test.
-        rawResults = terminalCommand("smartctl -s on -t long " + self.devicePath)
+        terminalCommand("smartctl -s on -t long " + self.devicePath)
 
     def abortTest(self):
         # Call smartctl directly to abort currently running test.
-        rawResults = terminalCommand("smartctl -s on -X " + self.devicePath)
+        terminalCommand("smartctl -s on -X " + self.devicePath)
 
     # Test if a given string matches any device field as a substring.
     def matchSearchString(self, searchString):
@@ -328,6 +327,7 @@ class Drive(object):
 
         return description
 
+    # If any attribute has something other than a dash for WHEN_FAIL then return True.
     def hasFailedAttributes(self):
         for attribute in self.attributes:
             if attribute and not re.search(r"\w*-\w*", attribute.whenFailed):
@@ -358,37 +358,3 @@ def attributeHeader():
     # Print out any WHEN_FAILED attributes that were found.
     return "ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE"
 
-
-def firstMatchPosition(searchString, text):
-    searchResult = re.search(searchString, text)
-    if searchResult is None:
-        return SEARCH_FAILED
-    else:
-        return searchResult.start()
-
-
-def leftColumn(someString, width):
-    # Strip ANSI codes before calculating string length.
-    length = len(re.sub(r'\x1b\[([0-9,A-Z]{1,2}(;[0-9]{1,2})?(;[0-9]{3})?)?[m|K]?', '', someString))
-
-    # Left justify string, truncate (with ellipsis) or pad with spaces to fill column width.
-    if length <= width:
-        # NOTE: str.ljust() mis-formats this under some circumstances so don't use it.
-        return someString + ' ' * (width - length + 1)
-    else:
-        return someString[:width-3] + "... "
-
-
-# Get the output from a terminal command and block any error messages from appearing.
-def terminalCommand(command):
-    output, _ = subprocess.Popen(command.split(), stdout=subprocess.PIPE, stderr=DEVNULL).communicate()
-    return output
-
-
-# Use a regular expression to capture part of a string.
-def capture(pattern, text):
-    result = re.search(pattern, text, re.IGNORECASE)
-    if result and result.group:
-        return result.group(1)
-    else:
-        return ""

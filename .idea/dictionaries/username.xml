@@ -3,6 +3,7 @@
     <words>
       <w>keypresses</w>
       <w>multiline</w>
+      <w>realloc</w>
       <w>smartctl</w>
       <w>stdscr</w>
       <w>sysrescue</w>
