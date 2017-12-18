@@ -6,6 +6,9 @@ import subprocess
 # Utility function constants.
 SEARCH_FAILED = -1
 
+# Open the null device for dumping unwanted output into.
+DEVNULL = open(os.devnull, 'w')
+
 
 def firstMatchPosition(searchString, text):
     searchResult = re.search(searchString, text)
