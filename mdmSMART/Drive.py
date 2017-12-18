@@ -224,51 +224,6 @@ class Drive(object):
             if hoursString is not "":
                 self.hours = int(hoursString)
 
-        # DEBUG: This should be rewritten to be pulled by attribute number. This search string is not reliable but the
-        #         desired value is always attribute #5.
-        # Search for a reallocated sector count entry from the SMART attributes list.
-        # line = capture(r"(Reallocated_Sector_Ct.*)", self.smartctlOutput)
-        # # If a reallocated sector count entry was found then extract the last number in that line.
-        # if line is not None:
-        #     self.reallocCount = capture(r"(\d+)(?!.*\d)", line)
-
-    # DEBUG: Remove this method after initiateQuery() is finished (and pySmart removed).
-    def load(self, devicePath):
-        warnings.filterwarnings("ignore")
-        self.device = Drive(devicePath)
-        warnings.filterwarnings("default")
-        self.smartCapable = False if (self.device.name is None or self.device.interface is None) else True
-
-        if self.smartCapable:
-            # Fill various fields with smartctl info.
-            if self.device.tests is not None:
-                for testResult in self.device.tests:
-                    self.testHistory.append(str(testResult))
-            if self.device.serial is not None:
-                self.serial = str(self.device.serial)
-            if self.device.model is not None:
-                self.model = str(self.device.model)
-            if self.device.name is not None:
-                self.name = str(self.device.name)
-            if self.device.interface is not None:
-                self.connector = str(self.device.interface).upper()
-                if self.connector == "SAT":
-                    self.connector = "SATA"
-            if self.device.attributes[5] is not None:
-                self.reallocCount = int(self.device.attributes[5].raw)
-
-            # Call smartctl directly to see if a test is in progress.
-            # rawResults = terminalCommand("smartctl -s on -c " + self.devicePath)
-            # if re.search("previous self-test", rawResults):
-            #     self.status = DR_STATUS_IDLE
-            # elif re.search("% of test remaining", rawResults):
-            #     self.status = DR_STATUS_TESTING
-            #     self.testProgress = int(capture(r"(\d+)% of test remaining", rawResults))
-            # else:
-            #     self.status = DR_STATUS_UNKNOWN
-
-        return DR_LOAD_SUCCESS if self.smartCapable else DR_LOAD_FAILED
-
     def runShortTest(self):
         # Call smartctl directly to run a short test.
         terminalCommand("smartctl -s on -t short " + self.devicePath)
