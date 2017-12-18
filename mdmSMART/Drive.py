@@ -7,11 +7,6 @@ from Attribute import Attribute
 from utils import *
 
 
-# Import pySMART but suppress the warning messages about not being root.
-warnings.filterwarnings("ignore")
-from pySMART import Device
-warnings.filterwarnings("default")
-
 # Possible states of a device's history: all past tests were good, one or more were bad, drive has never run a
 #   short or long test, drive has never run a long test (but short ones were all good), drive has no history
 #   because it is not SMART test capable.
