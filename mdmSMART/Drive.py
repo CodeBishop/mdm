@@ -352,6 +352,5 @@ def summaryHeader():
 
 
 def attributeHeader():
-    # Print out any WHEN_FAILED attributes that were found.
     return "ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE"
 
