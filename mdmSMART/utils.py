@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # A collection of utility functions for MDM (Multi-Drive Manager)
 import os
 import re
