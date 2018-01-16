@@ -54,9 +54,9 @@
 import curses
 import glob
 import time
+import os
 
 from mdmSMART.Drive import *
-from pySMART.utils import admin
 
 
 # Drawing positions for view layout.
@@ -78,7 +78,7 @@ SEARCH_PROMPT = "Find: "
 os.environ.setdefault('ESCDELAY', '0')
 
 # Check for root.
-if not admin():
+if not os.getuid() == 0:
     print "Only user ID #0 (root) can run this program"
     exit(1)
 
