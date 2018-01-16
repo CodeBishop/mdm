@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 
 class Attribute(object):
     def __init__(self, smartctlLine):
