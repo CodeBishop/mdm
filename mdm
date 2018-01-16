@@ -114,11 +114,18 @@ def main(screen):
     searchModeFlag = False  # Toggle search mode (as versus command mode).
     displayTestFlag = False  # Toggle a display properties test.
     redrawScreen = True  # Signal a screen redraw/refresh.
-    refreshDevices = True  # Signal a rescan of all the drives.
+    refreshDevices = True  # Signal a rescan of all drives.
+    autoRefresh = True  # Signal recurring rescan of all drives.
+    autoRefreshDelaySecs = 60  # Time between auto-rescan of all drives.
     messageBarContents = ""
 
     exitFlag = False
+    lastRefresh = time.time()
     while not exitFlag:
+        # Check if auto-refresh should be triggered.
+        if autoRefresh and (time.time() - lastRefresh) > autoRefreshDelaySecs:
+            refreshDevices = True
+
         # Rescan the drives if signaled to.
         if refreshDevices:
             # Reset the signal flag.
@@ -136,6 +143,8 @@ def main(screen):
                 # Place the selector on the first item if the selector is currently absent.
                 if selector == SELECTOR_ABSENT:
                     selector = 0
+            lastRefresh = time.time()
+            redrawScreen = True
 
         # Draw the screen if anything has changed.
         if redrawScreen:
