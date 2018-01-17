@@ -55,7 +55,7 @@ CW_CONNECTOR = 4
 CW_GSENSE = 5
 CW_DRIVE_TYPE = 4
 CW_HOURS = 6
-CW_MODEL = 20
+CW_MODEL = 24
 CW_PATH = 8
 CW_REALLOC = 7
 CW_SERIAL = 18
@@ -120,8 +120,8 @@ class Drive(object):
             self.connector = "USB"
             return  # Don't bother reading smartctl output if it's a USB device.
 
-        self.serial = capture(r"Serial Number:\s*(\w+)", self.smartctlOutput)
-        self.model = capture(r"Device Model:\s*(\w+)", self.smartctlOutput)
+        self.serial = capture(r"Serial Number:\s*(.+)", self.smartctlOutput)
+        self.model = capture(r"Device Model:\s*(.+)", self.smartctlOutput)
 
         # Search for SMART status code in smartctl output.
         smartStatusCodeSearch = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
