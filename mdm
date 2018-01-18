@@ -24,6 +24,9 @@
 #   Look for discrepancies in drive hours. Isn't there a bunch of ridiculously low-hour Fujitsu's? Do their logged
 #       tests show different hours from their attribute #9?
 #   Check if drives' hours in the test logs and attribute #9 are consistent.
+# The rapid keypress detector can be triggered by pressing keys during a refresh. Fix that.
+# Add the completion percentage to the status columnn (as reported by the smart status code) and also the estimated
+#   time to completion based on the estimate given at the start of a test.
 
 # Moderate Priority To Do:
 # Show gsense.
