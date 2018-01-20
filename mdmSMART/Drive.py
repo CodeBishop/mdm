@@ -181,7 +181,7 @@ class Drive(object):
                         break
 
         # Look for drive size.
-        self.capacity = capture(r"User Capacity:[\d,\w\s]*\[([\w\s]+)\]", self.smartctlOutput)
+        self.capacity = capture(r"User Capacity:\s*.*\[(.*)\]", self.smartctlOutput)
 
         # Look for self-test log.
         startOfTestHistory = firstMatchPosition("SMART Self-test log structure", self.smartctlOutput)
