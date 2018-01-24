@@ -83,6 +83,7 @@
 # history that flags past failed long scans and tells you if no long scan ever done.
 # ability to long-test all
 #   Consider going to a full-screen interactive interface. Since nano text editor runs you know it's possible.
+# Make the message area show what was searched for. Especially if the search fails.
 
 
 from deviceWrapper import *
