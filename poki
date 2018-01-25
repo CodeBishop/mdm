@@ -76,13 +76,15 @@
 #   Figure out why the progress column still puts the % to the far right.
 #   Add a selected column to highlight which drives are selected (for shells that don't support color).
 #   See if there's a way to make sysrescue support background color.
+#   Think about column width. Right now you're punching through the right-side screen border.
 
 
 # High Priority TO DO
 # -------------------
+# Flag past failed scans in the columns somewhere. Maybe replace the WHEN_FAIL column with a general purpose
+#   "alert" column.
 # history that flags past failed long scans and tells you if no long scan ever done.
-# ability to long-test all
-#   Consider going to a full-screen interactive interface. Since nano text editor runs you know it's possible.
+# Add the ability to long-test all. Maybe as shift-L?
 # Make the message area show what was searched for. Especially if the search fails.
 
 
