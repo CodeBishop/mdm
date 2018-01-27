@@ -74,7 +74,7 @@ SELECTOR_ABSENT = -1
 NO_KEYS_PRESSED = -1
 ESCAPE_KEY = 27
 ENTER_KEY = 10
-RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds between two getch() calls for input to be considered user-based.
+RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds to distinguish keyboard from barcode scanner.
 SEARCH_PROMPT = "Find: "
 
 # Before initializing curses, remove the Esc key delay from the OS environment.

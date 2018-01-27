@@ -18,6 +18,8 @@ DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_H
 numberOfPossibleDriveStates = 8
 DR_STATE_UNKNOWN, DR_STATE_IDLE, DR_STATE_QUERYING, DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING,\
     DR_STATE_WIPING, DR_STATE_FAILED = range(numberOfPossibleDriveStates)
+
+# Status descriptions.
 DR_STATE_MSG = [None] * numberOfPossibleDriveStates  # Create empty list of given size.
 DR_STATE_MSG[DR_STATE_UNKNOWN] = "Unknown"
 DR_STATE_MSG[DR_STATE_IDLE] = "Idle"
@@ -272,7 +274,11 @@ class Drive(object):
         description += leftColumn(str(self.hours), CW_HOURS)
         description += leftColumn(str(self.GSenseCount), CW_GSENSE)
         description += whenFailedStatus
-        description += leftColumn(DR_STATE_MSG[self.state], CW_STATE)
+        stateDesc = DR_STATE_MSG[self.state]
+        if self.smartStatusCode >= 241 and self.smartStatusCode <= 249:
+            completion = (250 - self.smartStatusCode) * 10
+            stateDesc += " " + str(completion) + "%"
+        description += leftColumn(stateDesc, CW_STATE)
 
         return description
 
