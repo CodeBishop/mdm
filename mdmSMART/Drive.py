@@ -42,10 +42,9 @@ NUMBER_OF_SMARTCTL_STATE_CODES = 256
 
 # Smart test status codes.
 SMART_CODE_IDLE = 0  # Drive is not smart testing.
+SMART_CODE_ABORTED = [16, 24, 25]  # Drive is idle and most recent test was aborted by user.
 SMART_CODE_INTERRUPTED = 32  # Drive is idle and most recent test was interrupted before completion.
 SMART_CODE_INTERRUPTED2 = 33  # Drive is idle and most recent test was interrupted before completion.
-SMART_CODE_ABORTED = 24  # Drive is idle and most recent test was aborted by user.
-SMART_CODE_ABORTED2 = 25  # Drive is idle and most recent test was aborted by user.
 SMART_CODE_READ_FAILURE = 118  # Drive failed most recent test with read failure.
 
 # Attribute ID numbers.
@@ -139,8 +138,8 @@ class Drive(object):
         else:
             self.smartStatusCode = int(smartStatusCodeSearch)
             # Determine device state based on whether smartctl reports a test-in-progress.
-            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED, SMART_CODE_INTERRUPTED2,
-                                        SMART_CODE_ABORTED, SMART_CODE_ABORTED2]:
+            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED, SMART_CODE_INTERRUPTED2] + \
+                    SMART_CODE_ABORTED:
                 self.state = DR_STATE_IDLE
             else:
                 # If the type of test being run is not already known then just record it state unknown.
