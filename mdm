@@ -14,7 +14,6 @@
 #       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
 # High Priority To Do:
-# Make the program auto-refresh every 5 minutes or so.
 # Figure out why there's a blank line after the test history header. Is the first item in the list blank?
 # See if there's a quick way to make the program reverse color text on devices that just finished a test.
 # Show number of hours.
