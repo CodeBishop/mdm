@@ -14,18 +14,19 @@
 #       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
 # High Priority To Do:
+# Add support for having hdparm do secure wiping. This may even skip the bus and run faster than DBAN but
+#   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
+#        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
 # Figure out why there's a blank line after the test history header. Is the first item in the list blank?
 # See if there's a quick way to make the program reverse color text on devices that just finished a test.
-# Show number of hours.
-#   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
-#       Some Maxtor's record attribute #9 in minutes not hours (correctable by '-v 9,minutes').
-#       Some Fujitsu's record attribute #9 in seconds not hours (correctable by '-v 9,seconds').
-#   Look for discrepancies in drive hours. Isn't there a bunch of ridiculously low-hour Fujitsu's? Do their logged
-#       tests show different hours from their attribute #9?
-#   Check if drives' hours in the test logs and attribute #9 are consistent.
+# Check SMART test history for hours if attribute #9 is missing, then write is as ">9843hrs" to imply that it's
+#   a minimum.
 # The rapid keypress detector can be triggered by pressing keys during a refresh. Fix that.
-# Add the completion percentage to the status columnn (as reported by the smart status code) and also the estimated
-#   time to completion based on the estimate given at the start of a test.
+# Highlight drives that have completed and color them depending on whether they're good or bad.
+# Add support for long testing all the drives at once.
+# Add a key for disabling auto-refresh.
+# Refresh currently hides the drive's previous data until it completes a fresh smartctl call. This is annoying
+#   and should be changed so that the old data will still be shown.
 
 # Moderate Priority To Do:
 # Show gsense.
@@ -46,6 +47,13 @@
 # Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
 # Add the ability to abort a test-in-progress.
+# Show number of hours.
+#   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
+#       Some Maxtor's record attribute #9 in minutes not hours (correctable by '-v 9,minutes').
+#       Some Fujitsu's record attribute #9 in seconds not hours (correctable by '-v 9,seconds').
+#   Look for discrepancies in drive hours. Isn't there a bunch of ridiculously low-hour Fujitsu's? Do their logged
+#       tests show different hours from their attribute #9?
+#   Check if drives' hours in the test logs and attribute #9 are consistent.
 
 # Low (long-term) Priority To Do:
 # Rewrite the section of code that reads the attribute table. It's a pair of for-loops right now and clunky.
@@ -81,7 +89,7 @@ os.environ.setdefault('ESCDELAY', '0')
 
 # Check for root.
 if not os.getuid() == 0:
-    print "Only user ID #0 (root) can run this program"
+    print("Only user ID #0 (root) can run this program")
     exit(1)
 
 
@@ -90,7 +98,7 @@ def main2(stdscr):
     # curses.start_color()
     curses.use_default_colors()
     for i in range(0, curses.COLORS):
-        curses.init_pair(i + 1, i, -1)
+        curses.init_pair(i + 1, i, i-1)
     stdscr.addstr(0, 0, '{0} colors available'.format(curses.COLORS))
     maxy, maxx = stdscr.getmaxyx()
     maxx = maxx - maxx % 5
@@ -382,4 +390,4 @@ def findAllDrives():
     return devices
 
 
-curses.wrapper(main)
+curses.wrapper(main2)
