@@ -1,9 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 # Multi-Drive Manager (mdm)
+###########################
 # A utility for managing the simultaneous S.M.A.R.T. testing and secure wiping of multiple data storage devices.
 
+
 # Misc Notes
+############
 # Summary of sysrescue display differences.
 #   The terminal does not get restored when a curses program ends. The prompt re-appears at the bottom
 #       and the screen remains cluttered with whatever was on display.
@@ -13,6 +16,14 @@
 #   Characters known to appear in smartctl output:
 #       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
+
+# High Priority TO DO
+#####################
+# Flag past failed scans in the columns somewhere. Maybe replace the WHEN_FAIL column with a general purpose
+#   "alert" column.
+# history that flags past failed long scans and tells you if no long scan ever done.
+# Add the ability to long-test all. Maybe as shift-L?
+# Make the message area show what was searched for. Especially if the search fails.
 # High Priority To Do:
 # Add support for having hdparm do secure wiping. This may even skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
@@ -28,7 +39,8 @@
 # Refresh currently hides the drive's previous data until it completes a fresh smartctl call. This is annoying
 #   and should be changed so that the old data will still be shown.
 
-# Moderate Priority To Do:
+# Moderate Priority To Do
+#########################
 # Show gsense.
 # Make F5 work for refresh also.
 # Search for "SMART Self-test Log not supported" and differentiate reporting that from reporting a drive that
@@ -55,7 +67,8 @@
 #       tests show different hours from their attribute #9?
 #   Check if drives' hours in the test logs and attribute #9 are consistent.
 
-# Low (long-term) Priority To Do:
+# Low (long-term) Priority To Do
+################################
 # Rewrite the section of code that reads the attribute table. It's a pair of for-loops right now and clunky.
 # Make the program detect if smartmontools is not installed so it can advise the user to install it.
 # Make the program work under Windows and Mac OS.

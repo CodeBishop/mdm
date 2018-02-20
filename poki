@@ -79,13 +79,6 @@
 #   Think about column width. Right now you're punching through the right-side screen border.
 
 
-# High Priority TO DO
-# -------------------
-# Flag past failed scans in the columns somewhere. Maybe replace the WHEN_FAIL column with a general purpose
-#   "alert" column.
-# history that flags past failed long scans and tells you if no long scan ever done.
-# Add the ability to long-test all. Maybe as shift-L?
-# Make the message area show what was searched for. Especially if the search fails.
 
 
 from deviceWrapper import *
