@@ -379,7 +379,7 @@ def searchDevices(searchString, devices):
             matchingDevices.append(devices[i])
             selector = i  # Set selector to matching drive.
     if len(matchingDevices) == 0:
-        message = "No drives matched search string."
+        message = "No drives matched search string: " + searchString
     if len(matchingDevices) >= 2:
         message = "Search matched multiple drives:"
         for device in matchingDevices:
@@ -403,4 +403,4 @@ def findAllDrives():
     return devices
 
 
-curses.wrapper(main2)
+curses.wrapper(main)
