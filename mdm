@@ -126,6 +126,15 @@ def main2(stdscr):
                 y += 1
     except curses.ERR:
         pass
+    stdscr.addstr(10, 10, " NORMAL ")
+    stdscr.addstr(11, 10, " REVERSE ", curses.A_REVERSE)
+    stdscr.addstr(12, 10, " BLINK ", curses.A_BLINK)
+    stdscr.addstr(13, 10, " BOLD ", curses.A_BOLD)
+    stdscr.addstr(14, 10, " DIM ", curses.A_DIM)
+    stdscr.addstr(15, 10, " STANDOUT ", curses.A_STANDOUT)
+    stdscr.addstr(16, 10, " UNDERLINE ", curses.A_UNDERLINE)
+    stdscr.addstr(17, 10, " COLOR! ", curses.color_pair(1))
+
     stdscr.getch()
 
 
@@ -134,7 +143,6 @@ def main(screen):
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
     searchString = ""
     searchModeFlag = False  # Toggle search mode (as versus command mode).
-    displayTestFlag = False  # Toggle a display properties test.
     redrawScreen = True  # Signal a screen redraw/refresh.
     refreshDevices = True  # Signal a rescan of all drives.
     autoRefresh = True  # Signal recurring rescan of all drives.
@@ -190,7 +198,7 @@ def main(screen):
             if searchModeFlag:
                 screen.addstr(POS_BY, POS_BX, SEARCH_PROMPT + searchString)
             else:
-                screen.addstr(POS_BY, POS_BX, "(f)ind (d)isplay test (r)efresh (s)hort test (l)ong test (a)bort test (q)uit")
+                screen.addstr(POS_BY, POS_BX, "(f)ind (r)efresh (s)hort test (l)ong test (L)ong test all (a)bort test (q)uit")
 
             # Print the message bar.
             screen.addstr(POS_MY, POS_MX, messageBarContents)
@@ -214,7 +222,7 @@ def main(screen):
 
                 # Print the current smartctl testing status.
                 if device.connector == "USB":
-                    screen.addstr(posY, posX, "Smartctl firmware was not reachable through USB interface.")
+                    screen.addstr(posY, posX, "SMART firmware was not reachable through USB interface.")
                 else:
                     if device.smartStatusCode == SMART_STATUS_CODE_NOT_INITIALIZED:
                         smartTestStateMsg = SMART_STATUS_CODE_NOT_FOUND_MSG
@@ -246,17 +254,6 @@ def main(screen):
                     screen.addstr(posY, posX, "No history of SMART tests found for " + deviceName)
                     posY += 1  # Increment vertical cursor
                 posY += 1  # Add a blank line before next section of info.
-
-            # Draw displaying testing stuff if that mode is active.
-            if displayTestFlag:
-                screen.addstr(10, 10, " NORMAL ")
-                screen.addstr(11, 10, " REVERSE ", curses.A_REVERSE)
-                screen.addstr(12, 10, " BLINK ", curses.A_BLINK)
-                screen.addstr(13, 10, " BOLD ", curses.A_BOLD)
-                screen.addstr(14, 10, " DIM ", curses.A_DIM)
-                screen.addstr(15, 10, " STANDOUT ", curses.A_STANDOUT)
-                screen.addstr(16, 10, " UNDERLINE ", curses.A_UNDERLINE)
-                screen.addstr(17, 10, " COLOR! ", curses.color_pair(1))
 
             # Show the cursor when in search mode and hide it the rest of the time.
             if searchModeFlag:
@@ -325,22 +322,29 @@ def main(screen):
                     if keypress == ord('f'):
                         searchModeFlag = True
 
-                    if keypress == ord('d'):
-                        displayTestFlag = not displayTestFlag
-
                     if keypress == ord('s'):
                         if selector is not SELECTOR_ABSENT:
                             # Start the test, refresh the drive and redraw the screen.
                             devices[selector].runShortTest()
-                            devices[selector] = Drive(devices[selector].devicePath)
+                            devices[selector].initiateQuery()# = Drive(devices[selector].devicePath)
                             redrawScreen = True
 
                     if keypress == ord('l'):
                         if selector is not SELECTOR_ABSENT:
                             # Start the test, refresh the drive and redraw the screen.
                             devices[selector].runLongTest()
-                            devices[selector] = Drive(devices[selector].devicePath)
+                            devices[selector].initiateQuery()# = Drive(devices[selector].devicePath)
                             redrawScreen = True
+
+                    if keypress == ord('L'):
+                        if selector is not SELECTOR_ABSENT:
+                            # Start the tests, refresh the drives and redraw the screen.
+                            for device in devices:
+                                if device.connector != "USB":
+                                    device.runLongTest()
+                                    device.initiateQuery()
+                            redrawScreen = True
+
 
                     if keypress == ord('a'):
                         if selector is not SELECTOR_ABSENT:
@@ -408,4 +412,4 @@ def findAllDrives():
     return devices
 
 
-curses.wrapper(main)
+curses.wrapper(main2)
