@@ -345,7 +345,6 @@ def main(screen):
                                     device.initiateQuery()
                             redrawScreen = True
 
-
                     if keypress == ord('a'):
                         if selector is not SELECTOR_ABSENT:
                             devices[selector].abortTest()
@@ -412,4 +411,4 @@ def findAllDrives():
     return devices
 
 
-curses.wrapper(main2)
+curses.wrapper(main)

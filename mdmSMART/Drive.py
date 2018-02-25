@@ -276,7 +276,8 @@ class Drive(object):
         description += leftColumn(str(self.GSenseCount), CW_GSENSE)
         description += whenFailedStatus
         stateDesc = DR_STATE_MSG[self.state]
-        if self.smartStatusCode >= 241 and self.smartStatusCode <= 249:
+        if self.state in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING] and \
+           241 <= self.smartStatusCode <= 249:
             completion = (250 - self.smartStatusCode) * 10
             stateDesc += " " + str(completion) + "%"
         description += leftColumn(stateDesc, CW_STATE)
