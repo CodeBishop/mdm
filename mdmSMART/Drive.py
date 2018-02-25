@@ -94,7 +94,6 @@ class Drive(object):
 
         # Start a smartctl process so the device fields can be filled.
         self.initiateQuery()
-        # self.load(devicePath)  # DEBUG: Old way of doing things by using PySmart.
 
     # Run a smartctl process to get latest device info.
     def initiateQuery(self):
@@ -187,13 +186,16 @@ class Drive(object):
         # Look for self-test log.
         startOfTestHistory = firstMatchPosition("SMART Self-test log structure", self.smartctlOutput)
         if startOfTestHistory is not SEARCH_FAILED:
+            self.testHistory = list()  # Reset test history.
             linesFromTestLogStart = self.smartctlOutput[startOfTestHistory:].split('\n')
             self.testHistoryHeader = linesFromTestLogStart[1]  # Header is first line after search match.
             for line in linesFromTestLogStart:
+                # For each test result (lines that start with a # sign).
                 if len(line) > 0 and line[0] == '#':  # Test result lines start with a pound sign.
                     self.testHistory.append(line)
 
         # Get the drive attributes.
+        self.importantAttributes = list()  # Reset attribute list.
         for i in range(len(self.smartctlLines)):
             # Look for the start of the attributes section.
             if self.smartctlLines[i] == "Vendor Specific SMART Attributes with Thresholds:":

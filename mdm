@@ -131,7 +131,6 @@ def main2(stdscr):
 
 def main(screen):
     initCurses(screen)  # Set parameters of curses environment.
-    devices = list()
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
     searchString = ""
     searchModeFlag = False  # Toggle search mode (as versus command mode).
@@ -141,6 +140,9 @@ def main(screen):
     autoRefresh = True  # Signal recurring rescan of all drives.
     autoRefreshDelaySecs = 60  # Time between auto-rescan of all drives.
     messageBarContents = ""
+
+    # Build initial list of drives.
+    devices = findAllDrives()
 
     exitFlag = False
     lastRefresh = time.time()
@@ -153,19 +155,22 @@ def main(screen):
         if refreshDevices:
             # Reset the signal flag.
             refreshDevices = False
-            # Rescan the drives
-            devices = findAllDrives()
-            # Remove the selector if the device list is now empty.
-            if len(devices) == 0:
-                selector = SELECTOR_ABSENT
-            # If the device list is not empty then check the selector position.
-            else:
-                # Bump selector to the end of the device list if it was pointing beyond it.
-                if selector >= len(devices):
-                    selector = len(devices) - 1
-                # Place the selector on the first item if the selector is currently absent.
-                if selector == SELECTOR_ABSENT:
-                    selector = 0
+            for device in devices:
+                device.initiateQuery()
+            # DEBUG: All this code becomes irrelevant is refreshing can't remove drives.
+            # # Rescan the drives
+            # devices = findAllDrives()
+            # # Remove the selector if the device list is now empty.
+            # if len(devices) == 0:
+            #     selector = SELECTOR_ABSENT
+            # # If the device list is not empty then check the selector position.
+            # else:
+            #     # Bump selector to the end of the device list if it was pointing beyond it.
+            #     if selector >= len(devices):
+            #         selector = len(devices) - 1
+            #     # Place the selector on the first item if the selector is currently absent.
+            #     if selector == SELECTOR_ABSENT:
+            #         selector = 0
             lastRefresh = time.time()
             redrawScreen = True
 
