@@ -170,7 +170,7 @@ def main(screen):
             redrawScreen = False
 
             # Clear the screen
-            screen.clear()
+            screen.erase()
             screen.border(0)
 
             # Print the program title.
