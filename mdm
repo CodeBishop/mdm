@@ -138,6 +138,7 @@ def main(screen):
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
     searchString = ""
     searchModeFlag = False  # Toggle search mode (as versus command mode).
+    barcodeScanDetection = False  # Treat rapid keypresses as barcode scans to be searched.
     redrawScreen = True  # Signal a screen redraw/refresh.
     refreshDevices = True  # Signal a rescan of all drives.
     autoRefresh = True  # Signal recurring rescan of all drives.
@@ -255,24 +256,8 @@ def main(screen):
             # Assume the screen will need to be redrawn anytime a key is pressed.
             redrawScreen = True
 
-            # In search mode most keys should be added to the search string until Esc or Enter are pressed.
-            if searchModeFlag:
-                if keypress == ESCAPE_KEY:
-                    searchString = ""
-                    searchModeFlag = False
-                elif keypress == ENTER_KEY:
-                    selector, messageBarContents = searchDevices(searchString, devices)
-                    searchModeFlag = False
-                    searchString = ""  # Clear the search string after each search.
-                elif keypress == curses.KEY_BACKSPACE:
-                    searchString = searchString[:-1]
-                elif keypress < 256:  # ASCII keys get added to search.
-                    searchString += curses.keyname(keypress)
-                else:
-                    pass  # All other keys are ignored in search mode.
-
-            # When not in search mode, all keys are interpreted as commands.
-            else:
+            # Test for rapid keypresses if barcode scanner detection is enabled.
+            if barcodeScanDetection:
                 # Pause briefly to see if another keypress happens rapidly enough to imply barcode scanning.
                 millisecondsElapsed = 0
                 startTime = time.time()
@@ -286,56 +271,73 @@ def main(screen):
                         break
                     millisecondsElapsed = int((time.time() - startTime) * 1000)
 
-                # Check again that search mode has not been triggered by rapid keypresses.
-                if not searchModeFlag:
-                    # If a drive list is present then check for cursor keys.
-                    if len(devices) > 0:
-                        if keypress == curses.KEY_DOWN:
-                            selector = (selector + 1) % len(devices)
-                        if keypress == curses.KEY_UP:
-                            selector = (selector - 1) % len(devices)
-                    else:
-                        selector = SELECTOR_ABSENT
+            # In search mode most keys should be added to the search string until Esc or Enter are pressed.
+            if searchModeFlag:
+                if keypress == ESCAPE_KEY:
+                    searchString = ""
+                    searchModeFlag = False
+                elif keypress == ENTER_KEY:
+                    if len(searchString) > 0:
+                        selector, messageBarContents = searchDevices(searchString, devices)
+                    searchModeFlag = False
+                    searchString = ""  # Clear the search string after each search.
+                elif keypress == curses.KEY_BACKSPACE:
+                    searchString = searchString[:-1]
+                elif keypress < 256:  # ASCII keys get added to search.
+                    searchString += curses.keyname(keypress)
+                else:
+                    pass  # All other keys are ignored in search mode.
 
-                    if keypress == ESCAPE_KEY:
-                        selector = SELECTOR_ABSENT
+            # When not in search mode, all keys are interpreted as commands.
+            else:
+                # If a drive list is present then check for cursor keys.
+                if len(devices) > 0:
+                    if keypress == curses.KEY_DOWN:
+                        selector = (selector + 1) % len(devices)
+                    if keypress == curses.KEY_UP:
+                        selector = (selector - 1) % len(devices)
+                else:
+                    selector = SELECTOR_ABSENT
 
-                    if keypress == ord('f'):
-                        searchModeFlag = True
+                if keypress == ESCAPE_KEY:
+                    selector = SELECTOR_ABSENT
 
-                    if keypress == ord('s'):
-                        if selector is not SELECTOR_ABSENT:
-                            # Start the test, refresh the drive and redraw the screen.
-                            devices[selector].runShortTest()
-                            devices[selector].initiateQuery()# = Drive(devices[selector].devicePath)
-                            redrawScreen = True
+                if keypress == ord('f'):
+                    searchModeFlag = True
 
-                    if keypress == ord('l'):
-                        if selector is not SELECTOR_ABSENT:
-                            # Start the test, refresh the drive and redraw the screen.
-                            devices[selector].runLongTest()
-                            devices[selector].initiateQuery()# = Drive(devices[selector].devicePath)
-                            redrawScreen = True
+                if keypress == ord('s'):
+                    if selector is not SELECTOR_ABSENT:
+                        # Start the test, refresh the drive and redraw the screen.
+                        devices[selector].runShortTest()
+                        devices[selector].initiateQuery()# = Drive(devices[selector].devicePath)
+                        redrawScreen = True
 
-                    if keypress == ord('L'):
-                        if selector is not SELECTOR_ABSENT:
-                            # Start the tests, refresh the drives and redraw the screen.
-                            for device in devices:
-                                if device.connector != "USB":
-                                    device.runLongTest()
-                                    device.initiateQuery()
-                            redrawScreen = True
+                if keypress == ord('l'):
+                    if selector is not SELECTOR_ABSENT:
+                        # Start the test, refresh the drive and redraw the screen.
+                        devices[selector].runLongTest()
+                        devices[selector].initiateQuery()# = Drive(devices[selector].devicePath)
+                        redrawScreen = True
 
-                    if keypress == ord('a'):
-                        if selector is not SELECTOR_ABSENT:
-                            devices[selector].abortTest()
-                        refreshDevices = redrawScreen = True
+                if keypress == ord('L'):
+                    if selector is not SELECTOR_ABSENT:
+                        # Start the tests, refresh the drives and redraw the screen.
+                        for device in devices:
+                            if device.connector != "USB":
+                                device.runLongTest()
+                                device.initiateQuery()
+                        redrawScreen = True
 
-                    if keypress == ord('r'):
-                        refreshDevices = redrawScreen = True
+                if keypress == ord('a'):
+                    if selector is not SELECTOR_ABSENT:
+                        devices[selector].abortTest()
+                    refreshDevices = redrawScreen = True
 
-                    if keypress == ord('q'):
-                        exitFlag = True
+                if keypress == ord('r'):
+                    refreshDevices = redrawScreen = True
+
+                if keypress == ord('q'):
+                    exitFlag = True
 
         # Check if any drives have a smartctl query in progress.
         for device in devices:

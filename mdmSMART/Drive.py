@@ -118,7 +118,7 @@ class Drive(object):
     def interpretSmartctlOutput(self):
         if re.search("Unknown USB bridge", self.smartctlOutput):
             self.connector = "USB"
-            return  # Don't bother reading smartctl output if it's a USB device.
+            return  # Don't bother reading smartctl output if it's an unbridged USB device.
 
         self.serial = capture(r"Serial Number:\s*(.+)", self.smartctlOutput)
         self.model = capture(r"Device Model:\s*(.+)", self.smartctlOutput)
