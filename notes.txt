@@ -12,3 +12,18 @@ Potential Commands
     All drives wipe.
     All drives long scan and if pass then wipe.
 
+
+Redoing Drive Table Drawing
+---------------------------
+buildDriveTable()
+    This method fully understand what Drives are. It's tightly coupled to that data structure.
+    It inserts color coding into the strings based on value tolerances.
+drawTable(String table[][], TableLayout layout, topLeft, width, height)
+    Knows nothing about Drives.
+    Draws strings at screen positions based on TableLayout instances.
+    Truncates strings to the column widths specified in TableLayout and adds an ellipsis to.
+    Understands color codes and uses them when making its curses.putStr() calls.
+ColoredString
+    length(): Returns the length of the string, not including color codes.
+    subset(start, end): Returns a section of a string, including color codes, but indexes without them.
+
