@@ -26,4 +26,5 @@ drawTable(String table[][], TableLayout layout, topLeft, width, height)
 ColoredString
     length(): Returns the length of the string, not including color codes.
     subset(start, end): Returns a section of a string, including color codes, but indexes without them.
-
+drawColoredString(x, y, string)
+    Draws a color-coded string at a given location.
