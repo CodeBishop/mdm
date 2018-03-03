@@ -12,19 +12,34 @@ Potential Commands
     All drives wipe.
     All drives long scan and if pass then wipe.
 
+Things That Should Possible When Drawing the Drive Table
+--------------------------------------------------------
+    Re-arrange the column ordering.
+    Set individual column widths.
+    Turn columns off or on.
+    Move the top-left corner position.
+    Specify a box (max width and height) that it won't overflow.
+    Make it scrollable?
 
 Redoing Drive Table Drawing
 ---------------------------
 buildDriveTable()
-    This method fully understand what Drives are. It's tightly coupled to that data structure.
-    It inserts color coding into the strings based on value tolerances.
-drawTable(String table[][], TableLayout layout, topLeft, width, height)
+    This method fully understand what Drives are. It's tightly coupled to that class.
+    It does not know the column widths, it just creates a 2-D array of ColoredString objects.
+    Inserts color coding into the strings based on value tolerances.
+    Determines the column ordering and which columns exist.
+    Writes the columns header.
+drawTable(String table[][], TableLayout layout, x, y, width, height)
     Knows nothing about Drives.
-    Draws strings at screen positions based on TableLayout instances.
-    Truncates strings to the column widths specified in TableLayout and adds an ellipsis to.
+    Draws strings at screen positions based on TableLayout description.
+    Truncates strings to the column widths specified in TableLayout and adds an ellipsis if needed.
     Understands color codes and uses them when making its curses.putStr() calls.
+    Truncates strings and table rows to fit within the given width and height restrictions.
 ColoredString
     length(): Returns the length of the string, not including color codes.
     subset(start, end): Returns a section of a string, including color codes, but indexes without them.
 drawColoredString(x, y, string)
     Draws a color-coded string at a given location.
+TableLayout
+    Has column widths but no understanding of what's in those columns.
+    Has no connection to the Drive class.
