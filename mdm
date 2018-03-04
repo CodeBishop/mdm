@@ -4,7 +4,6 @@
 ###########################
 # A utility for managing the simultaneous S.M.A.R.T. testing and secure wiping of multiple data storage devices.
 
-
 # Misc Notes
 ############
 # Summary of sysrescue display differences.
@@ -76,7 +75,6 @@ import time
 import os
 
 from mdmSMART.Drive import *
-
 
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
@@ -395,4 +393,4 @@ def findAllDrives():
     return devices
 
 
-curses.wrapper(main)
+curses.wrapper(main2)
