@@ -35,9 +35,10 @@ drawTable(String table[][], TableLayout layout, x, y, width, height)
     Truncates strings to the column widths specified in TableLayout and adds an ellipsis if needed.
     Understands color codes and uses them when making its curses.putStr() calls.
     Truncates strings and table rows to fit within the given width and height restrictions.
+    Should probably draw to a curses.Pad and then paste the pad onto the screen.
 ColoredString
     length(): Returns the length of the string, not including color codes.
-    subset(start, end): Returns a section of a string, including color codes, but indexes without them.
+    subset(start, end): Returns a section of a string, including color codes but indexed without them.
 drawColoredString(x, y, string)
     Draws a color-coded string at a given location.
 TableLayout
