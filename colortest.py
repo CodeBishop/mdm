@@ -6,7 +6,7 @@ from mdmSMART.utils import *
 
 def main(stdscr):
     setupCursesUtils(stdscr)
-    printAt(20, 20, "TEST", curses.COLOR_BLUE)
+    printAt(20, 20, "nothing%%%1Red%%%2Green")
     # curses.start_color()
     # curses.use_default_colors()
     for i in range(1, 8):

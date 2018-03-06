@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 # A collection of utility functions and classes for MDM (Multi-Drive Manager)
-import os
-import re
-import subprocess
+# import os
+# import re
+# import subprocess
 import curses
 
 # Utility function constants.
@@ -13,17 +13,13 @@ import curses
 # DEVNULL = open(os.devnull, 'w')
 
 CEC = "%%%"  # Escape code for colored or special text.
-CECLEN = len(CEC) + 1  # Total length of an escape code.
+CECLEN = 1  # Number of chars after a color escape code.
 
 utilsWindow = None
 
 
-class ColoredString:
-    def __init__(self, text):
-        self.text = text
-
-    def length(self):
-        return len(self.text) - self.text.count(CEC) * CECLEN
+def CECStringLength(test):
+    return len(text) - text.count(CEC) * (len(CEC) + CECLEN)
 
 
 def setPrintWindow(activeWindow):
@@ -39,9 +35,20 @@ def setupCursesUtils(activeWindow):
 
 
 def printAt(x, y, text):
-    utilsWindow.addstr(x, y, text, curses.color_pair(color))
     # Split the string into a list of tuples of length, text and color/attribute)
-    # Loop through the list printing.
+    strings = text.split(CEC)
+
+    # Lay down first portion of string in plain color
+    utilsWindow.addstr(y, x, strings[0], curses.A_BOLD)
+    x += len(strings[0])
+
+    # Lay down all subsequent strings based on their first character (which should be their CEC value).
+    for i in range(1, len(strings)):
+        if len(strings[i]) >= CECLEN:
+            colorCode = strings[i][0:CECLEN]
+            cursesCode = curses.color_pair(int(colorCode)) | curses.A_BOLD
+            utilsWindow.addstr(y, x, strings[i][1:], cursesCode)
+        x += len(strings[i]) - CECLEN
 
 
 # def firstMatchPosition(searchString, text):
