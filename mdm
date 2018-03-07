@@ -22,12 +22,9 @@
 # Eliminate the use of Drive.oneLineSummary() from mdm because it doesn't allow for embedded color-highlighting
 #   and Drive shouldn't really be responsible for any form of screen rendering anyways.
 #       Then decruft: Move the column width constants out of Drive.py and delete Drive.oneLineSummary()
-# Flag past failed scans in the columns somewhere. Maybe replace the WHEN_FAIL column with a general purpose
-#   "alert" column.
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
 #        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
-# Figure out why there's a blank line after the test history header. Is the first item in the list blank?
 # See if there's a quick way to make the program reverse color text on devices that just finished a test.
 # The rapid keypress detector can be triggered by pressing keys during a refresh. Fix that.
 # Highlight drives that have completed and color them depending on whether they're good or bad.
@@ -81,8 +78,8 @@ POS_BX = 1  # Left side of search/help bar.
 POS_BY = 3  # Top side of search/help bar.
 POS_MX = 1  # Left side of message bar.
 POS_MY = 5  # Top side of message bar.
-POS_DLX = 8  # Left side of drive list.
-POS_DLY = 8  # Top side of drive list.
+POS_DTX = 6  # Left side of drive table.
+POS_DTY = 7  # Top side of drive table.
 
 SELECTOR_ABSENT = -1
 NO_KEYS_PRESSED = -1
@@ -157,24 +154,21 @@ def main(screen):
             screen.addstr(POS_MY, POS_MX, messageBarContents)
 
             # Print the drive list.
-            # screen.addstr(POS_DLY - 1, POS_DLX, summaryHeader())
-            # for y in range(len(devices)):
-            #     screen.addstr(POS_DLY + y, POS_DLX, devices[y].oneLineSummary())
-            table = buildDriveTable(devices)
-            screenHeight, screenWidth = screen.getmaxyx()
-            drawTable(table, columnWidths, POS_DLX, POS_DLY, screenWidth - POS_DLX, screenHeight - POS_DLY)
+            table = buildDriveTable(devices)  # Construct a table of attribute text from the drive list.
+            screenHeight, screenWidth = screen.getmaxyx()  # Get limitations of screen size.
+            drawTable(table, columnWidths, POS_DTX, POS_DTY, screenWidth - POS_DTX, screenHeight - POS_DTY)
 
             # If a drive is currently selected.
             if selector is not SELECTOR_ABSENT:
                 # Draw the selector.
-                screen.addstr(POS_DLY + selector + 1, POS_DLX - 4, "-->")
+                screen.addstr(POS_DTY + selector + 1, POS_DTX - 4, "-->")
 
                 # Note the device the selector is pointed at.
                 device = devices[selector]
                 deviceName = device.devicePath  # Refer to the device by its path.
 
                 # Print detailed info for the currently selected device starting from a position below the drive list.
-                posX, posY = 1, POS_DLY + len(devices) + 1
+                posX, posY = 1, POS_DTY + len(devices) + 2
 
                 # Print the current smartctl testing status.
                 if device.connector == "USB":
@@ -201,10 +195,13 @@ def main(screen):
                 # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
                 #       of older tests.
                 if len(device.testHistory) > 0:
-                    screen.addstr(posY, posX, device.testHistoryHeader)
+                    printAt(posX, posY, device.testHistoryHeader)
                     posY += 1  # Increment vertical cursor
                     for testResult in device.testHistory:
-                        screen.addstr(posY + 1, posX, testResult)
+                        if "Completed without error" in testResult:
+                            printAt(posX, posY, testResult)
+                        else:
+                            printAt(posX, posY, CEC_RED + testResult)
                         posY += 1  # Increment vertical cursor.
                 else:
                     screen.addstr(posY, posX, "No history of SMART tests found for " + deviceName)
@@ -329,7 +326,7 @@ def main(screen):
 # Construct a 2D array for drive data, including a header row.
 def buildDriveTable(driveList):
     table = list()
-    table.append(["Path", "Conn", "Type", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "WHENFAIL", "State"])
+    table.append(["Path", "Conn", "Type", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State"])
     for drive in driveList:
         # Make a color-coded string of the reallocated sector count.
         if drive.reallocCount > 0:
@@ -340,7 +337,9 @@ def buildDriveTable(driveList):
             reallocText = str(drive.reallocCount)
 
         # Note whether the device has any failed attributes.
-        if drive.hasFailedAttributes():
+        if drive.hasFailureHistory():
+            whenFailedStatus = CEC_RED + "see below"
+        elif drive.hasFailedAttributes():
             whenFailedStatus = CEC_YELLOW + "see below"
         else:
             whenFailedStatus = "-"

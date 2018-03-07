@@ -296,6 +296,13 @@ class Drive(object):
                 return True
         return False
 
+    # If any past test failed.
+    def hasFailureHistory(self):
+        hasFailures = False
+        for test in self.testHistory:
+            if "Completed without error" not in test:
+                return True
+
 
 #######################################
 # Module functions and static methods #
