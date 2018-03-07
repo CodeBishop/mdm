@@ -91,6 +91,8 @@ ENTER_KEY = 10
 RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds to distinguish keyboard from barcode scanner.
 SEARCH_PROMPT = "Find: "
 
+columnWidths = [8, 4, 4, 8, 24, 21, 7, 6, 5, 10, 15]
+
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
 
@@ -319,6 +321,37 @@ def main(screen):
     # Clear the screen so that curses doesn't leave it's junk on the terminal (only happens on sysrescue machine).
     screen.clear()
     screen.refresh()
+
+
+def buildDriveTable(driveList):
+    # This method fully understand what Drives are. It's tightly coupled to that class.
+    # It does not know the column widths, it just creates a 2-D array of ColoredString objects.
+    # Inserts color coding into the strings based on value tolerances.
+    # Determines the column ordering and which columns exist.
+    # Writes the columns header.
+    table = list()
+    table.append(["Path", "Conn", "Type", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "WHENFAIL", "State"])
+    for drive in driveList:
+        # Make a color-coded string of the reallocated sector count.
+        if drive.reallocCount > 0:
+            reallocText = CEC_RED + str(drive.reallocCount)
+        elif self.reallocCount < 0:
+            reallocText = leftColumn("???", CW_REALLOC)
+        else:
+            reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
+
+        entry = list()
+        entry.append(drive.devicePath)
+        entry.append(drive.connector)
+        entry.append(drive.driveType)
+        entry.append(drive.capacity)
+        entry.append(drive.model)
+        entry.eppend(drive.serial)
+        description += reallocText
+        description += leftColumn(str(self.hours), CW_HOURS)
+        description += leftColumn(str(self.GSenseCount), CW_GSENSE)
+        description += whenFailedStatus
+        stateDesc = DR_STATE_MSG[self.state]
 
 
 # Initialize Curses (set various parameters, etc).

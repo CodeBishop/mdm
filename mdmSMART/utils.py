@@ -12,6 +12,9 @@ SEARCH_FAILED = -1
 CEC = "%%%"  # Escape code for colored or special text.
 CECLEN = 1  # Number of chars after a color escape code.
 
+CEC_RED = CEC + "1"
+CEC_GREEN = CEC + "2"
+
 utilsWindow = None
 
 
@@ -89,6 +92,14 @@ def printAt(x, y, text, length=-1):
             cursesCode = colorCode | curses.A_BOLD | reverseFlag
             utilsWindow.addstr(y, x, strings[i][1:], cursesCode)
         x += len(strings[i]) - CECLEN
+
+
+def drawTable(table, columnWidths, left, top, width, height):
+    for y in range(len(table)):
+        i = 0
+        for x in range(len(table[0])):
+            printAt(left + i, top + y, table[y][x], columnWidths[x])
+            i += columnWidths[x] + 1
 
 
 def firstMatchPosition(searchString, text):

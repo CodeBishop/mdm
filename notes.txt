@@ -29,7 +29,7 @@ buildDriveTable()
     Inserts color coding into the strings based on value tolerances.
     Determines the column ordering and which columns exist.
     Writes the columns header.
-drawTable(String table[][], TableLayout layout, x, y, width, height)
+drawTable(String table[][], columnWidths, x, y, width, height)
     Knows nothing about Drives.
     Draws strings at screen positions based on TableLayout description.
     Truncates strings to the column widths specified in TableLayout and adds an ellipsis if needed.

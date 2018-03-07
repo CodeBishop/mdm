@@ -9,6 +9,11 @@ testString = "nothing%%%1Red%%%2%%%rGreen%%%4%%%rBlue"
 def main(stdscr):
     setupCursesUtils(stdscr)
 
+    table = [["fast", "funky", "%%%1foo"],
+             ["blah", "borsch", "bar"]]
+
+    drawTable(table, [6, 3, 6], 5, 20, 20, 10)
+
     for i in range(1, 8):
         curses.init_pair(i, i, 0)
     # stdscr.addstr(0, 0, '{0} colors available'.format(curses.COLORS))
