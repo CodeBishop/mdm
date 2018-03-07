@@ -143,13 +143,13 @@ def main(screen):
             screen.border(0)
 
             # Print the program title.
-            screen.addstr(1, 1, "Multi-Drive Manager", curses.A_REVERSE)
+            printAt(1, 1, "%%%rMulti-Drive Manager")
 
             # Print the search bar or help bar.
             if searchModeFlag:
-                screen.addstr(POS_BY, POS_BX, SEARCH_PROMPT + searchString)
+                printAt(POS_BX, POS_BY, SEARCH_PROMPT + searchString)
             else:
-                screen.addstr(POS_BY, POS_BX, "(f)ind (r)efresh (s)hort test (l)ong test (L)ong test all (a)bort test (q)uit")
+                printAt(POS_BX, POS_BY, "(f)ind (r)efresh (s)hort test (l)ong test (L)ong test all (a)bort test (q)uit")
 
             # Print the message bar.
             screen.addstr(POS_MY, POS_MX, messageBarContents)

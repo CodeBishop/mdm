@@ -3,12 +3,12 @@
 import curses
 from mdmSMART.utils import *
 
+testString = "nothing%%%1Red%%%2%%%rGreen%%%4%%%rBlue"
+
 
 def main(stdscr):
     setupCursesUtils(stdscr)
-    printAt(20, 20, "nothing%%%1Red%%%2Green")
-    # curses.start_color()
-    # curses.use_default_colors()
+
     for i in range(1, 8):
         curses.init_pair(i, i, 0)
     # stdscr.addstr(0, 0, '{0} colors available'.format(curses.COLORS))
