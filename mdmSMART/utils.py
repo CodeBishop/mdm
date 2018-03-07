@@ -14,6 +14,7 @@ CECLEN = 1  # Number of chars after a color escape code.
 
 CEC_RED = CEC + "1"
 CEC_GREEN = CEC + "2"
+CEC_YELLOW = CEC + "3"
 
 utilsWindow = None
 
@@ -30,8 +31,8 @@ def setPrintWindow(activeWindow):
 def setupCursesUtils(activeWindow):
     setPrintWindow(activeWindow)
     # Prepare color pairs.
-    for i in range(0, 8):
-        curses.init_pair(i + 1, i, 0)
+    for i in range(1, 8):
+        curses.init_pair(i, i, 0)
 
 
 # If a CECString is longer than maxLength then cut it back and append ellipsis.

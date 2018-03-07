@@ -286,6 +286,9 @@ class Drive(object):
 
         return description
 
+    def statusString(self):
+        return DR_STATE_MSG[self.state]
+
     # If any attribute has something other than a dash for WHEN_FAIL then return True.
     def hasFailedAttributes(self):
         for attribute in self.attributes:

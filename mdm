@@ -157,14 +157,17 @@ def main(screen):
             screen.addstr(POS_MY, POS_MX, messageBarContents)
 
             # Print the drive list.
-            screen.addstr(POS_DLY - 1, POS_DLX, summaryHeader())
-            for y in range(len(devices)):
-                screen.addstr(POS_DLY + y, POS_DLX, devices[y].oneLineSummary())
+            # screen.addstr(POS_DLY - 1, POS_DLX, summaryHeader())
+            # for y in range(len(devices)):
+            #     screen.addstr(POS_DLY + y, POS_DLX, devices[y].oneLineSummary())
+            table = buildDriveTable(devices)
+            screenHeight, screenWidth = screen.getmaxyx()
+            drawTable(table, columnWidths, POS_DLX, POS_DLY, screenWidth - POS_DLX, screenHeight - POS_DLY)
 
             # If a drive is currently selected.
             if selector is not SELECTOR_ABSENT:
                 # Draw the selector.
-                screen.addstr(POS_DLY + selector, POS_DLX - 4, "-->")
+                screen.addstr(POS_DLY + selector + 1, POS_DLX - 4, "-->")
 
                 # Note the device the selector is pointed at.
                 device = devices[selector]
@@ -307,7 +310,7 @@ def main(screen):
                 if keypress == ord('r'):
                     refreshDevices = redrawScreen = True
 
-                if keypress == ord('q'):
+                if keypress in [ord('q'), ord('Q')]:
                     exitFlag = True
 
         # Check if any drives have a smartctl query in progress.
@@ -335,10 +338,16 @@ def buildDriveTable(driveList):
         # Make a color-coded string of the reallocated sector count.
         if drive.reallocCount > 0:
             reallocText = CEC_RED + str(drive.reallocCount)
-        elif self.reallocCount < 0:
-            reallocText = leftColumn("???", CW_REALLOC)
+        elif drive.reallocCount < 0:
+            reallocText = CEC_YELLOW + "???"
         else:
-            reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
+            reallocText = str(drive.reallocCount)
+
+        # Note whether the device has any failed attributes.
+        if drive.hasFailedAttributes():
+            whenFailedStatus = CEC_YELLOW + "see below"
+        else:
+            whenFailedStatus = "-"
 
         entry = list()
         entry.append(drive.devicePath)
@@ -346,12 +355,15 @@ def buildDriveTable(driveList):
         entry.append(drive.driveType)
         entry.append(drive.capacity)
         entry.append(drive.model)
-        entry.eppend(drive.serial)
-        description += reallocText
-        description += leftColumn(str(self.hours), CW_HOURS)
-        description += leftColumn(str(self.GSenseCount), CW_GSENSE)
-        description += whenFailedStatus
-        stateDesc = DR_STATE_MSG[self.state]
+        entry.append(drive.serial)
+        entry.append(reallocText)
+        entry.append(str(drive.hours))
+        entry.append(str(drive.GSenseCount))
+        entry.append(whenFailedStatus)
+        entry.append(drive.statusString())
+
+        table.append(entry)
+    return table
 
 
 # Initialize Curses (set various parameters, etc).
