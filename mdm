@@ -93,6 +93,8 @@ columnWidths = [8, 4, 4, 8, 24, 21, 7, 6, 5, 10, 15]
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
 
+attributeHeader = "ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE"
+
 # Check for root.
 if not os.getuid() == 0:
     print("Only user ID #0 (root) can run this program")
@@ -184,7 +186,7 @@ def main(screen):
 
                 # Print the list of important attributes.
                 if len(device.importantAttributes) > 0:
-                    screen.addstr(posY, posX, attributeHeader())
+                    screen.addstr(posY, posX, attributeHeader)
                     posY += 1
                     for attribute in device.importantAttributes:
                         screen.addstr(posY, posX, attribute.smartctlLine)

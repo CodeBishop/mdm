@@ -304,25 +304,3 @@ class Drive(object):
                 return True
 
 
-#######################################
-# Module functions and static methods #
-#######################################
-def summaryHeader():
-    header = ""
-    header += leftColumn("Path", CW_PATH)
-    header += leftColumn("Conn", CW_CONNECTOR)
-    header += leftColumn("Type", CW_DRIVE_TYPE)
-    header += leftColumn("Size", CW_CAPACITY)
-    header += leftColumn("Model", CW_MODEL)
-    header += leftColumn("Serial", CW_SERIAL)
-    header += leftColumn("ReAlloc", CW_REALLOC)
-    header += leftColumn("Hours", CW_HOURS)
-    header += leftColumn("GSen", CW_GSENSE)
-    header += leftColumn("WHENFAIL", CW_WHEN_FAILED_STATUS)
-    header += leftColumn("State", CW_STATE)
-    return header
-
-
-def attributeHeader():
-    return "ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE"
-
