@@ -15,7 +15,7 @@ CECLEN = 1  # Number of chars after a color escape code.
 utilsWindow = None
 
 
-def CECStringLength(test):
+def CECStringLength(text):
     return len(text) - text.count(CEC) * (len(CEC) + CECLEN)
 
 
