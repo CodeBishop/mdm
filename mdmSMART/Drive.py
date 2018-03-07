@@ -6,8 +6,10 @@ import subprocess
 import warnings
 
 from Attribute import Attribute
-from utils import *
+from mdmSMART.utils import *
 
+# Open the null device for dumping unwanted output into.
+DEVNULL = open(os.devnull, 'w')
 
 # Possible states of a device's history: all past tests were good, one or more were bad, drive has never run a
 #   short or long test, drive has never run a long test (but short ones were all good), drive has no history
