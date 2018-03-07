@@ -18,6 +18,7 @@
 
 # High Priority TO DO
 #####################
+# Remove all usage of curses.addstr() from mdm and switch them to printAt().
 # Remove the gsense column but add gsense to the list of important attributes.
 # Eliminate the use of Drive.oneLineSummary() from mdm because it doesn't allow for embedded color-highlighting
 #   and Drive shouldn't really be responsible for any form of screen rendering anyways.
@@ -279,14 +280,14 @@ def main(screen):
                     if selector is not SELECTOR_ABSENT:
                         # Start the test, refresh the drive and redraw the screen.
                         devices[selector].runShortTest()
-                        devices[selector].initiateQuery()# = Drive(devices[selector].devicePath)
+                        devices[selector].initiateQuery()
                         redrawScreen = True
 
                 if keypress == ord('l'):
                     if selector is not SELECTOR_ABSENT:
                         # Start the test, refresh the drive and redraw the screen.
                         devices[selector].runLongTest()
-                        devices[selector].initiateQuery()# = Drive(devices[selector].devicePath)
+                        devices[selector].initiateQuery()
                         redrawScreen = True
 
                 if keypress == ord('L'):
