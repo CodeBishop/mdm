@@ -102,6 +102,8 @@ if not os.getuid() == 0:
 
 def main(screen):
     initCurses(screen)  # Set parameters of curses environment.
+    screen.nodelay(True)  # Make getch() non-blocking.
+    setupCursesUtils(screen)  # Connect curses to the utility function library.
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
     searchString = ""
     searchModeFlag = False  # Toggle search mode (as versus command mode).
@@ -322,9 +324,6 @@ def main(screen):
 # Initialize Curses (set various parameters, etc).
 def initCurses(screen):
     screen.nodelay(True)  # Make getch() non-blocking.
-    curses.start_color()  # DEBUG: I'm not sure this does anything...
-    curses.use_default_colors()
-    # curses.init_pair(1, curses.COLOR_RED, -1)
 
 
 def searchDevices(searchString, devices):

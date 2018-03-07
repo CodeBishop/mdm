@@ -32,14 +32,14 @@ def setupCursesUtils(activeWindow):
 
 
 def printAt(x, y, text):
-    # Split the string into a list of tuples of length, text and color/attribute)
+    # Split the string by color-escape codes into a list of string portions.
     strings = text.split(CEC)
 
-    # Lay down first portion of string in plain color
+    # Draw first portion of string in plain color
     utilsWindow.addstr(y, x, strings[0], curses.A_BOLD)
     x += len(strings[0])
 
-    # Lay down all subsequent strings based on their first character (which should be their CEC value).
+    # Draw all subsequent string portions based on their first character (which should be their CEC value).
     for i in range(1, len(strings)):
         if len(strings[i]) >= CECLEN:
             colorCode = strings[i][0:CECLEN]
