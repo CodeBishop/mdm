@@ -15,6 +15,9 @@ CECLEN = 1  # Number of chars after a color escape code.
 CEC_RED = CEC + "1"
 CEC_GREEN = CEC + "2"
 CEC_YELLOW = CEC + "3"
+CEC_BLUE = CEC + "4"
+CEC_MAGENTA = CEC + "5"
+CEC_CYAN = CEC + "6"
 
 utilsWindow = None
 

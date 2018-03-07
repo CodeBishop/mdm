@@ -326,12 +326,8 @@ def main(screen):
     screen.refresh()
 
 
+# Construct a 2D array for drive data, including a header row.
 def buildDriveTable(driveList):
-    # This method fully understand what Drives are. It's tightly coupled to that class.
-    # It does not know the column widths, it just creates a 2-D array of ColoredString objects.
-    # Inserts color coding into the strings based on value tolerances.
-    # Determines the column ordering and which columns exist.
-    # Writes the columns header.
     table = list()
     table.append(["Path", "Conn", "Type", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "WHENFAIL", "State"])
     for drive in driveList:
