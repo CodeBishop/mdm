@@ -35,7 +35,6 @@
 
 # Moderate Priority To Do
 #########################
-# Add a gsense column.
 # Make F5 work for refresh also.
 # Search for "SMART Self-test Log not supported" and differentiate reporting that from reporting a drive that
 #   supports selt-test logging but no tests have ever been run on it.
@@ -44,14 +43,11 @@
 # Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
 # Add a test that if the number of hours is less than a 1000 then the program warns you that smartctl may be
 #   misinterpreting minutes into hours when hours was what the manufacturer actually meant.
-# Make shift+s be a way to order all idle drives to short-test themselves. Same for long tests.
-# Make it beep when a drive completes a scan and triple beep when all drives become idle.
-#   Maybe even make it triple-beep on a decreasing time-scale (up to 3 times?) and show a flashing message window.
 # Add functionality to extrapolate test completion within 1% (rather than 10%) based on smartctl reporting and time.
 # Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
 # Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
 # Add the ability to abort a test-in-progress.
-# Show number of hours.
+# Show correct number of hours.
 #   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
 #       Some Maxtor's record attribute #9 in minutes not hours (correctable by '-v 9,minutes').
 #       Some Fujitsu's record attribute #9 in seconds not hours (correctable by '-v 9,seconds').
@@ -59,12 +55,13 @@
 #       tests show different hours from their attribute #9?
 #   Check if drives' hours in the test logs and attribute #9 are consistent.
 
+
 # Low (long-term) Priority To Do
 ################################
 # Rewrite the section of code that reads the attribute table. It's a pair of for-loops right now and clunky.
 # Make the program detect if smartmontools is not installed so it can advise the user to install it.
 # Make the program work under Windows and Mac OS.
-# Turn the StorageDevice class into a clean library suitable for general-purpose use and GPL release it.
+# Turn the Drive class into a clean library suitable for general-purpose use and GPL release it.
 
 import curses
 import glob
