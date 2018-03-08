@@ -18,6 +18,7 @@
 
 # High Priority TO DO
 #####################
+# Add completion percentage to test status.
 # Remove all usage of curses.addstr() from mdm and switch them to printAt().
 # Remove the gsense column but add gsense to the list of important attributes.
 # Eliminate the use of Drive.oneLineSummary() from mdm because it doesn't allow for embedded color-highlighting
@@ -92,8 +93,6 @@ columnWidths = [8, 4, 4, 8, 24, 21, 7, 6, 5, 10, 15]
 os.environ.setdefault('ESCDELAY', '0')
 
 attributeHeader = "ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE"
-harmlessTestMessages = ["Aborted by host", "Completed without error", "Self-test routine in progress",
-                        "Interrupted (host reset)"]
 
 # Check for root.
 if not os.getuid() == 0:

@@ -8,6 +8,10 @@ import warnings
 from Attribute import Attribute
 from mdmSMART.utils import *
 
+# Test result messages that are innocuous.
+harmlessTestMessages = ["Aborted by host", "Completed without error", "Self-test routine in progress",
+                        "Interrupted (host reset)"]
+
 # Open the null device for dumping unwanted output into.
 DEVNULL = open(os.devnull, 'w')
 
@@ -300,7 +304,7 @@ class Drive(object):
     def hasFailureHistory(self):
         hasFailures = False
         for test in self.testHistory:
-            if "Completed without error" not in test:
+            if not any(msg in test for msg in harmlessTestMessages):
                 return True
 
 
