@@ -254,43 +254,11 @@ class Drive(object):
         else:
             return False
 
-    # def oneLineSummary(self):
-    #     # Make a color-coded string of the reallocated sector count.  #DEBUG: Color not implemented yet.
-    #     if self.reallocCount > 0:
-    #         reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
-    #     elif self.reallocCount < 0:
-    #         reallocText = leftColumn("???", CW_REALLOC)
-    #     else:
-    #         reallocText = leftColumn(str(self.reallocCount), CW_REALLOC)
-    #
-    #     # Note whether the device has any failed attributes.
-    #     if self.hasFailedAttributes():
-    #         whenFailedStatus = leftColumn("see below", CW_WHEN_FAILED_STATUS)
-    #     else:
-    #         whenFailedStatus = leftColumn("-", CW_WHEN_FAILED_STATUS)
-    #
-    #     # Construct one-line summary of drive.
-    #     description = ""
-    #     description += leftColumn(self.devicePath, CW_PATH)
-    #     description += leftColumn(self.connector, CW_CONNECTOR)
-    #     description += leftColumn(self.driveType, CW_DRIVE_TYPE)
-    #     description += leftColumn(self.capacity, CW_CAPACITY)
-    #     description += leftColumn(self.model, CW_MODEL)
-    #     description += leftColumn(self.serial, CW_SERIAL)
-    #     description += reallocText
-    #     description += leftColumn(str(self.hours), CW_HOURS)
-    #     description += leftColumn(str(self.GSenseCount), CW_GSENSE)
-    #     description += whenFailedStatus
-    #     stateDesc = DR_STATE_MSG[self.state]
-    #     if self.state in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING] and \
-    #        241 <= self.smartStatusCode <= 249:
-    #         completion = (250 - self.smartStatusCode) * 10
-    #         stateDesc += " " + str(completion) + "%"
-    #     description += leftColumn(stateDesc, CW_STATE)
-    #
-    #     return description
-
     def statusString(self):
+        if self.state in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING] and \
+           241 <= self.smartStatusCode <= 249:
+            completion = (250 - self.smartStatusCode) * 10
+            return DR_STATE_MSG[self.state] + " " + str(completion) + "%"
         return DR_STATE_MSG[self.state]
 
     # If any attribute has something other than a dash for WHEN_FAIL then return True.
@@ -302,9 +270,9 @@ class Drive(object):
 
     # If any past test failed.
     def hasFailureHistory(self):
-        hasFailures = False
         for test in self.testHistory:
             if not any(msg in test for msg in harmlessTestMessages):
                 return True
+        return False
 
 

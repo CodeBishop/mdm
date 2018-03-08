@@ -339,9 +339,9 @@ def buildDriveTable(driveList):
 
         # Note whether the device has any failed attributes.
         if drive.hasFailureHistory():
-            whenFailedStatus = CEC_RED + "see below"
+            whenFailedStatus = CEC_RED + "bad test"
         elif drive.hasFailedAttributes():
-            whenFailedStatus = CEC_YELLOW + "see below"
+            whenFailedStatus = CEC_YELLOW + "bad value"
         else:
             whenFailedStatus = "-"
 
