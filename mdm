@@ -22,9 +22,6 @@
 # Make the Connection column show SATA and IDE.
 # Make the Type column show SSD and HDD.
 # Remove the gsense column but add gsense to the list of important attributes.
-# Eliminate the use of Drive.oneLineSummary() from mdm because it doesn't allow for embedded color-highlighting
-#   and Drive shouldn't really be responsible for any form of screen rendering anyways.
-#       Then decruft: Move the column width constants out of Drive.py and delete Drive.oneLineSummary()
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
 #        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase

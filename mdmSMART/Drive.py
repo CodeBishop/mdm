@@ -56,6 +56,11 @@ SMART_CODE_READ_FAILURE = 118  # Drive failed most recent test with read failure
 # Attribute ID numbers.
 ATTR_REALLOC = 5
 ATTR_HOURS = 9
+ATTR_GSENSE1 = 191
+ATTR_GSENSE2 = 221
+
+# Attributes that should always be shown (unnamed numbers are from attribute table in Wikipedia's SMART article).
+IMPORTANT_ATTRIBUTES = [ATTR_REALLOC, ATTR_HOURS, ATTR_GSENSE1, ATTR_GSENSE2, 10, 184, 187, 188, 196, 197, 198, 201]
 
 
 class Drive(object):
@@ -199,7 +204,7 @@ class Drive(object):
                         attribute = Attribute(self.smartctlLines[j])
                         self.attributes[attribute.idNumber] = attribute
                         # Add it to the list of important attributes if it's one that should always be shown.
-                        if attribute.idNumber in [ATTR_REALLOC, ATTR_HOURS]:
+                        if attribute.idNumber in IMPORTANT_ATTRIBUTES:
                             self.importantAttributes.append(attribute)
                         # Add it to the list of important attributes if it has a WHEN_FAIL entry.
                         elif not re.search(r"\w*-\w*", attribute.whenFailed):
