@@ -19,7 +19,8 @@
 # High Priority TO DO
 #####################
 # Add completion percentage to test status.
-# Remove all usage of curses.addstr() from mdm and switch them to printAt().
+# Make the Connection column show SATA and IDE.
+# Make the Type column show SSD and HDD.
 # Remove the gsense column but add gsense to the list of important attributes.
 # Eliminate the use of Drive.oneLineSummary() from mdm because it doesn't allow for embedded color-highlighting
 #   and Drive shouldn't really be responsible for any form of screen rendering anyways.
@@ -152,7 +153,7 @@ def main(screen):
                 printAt(POS_BX, POS_BY, "(f)ind (r)efresh (s)hort test (l)ong test (L)ong test all (a)bort test (q)uit")
 
             # Print the message bar.
-            screen.addstr(POS_MY, POS_MX, messageBarContents)
+            printAt(POS_MX, POS_MY, messageBarContents)
 
             # Print the drive list.
             table = buildDriveTable(devices)  # Construct a table of attribute text from the drive list.
@@ -162,7 +163,7 @@ def main(screen):
             # If a drive is currently selected.
             if selector is not SELECTOR_ABSENT:
                 # Draw the selector.
-                screen.addstr(POS_DTY + selector + 1, POS_DTX - 4, "-->")
+                printAt(POS_DTX - 4, POS_DTY + selector + 1, "-->")
 
                 # Note the device the selector is pointed at.
                 device = devices[selector]
@@ -173,22 +174,22 @@ def main(screen):
 
                 # Print the current smartctl testing status.
                 if device.connector == "USB":
-                    screen.addstr(posY, posX, "SMART firmware was not reachable through USB interface.")
+                    printAt(posX, posY, "SMART firmware was not reachable through USB interface.")
                 else:
                     if device.smartStatusCode == SMART_STATUS_CODE_NOT_INITIALIZED:
                         smartTestStateMsg = SMART_STATUS_CODE_NOT_FOUND_MSG
                     else:
                         smartTestStateMsg = "SMART status code " + str(device.smartStatusCode) + ": "
                         smartTestStateMsg += device.smartStatusDescription
-                    screen.addstr(posY, posX, smartTestStateMsg)
+                    printAt(posX, posY, smartTestStateMsg)
                 posY += 2  # Increment vertical cursor and add blank line.
 
                 # Print the list of important attributes.
                 if len(device.importantAttributes) > 0:
-                    screen.addstr(posY, posX, attributeHeader)
+                    printAt(posX, posY, attributeHeader)
                     posY += 1
                     for attribute in device.importantAttributes:
-                        screen.addstr(posY, posX, attribute.smartctlLine)
+                        printAt(posX, posY, attribute.smartctlLine)
                         posY += 1  # Increment vertical cursor
                     posY += 1  # Add a blank line before next section of info.
 
@@ -205,7 +206,7 @@ def main(screen):
                             printAt(posX, posY, CEC_RED + testResult)
                         posY += 1  # Increment vertical cursor.
                 else:
-                    screen.addstr(posY, posX, "No history of SMART tests found for " + deviceName)
+                    printAt(posX, posY, "No history of SMART tests found for " + deviceName)
                     posY += 1  # Increment vertical cursor
                 posY += 1  # Add a blank line before next section of info.
 
@@ -213,8 +214,7 @@ def main(screen):
             if searchModeFlag:
                 curses.curs_set(1)
                 # Position the cursor by printing nothing where it should be.
-                screen.addstr(POS_BY, POS_BX + len(SEARCH_PROMPT + searchString), "")
-
+                printAt(POS_BX, POS_BY + len(SEARCH_PROMPT + searchString), "")
             # Hide the cursor when not in search mode.
             else:
                 curses.curs_set(0)
