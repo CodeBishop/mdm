@@ -57,19 +57,6 @@ SMART_CODE_READ_FAILURE = 118  # Drive failed most recent test with read failure
 ATTR_REALLOC = 5
 ATTR_HOURS = 9
 
-# Define column widths for displaying drive summaries (doesn't include one-space separator).
-CW_CONNECTOR = 4
-CW_GSENSE = 5
-CW_DRIVE_TYPE = 4
-CW_HOURS = 6
-CW_MODEL = 24
-CW_PATH = 8
-CW_REALLOC = 7
-CW_SERIAL = 21
-CW_CAPACITY = 8
-CW_STATE = 15
-CW_WHEN_FAILED_STATUS = 10
-
 
 class Drive(object):
     def __init__(self, devicePath):
@@ -248,7 +235,6 @@ class Drive(object):
         if re.search(searchString, self.serial, re.IGNORECASE) or \
                 re.search(searchString, self.model, re.IGNORECASE) or \
                 re.search(searchString, self.devicePath, re.IGNORECASE) or \
-                re.search(searchString, self.oneLineSummary(), re.IGNORECASE) or \
                 re.search(searchString, self.name, re.IGNORECASE):
             return True
         else:
@@ -274,5 +260,3 @@ class Drive(object):
             if not any(msg in test for msg in harmlessTestMessages):
                 return True
         return False
-
-
