@@ -19,7 +19,6 @@
 # High Priority TO DO
 #####################
 # Make the Connection column show SATA and IDE.
-# Make the Type column show SSD and HDD.
 # Remove the gsense column but add gsense to the list of important attributes.
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
