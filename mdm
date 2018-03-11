@@ -18,7 +18,6 @@
 
 # High Priority TO DO
 #####################
-# Add completion percentage to test status.
 # Make the Connection column show SATA and IDE.
 # Make the Type column show SSD and HDD.
 # Remove the gsense column but add gsense to the list of important attributes.
@@ -85,7 +84,7 @@ ENTER_KEY = 10
 RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds to distinguish keyboard from barcode scanner.
 SEARCH_PROMPT = "Find: "
 
-columnWidths = [8, 4, 4, 8, 24, 21, 7, 6, 5, 10, 15]
+columnWidths = [8, 4, 5, 8, 24, 21, 7, 6, 5, 10, 15]
 
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
@@ -324,7 +323,7 @@ def main(screen):
 # Construct a 2D array for drive data, including a header row.
 def buildDriveTable(driveList):
     table = list()
-    table.append(["Path", "Conn", "Type", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State"])
+    table.append(["Path", "Conn", "RPM", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State"])
     for drive in driveList:
         # Make a color-coded string of the reallocated sector count.
         if drive.reallocCount > 0:
@@ -345,7 +344,7 @@ def buildDriveTable(driveList):
         entry = list()
         entry.append(drive.devicePath)
         entry.append(drive.connector)
-        entry.append(drive.driveType)
+        entry.append(drive.rotationRate)
         entry.append(drive.capacity)
         entry.append(drive.model)
         entry.append(drive.serial)

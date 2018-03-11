@@ -8,6 +8,7 @@ import curses
 
 # Utility function constants.
 SEARCH_FAILED = -1
+CAPTURE_FAILED = ""
 
 CEC = "%%%"  # Escape code for colored or special text.
 CECLEN = 1  # Number of chars after a color escape code.
@@ -138,4 +139,4 @@ def capture(pattern, text):
     if result and result.group:
         return result.group(1)
     else:
-        return ""
+        return CAPTURE_FAILED

@@ -71,13 +71,13 @@ class Drive(object):
         self.connector = ""  # SATA, SCSI, USB, etc.
         self.device = None
         self.devicePath = devicePath
-        self.driveType = ""  # SSD or HDD.
         self.GSenseCount = ""
         self.hours = NOT_INITIALIZED
         self.importantAttributes = list()  # Attributes that should always be shown (like WHEN_FAILs).
         self.model = ""
         self.name = devicePath  # Device is referred to by its path.
         self.reallocCount = -1  # Marker value for uninitialized integer.
+        self.rotationRate = ""  # RPM (5400, 7200, ..) or SSD.
         self.serial = ""
         self.smartCapable = None
         self.smartctlOutput = ""  # All smartctl output as a single string.
@@ -120,12 +120,16 @@ class Drive(object):
 
         self.serial = capture(r"Serial Number:\s*(.+)", self.smartctlOutput)
         self.model = capture(r"Device Model:\s*(.+)", self.smartctlOutput)
+        self.rotationRate = capture(r"Rotation Rate:\s*(\d+)", self.smartctlOutput)
+        if self.rotationRate == CAPTURE_FAILED:
+            if firstMatchPosition("Solid State Device", self.smartctlOutput) is not SEARCH_FAILED:
+                self.rotationRate = "SSD"
 
         # Search for SMART status code in smartctl output.
         smartStatusCodeSearch = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
 
         # If smart status code wasn't found in smartctl output then.
-        if smartStatusCodeSearch is "":
+        if smartStatusCodeSearch is CAPTURE_FAILED:
             self.smartStatusCode = SMART_STATUS_CODE_NOT_INITIALIZED
             self.smartStatusDescription = SMART_STATUS_CODE_NOT_FOUND_MSG
             # If smart status code is unavailable and drive is not being wiped then presume drive is idle.
