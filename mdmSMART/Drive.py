@@ -36,7 +36,6 @@ DR_STATE_MSG[DR_STATE_TESTING] = "Testing"  # Drive is testing but type of test 
 DR_STATE_MSG[DR_STATE_WIPING] = "Wiping"
 DR_STATE_MSG[DR_STATE_FAILED] = "Failed"
 
-
 # Class-related constants.
 DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
 NOT_INITIALIZED = -1

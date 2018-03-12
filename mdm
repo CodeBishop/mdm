@@ -71,6 +71,9 @@ ENTER_KEY = 10
 RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds to distinguish keyboard from barcode scanner.
 SEARCH_PROMPT = "Find: "
 
+HOURS_WARNING = 30000  # Number of drive operation hours above which the user is warned of old age.
+HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is warned of end-of-life imminence.
+
 columnWidths = [8, 4, 5, 8, 24, 21, 7, 6, 5, 10, 15]
 
 # Before initializing curses, remove the Esc key delay from the OS environment.
@@ -331,6 +334,10 @@ def buildDriveTable(driveList):
         # Check whether hours of operation was detected.
         if drive.hours is NOT_INITIALIZED:
             driveHours = ""
+        elif drive.hours > HOURS_CRITICAL:
+            driveHours = CEC_RED + str(drive.hours)
+        elif drive.hours > HOURS_WARNING:
+            driveHours = CEC_YELLOW + str(drive.hours)
         else:
             driveHours = str(drive.hours)
 
