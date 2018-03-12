@@ -78,7 +78,7 @@ class Drive(object):
         self.reallocCount = NOT_INITIALIZED  # Marker value for uninitialized integer.
         self.rotationRate = ""  # RPM (5400, 7200, ..) or SSD.
         self.serial = ""
-        self.smartCapable = None
+        self.smartCapable = False  # Assume a drive is not SMART-capable until proven otherwise.
         self.smartctlOutput = ""  # All smartctl output as a single string.
         self.smartctlLines = list()  # All smartctl output as a list of strings, one per line.
         self.smartStatusCode = SMART_STATUS_CODE_NOT_INITIALIZED
@@ -115,10 +115,16 @@ class Drive(object):
     def interpretSmartctlOutput(self):
         if re.search("Unknown USB bridge", self.smartctlOutput):
             self.connector = "USB"
+            self.smartCapable = False
             return  # Don't bother reading smartctl output if it's an unbridged USB device.
+        else:
+            self.smartCapable = True
 
+        # Pull out the easy-to-capture values.
         self.serial = capture(r"Serial Number:\s*(.+)", self.smartctlOutput)
         self.model = capture(r"Device Model:\s*(.+)", self.smartctlOutput)
+
+        # Determine the rotation rate or detect SSD.
         self.rotationRate = capture(r"Rotation Rate:\s*(\d+)", self.smartctlOutput)
         if self.rotationRate == CAPTURE_FAILED:
             if firstMatchPosition("Solid State Device", self.smartctlOutput) is not SEARCH_FAILED:

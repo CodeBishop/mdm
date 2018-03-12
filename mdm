@@ -182,19 +182,20 @@ def main(screen):
                 # Print the test history for the device.
                 # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
                 #       of older tests.
-                if len(device.testHistory) > 0:
-                    printAt(posX, posY, device.testHistoryHeader)
-                    posY += 1  # Increment vertical cursor
-                    for testResult in device.testHistory:
-                        if any(msg in testResult for msg in harmlessTestMessages):
-                            printAt(posX, posY, testResult)
-                        else:
-                            printAt(posX, posY, CEC_RED + testResult)
-                        posY += 1  # Increment vertical cursor.
-                else:
-                    printAt(posX, posY, "No history of SMART tests found for " + deviceName)
-                    posY += 1  # Increment vertical cursor
-                posY += 1  # Add a blank line before next section of info.
+                if device.smartCapable:
+                    if len(device.testHistory) > 0:
+                        printAt(posX, posY, device.testHistoryHeader)
+                        posY += 1  # Increment vertical cursor
+                        for testResult in device.testHistory:
+                            if any(msg in testResult for msg in harmlessTestMessages):
+                                printAt(posX, posY, testResult)
+                            else:
+                                printAt(posX, posY, CEC_RED + testResult)
+                            posY += 1  # Increment vertical cursor.
+                    else:
+                        printAt(posX, posY, "No history of SMART tests found for " + deviceName)
+                        posY += 1  # Increment vertical cursor
+                    posY += 1  # Add a blank line before next section of info.
 
             # Show the cursor when in search mode and hide it the rest of the time.
             if searchModeFlag:
