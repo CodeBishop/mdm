@@ -19,7 +19,6 @@
 # High Priority TO DO
 #####################
 # Make the Connection column show SATA and IDE.
-# Remove the gsense column but add gsense to the list of important attributes.
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
 #        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
@@ -28,7 +27,7 @@
 # Highlight drives that have completed and color them depending on whether they're good or bad.
 # Investigate whether you can save temporary files anywhere in order to track things like whether a currently
 #   running test is a short or long test. If not then remove the short and long test states from Drive.
-# Make drives blink when they're done and the whole screen blink if all drives are done.
+# Make drive entries blink when they're done and the whole screen blink if all drives are done.
 
 
 # Moderate Priority To Do

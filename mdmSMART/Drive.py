@@ -225,6 +225,10 @@ class Drive(object):
             hoursString = capture(r"([0-9]+)", self.attributes[9].rawValue)
             if hoursString is not "":
                 self.hours = int(hoursString)
+        if self.attributes[ATTR_GSENSE1]:
+            self.GSenseCount = self.attributes[ATTR_GSENSE1].rawValue
+        elif self.attributes[ATTR_GSENSE2]:
+            self.GSenseCount = self.attributes[ATTR_GSENSE2].rawValue
 
     def runShortTest(self):
         # Call smartctl directly to run a short test.
