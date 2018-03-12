@@ -18,6 +18,7 @@
 
 # High Priority TO DO
 #####################
+# Add the IDE examples to your Git repository and your hdd-comparison spreadsheet.
 # Make the Connection column show SATA and IDE.
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
@@ -143,13 +144,15 @@ def main(screen):
 
             # Print the drive list.
             table = buildDriveTable(devices)  # Construct a table of attribute text from the drive list.
+            if selector is not SELECTOR_ABSENT:
+                table[selector+1][0] = CEC_REVERSE + table[selector+1][0]
             screenHeight, screenWidth = screen.getmaxyx()  # Get limitations of screen size.
             drawTable(table, columnWidths, POS_DTX, POS_DTY, screenWidth - POS_DTX, screenHeight - POS_DTY)
 
             # If a drive is currently selected.
             if selector is not SELECTOR_ABSENT:
                 # Draw the selector.
-                printAt(POS_DTX - 4, POS_DTY + selector + 1, "-->")
+                printAt(POS_DTX - 4, POS_DTY + selector + 1, CEC_REVERSE + "--> ")
 
                 # Note the device the selector is pointed at.
                 device = devices[selector]

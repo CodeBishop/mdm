@@ -19,6 +19,7 @@ CEC_YELLOW = CEC + "3"
 CEC_BLUE = CEC + "4"
 CEC_MAGENTA = CEC + "5"
 CEC_CYAN = CEC + "6"
+CEC_REVERSE = CEC + "r"
 
 utilsWindow = None
 
