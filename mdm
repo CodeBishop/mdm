@@ -28,10 +28,12 @@
 # Make drive entries blink when they're done and the whole screen blink if all drives are done.
 # Investigate whether you can save temporary files anywhere in order to track things like whether a currently
 #   running test is a short or long test. If not then remove the short and long test states from Drive.
+# Run the program with a variety of drives to make sure nothing crashes mdm.
 
 
 # Moderate Priority To Do
 #########################
+# Make the program frequently (1hz) scan for changes in /dev/sdX to see if drives have changed.
 # Make F5 work for refresh also.
 # Search for "SMART Self-test Log not supported" and differentiate reporting that from reporting a drive that
 #   supports selt-test logging but no tests have ever been run on it.
