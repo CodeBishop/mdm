@@ -313,20 +313,26 @@ def buildDriveTable(driveList):
     table.append(["Path", "Conn", "RPM", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State"])
     for drive in driveList:
         # Make a color-coded string of the reallocated sector count.
-        if drive.reallocCount > 0:
+        if drive.reallocCount is 0:
+            reallocText = CEC_GREEN + "0"
+        elif drive.reallocCount > 0:
             reallocText = CEC_RED + str(drive.reallocCount)
-        elif drive.reallocCount < 0:
-            reallocText = CEC_YELLOW + "???"
         else:
-            reallocText = str(drive.reallocCount)
+            reallocText = CEC_YELLOW + "???"  # Includes NOT_INITIALIZED.
 
         # Note whether the device has any failed attributes.
         if drive.hasFailureHistory():
-            whenFailedStatus = CEC_RED + "bad test"
+            alertMessage = CEC_RED + "bad test"
         elif drive.hasFailedAttributes():
-            whenFailedStatus = CEC_YELLOW + "bad value"
+            alertMessage = CEC_YELLOW + "bad value"
         else:
-            whenFailedStatus = "-"
+            alertMessage = ""
+
+        # Check whether hours of operation was detected.
+        if drive.hours is NOT_INITIALIZED:
+            driveHours = ""
+        else:
+            driveHours = str(drive.hours)
 
         entry = list()
         entry.append(drive.devicePath)
@@ -336,9 +342,9 @@ def buildDriveTable(driveList):
         entry.append(drive.model)
         entry.append(drive.serial)
         entry.append(reallocText)
-        entry.append(str(drive.hours))
+        entry.append(driveHours)
         entry.append(str(drive.GSenseCount))
-        entry.append(whenFailedStatus)
+        entry.append(alertMessage)
         entry.append(drive.statusString())
 
         table.append(entry)

@@ -76,7 +76,7 @@ class Drive(object):
         self.importantAttributes = list()  # Attributes that should always be shown (like WHEN_FAILs).
         self.model = ""
         self.name = devicePath  # Device is referred to by its path.
-        self.reallocCount = -1  # Marker value for uninitialized integer.
+        self.reallocCount = NOT_INITIALIZED  # Marker value for uninitialized integer.
         self.rotationRate = ""  # RPM (5400, 7200, ..) or SSD.
         self.serial = ""
         self.smartCapable = None
