@@ -22,12 +22,12 @@
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
 #        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
-# See if there's a quick way to make the program reverse color text on devices that just finished a test.
 # The rapid keypress detector can be triggered by pressing keys during a refresh. Fix that.
+# See if there's a quick way to make the program reverse color text on devices that just finished a test.
 # Highlight drives that have completed and color them depending on whether they're good or bad.
+# Make drive entries blink when they're done and the whole screen blink if all drives are done.
 # Investigate whether you can save temporary files anywhere in order to track things like whether a currently
 #   running test is a short or long test. If not then remove the short and long test states from Drive.
-# Make drive entries blink when they're done and the whole screen blink if all drives are done.
 
 
 # Moderate Priority To Do
@@ -35,22 +35,9 @@
 # Make F5 work for refresh also.
 # Search for "SMART Self-test Log not supported" and differentiate reporting that from reporting a drive that
 #   supports selt-test logging but no tests have ever been run on it.
-# See if StorageDevice.smartctlLines can simplify some of the stuff you're doing with StorageDevice.smartctlOutput.
-# Highlight drives that have completed a test.
-# Try to find some way to make the system beep. Printing "\a" and "\007" didn't work.
-# Add a test that if the number of hours is less than a 1000 then the program warns you that smartctl may be
-#   misinterpreting minutes into hours when hours was what the manufacturer actually meant.
+# Rewrite the Drive.testHistory construction to use Drive.smartctlLines instead of Drive.smartctlOutput.
 # Add functionality to extrapolate test completion within 1% (rather than 10%) based on smartctl reporting and time.
-# Test that the (r)efresh command relocates the selector properly if devices are hot-unplugged.
-# Add an RPM column that eliminates the type column as an ssd/hdd divider (and also provides more info).
-# Add the ability to abort a test-in-progress.
-# Show correct number of hours.
-#   The smartmontools FAQ https://www.smartmontools.org/wiki/FAQ says:
-#       Some Maxtor's record attribute #9 in minutes not hours (correctable by '-v 9,minutes').
-#       Some Fujitsu's record attribute #9 in seconds not hours (correctable by '-v 9,seconds').
-#   Look for discrepancies in drive hours. Isn't there a bunch of ridiculously low-hour Fujitsu's? Do their logged
-#       tests show different hours from their attribute #9?
-#   Check if drives' hours in the test logs and attribute #9 are consistent.
+# Add shift-R refresh or some other trigger to rescan for Drives (in the event of hot-swapping).
 
 
 # Low (long-term) Priority To Do
