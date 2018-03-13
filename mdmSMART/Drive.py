@@ -21,8 +21,8 @@ DEVNULL = open(os.devnull, 'w')
 DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_HIST_NOT_TESTABLE = range(5)
 
 # Possible drive states of an instance of this class.
-numberOfPossibleDriveStates = 8
-DR_STATE_UNKNOWN, DR_STATE_IDLE, DR_STATE_QUERYING, DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING,\
+numberOfPossibleDriveStates = 6
+DR_STATE_UNKNOWN, DR_STATE_IDLE, DR_STATE_QUERYING, DR_STATE_TESTING,\
     DR_STATE_WIPING, DR_STATE_FAILED = range(numberOfPossibleDriveStates)
 
 # Status descriptions.
@@ -30,8 +30,6 @@ DR_STATE_MSG = [None] * numberOfPossibleDriveStates  # Create empty list of give
 DR_STATE_MSG[DR_STATE_UNKNOWN] = "Unknown"
 DR_STATE_MSG[DR_STATE_IDLE] = "Idle"
 DR_STATE_MSG[DR_STATE_QUERYING] = "Querying"
-DR_STATE_MSG[DR_STATE_SHORT_TESTING] = "Short testing"
-DR_STATE_MSG[DR_STATE_LONG_TESTING] = "Long testing"
 DR_STATE_MSG[DR_STATE_TESTING] = "Testing"  # Drive is testing but type of test is unknown.
 DR_STATE_MSG[DR_STATE_WIPING] = "Wiping"
 DR_STATE_MSG[DR_STATE_FAILED] = "Failed"
@@ -143,18 +141,16 @@ class Drive(object):
         # If SMART status code was found then record that status.
         else:
             self.smartStatusCode = int(smartStatusCodeSearch)
-            # Determine device state based on whether smartctl reports a test-in-progress.
+            # Look for smartctl status codes that imply the drive is idle.
             if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED, SMART_CODE_INTERRUPTED2] + \
                     SMART_CODE_ABORTED:
                 self.state = DR_STATE_IDLE
-            else:
-                # If the type of test being run is not already known then just record it state unknown.
-                if self.state not in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING] and \
-                                self.smartStatusCode not in range(241, 250):  # Range of SMART testing codes = 241-249.
-                    self.state = DR_STATE_UNKNOWN
-                # Otherwise record it as testing.
-                else:
+            # Look for smartctl status codes that imply the drive is running a test.
+            elif self.smartStatusCode in range(241, 250):  # Range of SMART testing codes = 241-249.
                     self.state = DR_STATE_TESTING
+            # If smartctl status code is not recognized that specify the drive state as unknown.
+            else:
+                self.state = DR_STATE_UNKNOWN
             # Search for SMART status message in smartctl output.
             smartStatusDescSearch = capture(r"Self-test execution status:\s*\(\s*\d+\s*\)\s*(.*)", self.smartctlOutput)
             # If status description wasn't found then report that fact.
@@ -260,8 +256,7 @@ class Drive(object):
 
     # Return the drive status description as a short string.
     def statusString(self):
-        if self.state in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING] and \
-           241 <= self.smartStatusCode <= 249:
+        if self.state is DR_STATE_TESTING and 241 <= self.smartStatusCode <= 249:
             completion = (250 - self.smartStatusCode) * 10
             return DR_STATE_MSG[self.state] + " " + str(completion) + "%"
         return DR_STATE_MSG[self.state]

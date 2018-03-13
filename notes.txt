@@ -14,6 +14,8 @@ progress and they have all completed. This is accomplished by having mdm maintai
         After calling queryIsDone(), if testsInProgress is True and drivesRunningTests is empty then:
             testInProgress = False
             completionAlertFlag = True
+        The abort command will remove that drive from drivesRunningTests and if the list is now empty then both the
+            testsInProgress and completionAlertFlag flags will be set to False so an abort can't trigger an alert.
 
 
 Potential Commands

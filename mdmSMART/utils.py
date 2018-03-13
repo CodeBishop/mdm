@@ -6,6 +6,9 @@ import re
 import subprocess
 import curses
 
+# Open the null device for dumping unwanted output into.
+DEVNULL = open(os.devnull, 'w')
+
 # Utility function constants.
 SEARCH_FAILED = -1
 CAPTURE_FAILED = ""
