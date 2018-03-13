@@ -16,6 +16,25 @@ progress and they have all completed. This is accomplished by having mdm maintai
             completionAlertFlag = True
         The abort command will remove that drive from drivesRunningTests and if the list is now empty then both the
             testsInProgress and completionAlertFlag flags will be set to False so an abort can't trigger an alert.
+   Alternative mechanism:
+        An allDrivesAreIdle(drivelist) function goes through the list of drives and if all of them are idle then it
+            returns True. If any are testing or querying then it returns False.
+        After each queryIsDone() returns True then calls allDrivesAreIdle(). If it's True then testInProgress is set
+            to True. If it's False and testInProgress was True then testInProgress is set to False and
+            completionAlertFlag is set to True unless abortionStartTime was in the last 5 seconds.
+        If an abort command is given then the abortionStartTime is set to the current time.
+    Alternative mechanism flow:
+        testInProgress = False
+        completionAlert = False
+        if queryIsDone():
+            if testInProgress:
+                if allDrivesAreIdleOrUnknown() and (currentTime-abortionStartTime) > 5secs:
+                    testInProgress = False
+                    completionAlert = True
+            else:
+                anyDriveIsTesting(drivelist)
+                testInProgress = True
+
 
 
 Potential Commands

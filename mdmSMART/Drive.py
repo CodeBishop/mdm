@@ -21,9 +21,9 @@ DEVNULL = open(os.devnull, 'w')
 DR_HIST_GOOD, DR_HIST_BAD, DR_HIST_NEVER_TESTED, DR_HIST_NEVER_LONG_TESTED, DR_HIST_NOT_TESTABLE = range(5)
 
 # Possible drive states of an instance of this class.
-numberOfPossibleDriveStates = 6
+numberOfPossibleDriveStates = 5
 DR_STATE_UNKNOWN, DR_STATE_IDLE, DR_STATE_QUERYING, DR_STATE_TESTING,\
-    DR_STATE_WIPING, DR_STATE_FAILED = range(numberOfPossibleDriveStates)
+    DR_STATE_WIPING = range(numberOfPossibleDriveStates)
 
 # Status descriptions.
 DR_STATE_MSG = [None] * numberOfPossibleDriveStates  # Create empty list of given size.
@@ -32,7 +32,6 @@ DR_STATE_MSG[DR_STATE_IDLE] = "Idle"
 DR_STATE_MSG[DR_STATE_QUERYING] = "Querying"
 DR_STATE_MSG[DR_STATE_TESTING] = "Testing"  # Drive is testing but type of test is unknown.
 DR_STATE_MSG[DR_STATE_WIPING] = "Wiping"
-DR_STATE_MSG[DR_STATE_FAILED] = "Failed"
 
 # Class-related constants.
 DR_LOAD_FAILED, DR_LOAD_SUCCESS = range(2)
@@ -44,7 +43,7 @@ SMART_STATUS_CODE_NOT_FOUND_MSG = "SMART status code not found in smartctl outpu
 NUMBER_OF_SMARTCTL_STATE_CODES = 256
 
 # Smart test status codes.
-SMART_CODE_IDLE = 0  # Drive is not smart testing.
+SMART_CODE_IDLE = [0, 1]  # Drive is not smart testing.
 SMART_CODE_ABORTED = [16, 24, 25]  # Drive is idle and most recent test was aborted by user.
 SMART_CODE_INTERRUPTED = 32  # Drive is idle and most recent test was interrupted before completion.
 SMART_CODE_INTERRUPTED2 = 33  # Drive is idle and most recent test was interrupted before completion.
@@ -142,7 +141,7 @@ class Drive(object):
         else:
             self.smartStatusCode = int(smartStatusCodeSearch)
             # Look for smartctl status codes that imply the drive is idle.
-            if self.smartStatusCode in [SMART_CODE_IDLE, SMART_CODE_INTERRUPTED, SMART_CODE_INTERRUPTED2] + \
+            if self.smartStatusCode in SMART_CODE_IDLE + [SMART_CODE_INTERRUPTED, SMART_CODE_INTERRUPTED2] + \
                     SMART_CODE_ABORTED:
                 self.state = DR_STATE_IDLE
             # Look for smartctl status codes that imply the drive is running a test.

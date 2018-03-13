@@ -21,16 +21,16 @@
 
 # High Priority TO DO
 #####################
-# See if 'beep' command works on your testers and on the recovery machines. Use "modprobe pcspkr" if needed.
-# Add an machine ID feature so you can number the machines and they'll have unique beep sequences.
-# Add the IDE examples to your Git repository and your hdd-comparison spreadsheet.
+# Make a large alert box appear when tests are complete.
+# Make drives shows a status of "complete" if they have finished a test during the current run.
+# Make the alarm beep repeat x number of times with a pause of m minutes.
+# Find out why starting a test doesn't change the displayed drive status to "querying".
+# Add a machine ID feature so you can number the machines and they'll have unique beep sequences.
 # Make the Connection column show SATA vs IDE vs USB bridge (successful bridges, not thumb drives/bad enclosures).
+# Make an ISO and add pcspkr to /etc/modules.
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
 #        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
-# See if there's a quick way to make the program reverse color text on devices that just finished a test.
-# Highlight drives that have completed and color them depending on whether they're good or bad.
-# Make drive entries blink when they're done and the whole screen blink if all drives are done.
 # Run the program with a variety of drives to make sure nothing crashes mdm.
 
 
@@ -111,7 +111,10 @@ def main(screen):
     autoRefresh = True  # Signal recurring rescan of all drives.
     autoRefreshDelaySecs = 60  # Time between auto-rescan of all drives.
     messageBarContents = ""
-    programTitle = "%%%r%%%0Multi-Drive Manager"
+    programTitle = "%%%r%%%0Multi-Drive Manager"  # Title shown at top of screen.
+    testInProgress = False  # True if any drive is in a testing state.
+    completionAlert = False  # True if the program is alerting the user all drives have finished testing.
+    abortionStartTime = time.time()  # Reset time marker of last abort command.
 
     # Build initial list of drives.
     devices = findAllDrives()
@@ -220,6 +223,10 @@ def main(screen):
             else:
                 curses.curs_set(0)
 
+            # Overlay screen with alert notification if one is active.
+            if completionAlert:
+                printAt(20, 20, CEC_RED + CEC_REVERSE + "ALERT")  # DEBUG
+
             # Update the view.
             screen.refresh()
 
@@ -244,8 +251,12 @@ def main(screen):
                         break
                     millisecondsElapsed = int((time.time() - startTime) * 1000)
 
+            # If acknowledging an alert message.
+            if completionAlert:
+                completionAlert = False  # Shut off alert message.
+
             # In search mode most keys should be added to the search string until Esc or Enter are pressed.
-            if searchModeFlag:
+            elif searchModeFlag:
                 if keypress == ESCAPE_KEY:
                     searchString = ""
                     searchModeFlag = False
@@ -261,7 +272,7 @@ def main(screen):
                 else:
                     pass  # All other keys are ignored in search mode.
 
-            # When not in search mode, all keys are interpreted as commands.
+            # If not in any special modes (searching, alert acknowledgement, etc), then interpret keys as commands.
             else:
                 # If a drive list is present then check for cursor keys.
                 if len(devices) > 0:
@@ -274,6 +285,9 @@ def main(screen):
 
                 if keypress == ESCAPE_KEY:
                     selector = SELECTOR_ABSENT
+
+                if keypress == ord('t'):  # DEBUG: For testing alerts.
+                    completionAlert = True
 
                 if keypress == ord('f'):
                     searchModeFlag = True
@@ -304,6 +318,7 @@ def main(screen):
                 if keypress == ord('a'):
                     if selector is not SELECTOR_ABSENT:
                         devices[selector].abortTest()
+                        abortionStartTime = time.time()
                     refreshDevices = redrawScreen = True
 
                 if keypress == ord('r'):
@@ -315,7 +330,21 @@ def main(screen):
         # Check if any drives have a smartctl query in progress.
         for device in devices:
             if device.state == DR_STATE_QUERYING and device.queryIsDone():
-                device.interpretSmartctlOutput()  # Process smartctl output.
+                # If a query just completed then process the smartctl output.
+                device.interpretSmartctlOutput()
+                # If at least one test was in progress then check if all tests have completed.
+                if testInProgress:
+                    secondsSinceLastAbortCommand = int((time.time() - abortionStartTime))
+                    if allDrivesAreIdleOrUnknown(devices) and secondsSinceLastAbortCommand > 5:
+                        testInProgress = False
+                        completionAlert = True
+                        # Send alert beep with non-blocking terminal command.
+                        beepCommand = BASE_BEEP
+                        subprocess.Popen(beepCommand.split(), stdout=subprocess.PIPE, stderr=DEVNULL)
+                else:
+                    if any(drive.state == DR_STATE_TESTING for drive in devices):
+                        testInProgress = True
+
                 redrawScreen = True  # Show outcome by redrawing screen.
 
         time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
@@ -371,6 +400,14 @@ def buildDriveTable(driveList):
 
         table.append(entry)
     return table
+
+
+# Returns true if all drives are idle/unknown,  (not testing or querying).
+def allDrivesAreIdleOrUnknown(driveList):
+    for drive in driveList:
+        if drive.state not in [DR_STATE_UNKNOWN, DR_STATE_IDLE]:
+            return False
+    return True
 
 
 # Initialize Curses (set various parameters, etc).

@@ -55,14 +55,11 @@ def cutToEllipsis(text, maxLength):
             if text[i:i+len(CEC)] == CEC:
                 newText += text[i:i+len(CEC) + CECLEN]
                 i += len(CEC) + CECLEN
-                print newText
             # Else it's a normal character and just append it.
             else:
                 newText += text[i]
                 i += 1
                 newLength += 1
-            print newText
-            print str(newLength) + " < " + str(maxLength - len(ellipsis))
         # Return excess string with an ellipsis tacked on at the end.
         return newText + ellipsis
     # If the given string didn't exceed the max length then return it as-is.
