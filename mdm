@@ -22,23 +22,22 @@
 # High Priority TO DO
 #####################
 # See if 'beep' command works on your testers and on the recovery machines. Use "modprobe pcspkr" if needed.
+# Add an machine ID feature so you can number the machines and they'll have unique beep sequences.
 # Add the IDE examples to your Git repository and your hdd-comparison spreadsheet.
 # Make the Connection column show SATA vs IDE vs USB bridge (successful bridges, not thumb drives/bad enclosures).
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
 #        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
-# The rapid keypress detector can be triggered by pressing keys during a refresh. Fix that.
 # See if there's a quick way to make the program reverse color text on devices that just finished a test.
 # Highlight drives that have completed and color them depending on whether they're good or bad.
 # Make drive entries blink when they're done and the whole screen blink if all drives are done.
-# Investigate whether you can save temporary files anywhere in order to track things like whether a currently
-#   running test is a short or long test. If not then remove the short and long test states from Drive.
 # Run the program with a variety of drives to make sure nothing crashes mdm.
 
 
 # Moderate Priority To Do
 #########################
-# Make the program frequently (1hz) scan for changes in /dev/sdX to see if drives have changed.
+# Make the program frequently (1hz) scan for changes in /dev/sdX to see if drives have been hot-swapped.
+# Save status data to a /var/tmp file so that session settings remain if you quit the program and re-run it.
 # Make F5 work for refresh also.
 # Search for "SMART Self-test Log not supported" and differentiate reporting that from reporting a drive that
 #   supports selt-test logging but no tests have ever been run on it.
@@ -112,6 +111,7 @@ def main(screen):
     autoRefresh = True  # Signal recurring rescan of all drives.
     autoRefreshDelaySecs = 60  # Time between auto-rescan of all drives.
     messageBarContents = ""
+    programTitle = "%%%r%%%0Multi-Drive Manager"
 
     # Build initial list of drives.
     devices = findAllDrives()
@@ -142,7 +142,7 @@ def main(screen):
             screen.border(0)
 
             # Print the program title.
-            printAt(1, 1, "%%%rMulti-Drive Manager")
+            printAt(1, 1, programTitle)
 
             # Print the search bar or help bar.
             if searchModeFlag:

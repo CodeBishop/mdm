@@ -258,6 +258,7 @@ class Drive(object):
         else:
             return False
 
+    # Return the drive status description as a short string.
     def statusString(self):
         if self.state in [DR_STATE_SHORT_TESTING, DR_STATE_LONG_TESTING, DR_STATE_TESTING] and \
            241 <= self.smartStatusCode <= 249:

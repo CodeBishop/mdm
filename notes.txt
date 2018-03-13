@@ -2,11 +2,19 @@
 
 Alerting When Finished
 ----------------------
-    The mechanism should be a testsInProgress flag.
-        Defaults to False.
-        Turns true on program start if any drives are detected as testing.
-        Turns true if any drives are started testing.
-        Is checked on every refresh?
+    The purpose to this alert system is to make the program grab the user's attention if there were drive tests in
+progress and they have all completed. This is accomplished by having mdm maintain several global variables:
+        bool testsInProgress: True if tests are running.
+        bool completionAlertFlag: True if tests have completed and the program is awaiting user acknowledgement.
+        list drivesRunningTests: List of Drive instances that are currently running tests.
+    The mechanism operates as follows:
+        testsInProgress and completionAlertFlag start out False.
+        If queryIsDone() returns True and the drive is testing then it gets added to drivesRunningTests if not already.
+        If queryIsDone() returns True and the drive is idle then it gets removed from drivesRunningTests.
+        After calling queryIsDone(), if testsInProgress is True and drivesRunningTests is empty then:
+            testInProgress = False
+            completionAlertFlag = True
+
 
 Potential Commands
 ------------------
