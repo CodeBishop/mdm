@@ -28,9 +28,6 @@
 # Add a machine ID feature so you can number the machines and they'll have unique beep sequences.
 # Make the Connection column show SATA vs IDE vs USB bridge (successful bridges, not thumb drives/bad enclosures).
 # Make an ISO and add pcspkr to /etc/modules.
-# Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
-#   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
-#        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
 # Run the program with a variety of drives to make sure nothing crashes mdm.
 
 
@@ -38,9 +35,10 @@
 #########################
 # Make the program frequently (1hz) scan for changes in /dev/sdX to see if drives have been hot-swapped.
 # Save status data to a /var/tmp file so that session settings remain if you quit the program and re-run it.
+# Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
+#   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
+#        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
 # Make F5 work for refresh also.
-# Search for "SMART Self-test Log not supported" and differentiate reporting that from reporting a drive that
-#   supports selt-test logging but no tests have ever been run on it.
 # Rewrite the Drive.testHistory construction to use Drive.smartctlLines instead of Drive.smartctlOutput.
 # Add functionality to extrapolate test completion within 1% (rather than 10%) based on smartctl reporting and time.
 # Add shift-R refresh or some other trigger to rescan for Drives (in the event of hot-swapping).
@@ -116,6 +114,18 @@ def main(screen):
     completionAlert = False  # True if the program is alerting the user all drives have finished testing.
     abortionStartTime = time.time()  # Reset time marker of last abort command.
 
+    # Construct alert message window.
+    alertWindow = curses.newwin(16, 40, 3, 5)
+    alertWindow.bkgd(curses.color_pair(1))
+    alertWindow.bkgd(curses.A_REVERSE)
+    alertWindow.bkgdset(curses.color_pair(1))
+    alertWindow.bkgdset(curses.A_REVERSE)
+    alertWindow.border(0)
+    setPrintWindow(alertWindow)
+    printAt(11, 7, "TESTING COMPLETE")
+    printAt(7, 13, "Press Any Key to Continue")
+    setPrintWindow(screen)
+
     # Build initial list of drives.
     devices = findAllDrives()
 
@@ -151,7 +161,8 @@ def main(screen):
             if searchModeFlag:
                 printAt(POS_BX, POS_BY, SEARCH_PROMPT + searchString)
             else:
-                printAt(POS_BX, POS_BY, "(f)ind (r)efresh (s)hort test (l)ong test (L)ong test all (a)bort test (q)uit")
+                printAt(POS_BX, POS_BY, "(f)ind  (r)efresh  (s)hort test  (l)ong test  (L)ong test all  " +
+                                        "(a)bort test  (q)uit")
 
             # Print the message bar.
             printAt(POS_MX, POS_MY, messageBarContents)
@@ -225,7 +236,7 @@ def main(screen):
 
             # Overlay screen with alert notification if one is active.
             if completionAlert:
-                printAt(20, 20, CEC_RED + CEC_REVERSE + "ALERT")  # DEBUG
+                alertWindow.overwrite(screen)
 
             # Update the view.
             screen.refresh()
@@ -285,9 +296,6 @@ def main(screen):
 
                 if keypress == ESCAPE_KEY:
                     selector = SELECTOR_ABSENT
-
-                if keypress == ord('t'):  # DEBUG: For testing alerts.
-                    completionAlert = True
 
                 if keypress == ord('f'):
                     searchModeFlag = True
