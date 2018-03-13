@@ -1,5 +1,13 @@
 
 
+Alerting When Finished
+----------------------
+    The mechanism should be a testsInProgress flag.
+        Defaults to False.
+        Turns true on program start if any drives are detected as testing.
+        Turns true if any drives are started testing.
+        Is checked on every refresh?
+
 Potential Commands
 ------------------
     One drive short scan.
@@ -12,8 +20,8 @@ Potential Commands
     All drives wipe.
     All drives long scan and if pass then wipe.
 
-Things That Should Possible When Drawing the Drive Table
---------------------------------------------------------
+Things That Should Be Possible When Drawing the Drive Table
+-----------------------------------------------------------
     Re-arrange the column ordering.
     Set individual column widths.
     Turn columns off or on.

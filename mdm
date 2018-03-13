@@ -3,9 +3,12 @@
 # Multi-Drive Manager (mdm)
 ###########################
 # A utility for managing the simultaneous S.M.A.R.T. testing and secure wiping of multiple data storage devices.
+# NOTE: Beep effects won't work unless you have 'beep' installed and the pcspkr module installed (either
+#       temporarily by modprobe or permanently in /etc/modules).
 
-# Misc Notes
-############
+
+# Misc Dev Notes
+################
 # Summary of sysrescue display differences.
 #   The terminal does not get restored when a curses program ends. The prompt re-appears at the bottom
 #       and the screen remains cluttered with whatever was on display.
@@ -18,8 +21,9 @@
 
 # High Priority TO DO
 #####################
+# See if 'beep' command works on your testers and on the recovery machines. Use "modprobe pcspkr" if needed.
 # Add the IDE examples to your Git repository and your hdd-comparison spreadsheet.
-# Make the Connection column show SATA and IDE.
+# Make the Connection column show SATA vs IDE vs USB bridge (successful bridges, not thumb drives/bad enclosures).
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
 #        https://ata.wiki.kernel.org/index.php/ATA_Secure_Erase
@@ -71,6 +75,13 @@ ESCAPE_KEY = 27
 ENTER_KEY = 10
 RAPID_KEYPRESS_THRESHOLD = 30  # Minimum milliseconds to distinguish keyboard from barcode scanner.
 SEARCH_PROMPT = "Find: "
+
+# Constants related to the beep sequence alert.
+BASE_BEEP = "beep -f1000 -l50 -n -f2000 -l50 -n -f3000 -l40 -n -f4000 -l30 -D1200"
+BEEP_START_FREQ = 200
+BEEP_FREQ_STEP = 100
+BEEP_LENGTH_MS = 150
+BEEP_DELAY_MS = 250
 
 HOURS_WARNING = 30000  # Number of drive operation hours above which the user is warned of old age.
 HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is warned of end-of-life imminence.
