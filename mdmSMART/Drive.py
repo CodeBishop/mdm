@@ -233,10 +233,12 @@ class Drive(object):
     def runShortTest(self):
         # Call smartctl directly to run a short test.
         terminalCommand("smartctl -s on -t short " + self.devicePath)
+        self.state = DR_STATE_TESTING
 
     def runLongTest(self):
         # Call smartctl directly to run a long test.
         terminalCommand("smartctl -s on -t long " + self.devicePath)
+        self.state = DR_STATE_TESTING
 
     def abortTest(self):
         # Call smartctl directly to abort currently running test.
