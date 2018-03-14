@@ -22,8 +22,6 @@
 # High Priority TO DO
 #####################
 # Make drives shows a status of "complete" if they have finished a test during the current run.
-# Add a machine ID feature so you can number the machines and they'll have unique beep sequences.
-# Make the Connection column show SATA vs IDE vs USB bridge (successful bridges, not thumb drives/bad enclosures).
 # Make an ISO and add pcspkr to /etc/modules.
 # Run the program with a variety of drives to make sure nothing crashes mdm.
 
@@ -31,6 +29,7 @@
 # Moderate Priority To Do
 #########################
 # Make the program frequently (1hz) scan for changes in /dev/sdX to see if drives have been hot-swapped.
+# Add a machine ID feature so you can number the machines and they'll have unique beep sequences.
 # Save status data to a /var/tmp file so that session settings remain if you quit the program and re-run it.
 # Add support for having hdparm do secure wiping. This should skip the bus and run faster than DBAN but
 #   make sure you DO NOT LET IT RUN OVER USB! Doing so can brick a drive apparently. More info here:
