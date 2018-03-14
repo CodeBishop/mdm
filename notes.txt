@@ -1,39 +1,5 @@
 
 
-Alerting When Finished
-----------------------
-    The purpose to this alert system is to make the program grab the user's attention if there were drive tests in
-progress and they have all completed. This is accomplished by having mdm maintain several global variables:
-        bool testsInProgress: True if tests are running.
-        bool completionAlertFlag: True if tests have completed and the program is awaiting user acknowledgement.
-        list drivesRunningTests: List of Drive instances that are currently running tests.
-    The mechanism operates as follows:
-        testsInProgress and completionAlertFlag start out False.
-        If queryIsDone() returns True and the drive is testing then it gets added to drivesRunningTests if not already.
-        If queryIsDone() returns True and the drive is idle then it gets removed from drivesRunningTests.
-        After calling queryIsDone(), if testsInProgress is True and drivesRunningTests is empty then:
-            testInProgress = False
-            completionAlertFlag = True
-        The abort command will remove that drive from drivesRunningTests and if the list is now empty then both the
-            testsInProgress and completionAlertFlag flags will be set to False so an abort can't trigger an alert.
-   Alternative mechanism:
-        An allDrivesAreIdle(drivelist) function goes through the list of drives and if all of them are idle then it
-            returns True. If any are testing or querying then it returns False.
-        After each queryIsDone() returns True then calls allDrivesAreIdle(). If it's True then testInProgress is set
-            to True. If it's False and testInProgress was True then testInProgress is set to False and
-            completionAlertFlag is set to True unless abortionStartTime was in the last 5 seconds.
-        If an abort command is given then the abortionStartTime is set to the current time.
-    Alternative mechanism flow:
-        testInProgress = False
-        completionAlert = False
-        if queryIsDone():
-            if testInProgress:
-                if allDrivesAreIdleOrUnknown() and (currentTime-abortionStartTime) > 5secs:
-                    testInProgress = False
-                    completionAlert = True
-            else:
-                anyDriveIsTesting(drivelist)
-                testInProgress = True
 
 
 
