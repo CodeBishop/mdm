@@ -79,8 +79,8 @@ BASE_BEEP = "beep -f1000 -l50 -n -f2000 -l50 -n -f3000 -l40 -n -f4000 -l30 -D120
 BEEP_REPEAT_COUNT = 3
 BEEP_REPEAT_DELAY_SECS = 600
 
-HOURS_WARNING = 30000  # Number of drive operation hours above which the user is warned of old age.
-HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is warned of end-of-life imminence.
+HOURS_WARNING = 25000  # Number of drive operation hours above which the user is warned of old age.
+HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is strongly warned of old age.
 
 columnWidths = [8, 5, 8, 24, 21, 7, 6, 5, 10, 15]
 
