@@ -72,17 +72,17 @@ SEARCH_PROMPT = "Find: "
 
 # Constants related to the beep sequence alert.
 BASE_BEEP = "beep -f1000 -l50 -n -f2000 -l50 -n -f3000 -l40 -n -f4000 -l30 -D1200"
-BEEP_START_FREQ = 200
-BEEP_FREQ_STEP = 100
-BEEP_LENGTH_MS = 150
-BEEP_DELAY_MS = 250
+# BEEP_START_FREQ = 200
+# BEEP_FREQ_STEP = 100
+# BEEP_LENGTH_MS = 150
+# BEEP_DELAY_MS = 250
 BEEP_REPEAT_COUNT = 3
 BEEP_REPEAT_DELAY_SECS = 600
 
 HOURS_WARNING = 30000  # Number of drive operation hours above which the user is warned of old age.
 HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is warned of end-of-life imminence.
 
-columnWidths = [8, 4, 5, 8, 24, 21, 7, 6, 5, 10, 15]
+columnWidths = [8, 5, 8, 24, 21, 7, 6, 5, 10, 15]
 
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
@@ -188,7 +188,7 @@ def main(screen):
                 posX, posY = 1, POS_DTY + len(devices) + 2
 
                 # Print the current smartctl testing status.
-                if device.connector == "USB":
+                if device.unknownUSBBridge:
                     printAt(posX, posY, "SMART firmware was not reachable through USB interface.")
                 else:
                     if device.smartStatusCode == SMART_STATUS_CODE_NOT_INITIALIZED:
@@ -349,6 +349,9 @@ def main(screen):
             if device.state == DR_STATE_QUERYING and device.queryIsDone():
                 # If a query just completed then process the smartctl output.
                 device.interpretSmartctlOutput()
+                # If a drive is identified as having an unknown USB bridge then remove it from the list of devices.
+                if device.unknownUSBBridge:
+                    devices.remove(device)
                 # If at least one test was in progress then check if all tests have completed.
                 if testInProgress:
                     # If drives are idle and there's been no abort command recently then alert user of test completion.
@@ -373,7 +376,7 @@ def main(screen):
 # Construct a 2D array for drive data, including a header row.
 def buildDriveTable(driveList):
     table = list()
-    table.append(["Path", "Conn", "RPM", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State"])
+    table.append(["Path", "RPM", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State"])
     for drive in driveList:
         # Make a color-coded string of the reallocated sector count.
         if drive.reallocCount is 0:
@@ -403,7 +406,6 @@ def buildDriveTable(driveList):
 
         entry = list()
         entry.append(drive.devicePath)
-        entry.append(drive.connector)
         entry.append(drive.rotationRate)
         entry.append(drive.capacity)
         entry.append(drive.model)

@@ -64,7 +64,7 @@ class Drive(object):
         # Declare the members of this class.
         self.attributes = [None] * 256  # Create list of unfilled attributes.
         self.capacity = ""  # Drive size in MB, GB or TB as a string.
-        self.connector = ""  # SATA, SCSI, USB, etc.
+        self.unknownUSBBridge = False
         self.device = None
         self.devicePath = devicePath
         self.GSenseCount = ""
@@ -111,7 +111,7 @@ class Drive(object):
     # Interpret the current stored raw output of smartctl to fill device fields.
     def interpretSmartctlOutput(self):
         if re.search("Unknown USB bridge", self.smartctlOutput):
-            self.connector = "USB"
+            self.unknownUSBBridge = True
             self.smartCapable = False
             return  # Don't bother reading smartctl output if it's an unbridged USB device.
         else:
