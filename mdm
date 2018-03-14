@@ -22,8 +22,6 @@
 # High Priority TO DO
 #####################
 # Make drives shows a status of "complete" if they have finished a test during the current run.
-# Make the alarm beep repeat x number of times with a pause of m minutes.
-# Find out why starting a test doesn't change the displayed drive status to "querying".
 # Add a machine ID feature so you can number the machines and they'll have unique beep sequences.
 # Make the Connection column show SATA vs IDE vs USB bridge (successful bridges, not thumb drives/bad enclosures).
 # Make an ISO and add pcspkr to /etc/modules.
@@ -78,8 +76,8 @@ BEEP_START_FREQ = 200
 BEEP_FREQ_STEP = 100
 BEEP_LENGTH_MS = 150
 BEEP_DELAY_MS = 250
-BEEP_REPEAT_COUNT = 6
-BEEP_REPEAT_DELAY_SECS = 5
+BEEP_REPEAT_COUNT = 3
+BEEP_REPEAT_DELAY_SECS = 600
 
 HOURS_WARNING = 30000  # Number of drive operation hours above which the user is warned of old age.
 HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is warned of end-of-life imminence.
