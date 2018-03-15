@@ -28,11 +28,15 @@ Having an ETA Column
 Having an ETA Column Alternative: Drive-centric Approach
 --------------------------------------------------------
     The main program calls a static method of Drive to set the class variable of the ETA file path.
-    When Drive.interpretSmartctlOutput() is called the Drive checks if there's an ETA file and the Drive is testing
-        and the drive has no ETA and the drive has a serial number. Then it should look for itself in the ETA file
-        and load its ETA if found.
+    Add a Drive.completionPercentage member to the class definition. It gets loaded from the ETA file and also
+        re-derived at each interpretSmartCtlOutput() call which also checks if the percentage has changed in the
+        wrong direction. In that event the Drive disables its ETA member on the assumption that something has gone
+        screwy with the progress measurement. This will catch instances where a new smart test has been ordered
+        from the command line while mdm still thought there was a previous one running based on the ETA file. If the
+        percentage has changed in the right direction then the drive updates the ETA file. This will provide the
+        initial save also.
     When Drive.startTest() is called it feeds the terminal output to Drive.interpretTestCommand(). This function
-        checks if there's an ETA file
+        checks if there's an ETA file and if so then it puts this Drive's info into the ETA file.
 
 
 Things That Should Be Possible When Drawing the Drive Table
