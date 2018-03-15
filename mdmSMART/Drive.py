@@ -44,7 +44,7 @@ NUMBER_OF_SMARTCTL_STATE_CODES = 256
 
 # Smart test status codes.
 SMART_CODE_IDLE = [0, 1]  # Drive is not smart testing.
-SMART_CODE_ABORTED = [16, 24, 25]  # Drive is idle and most recent test was aborted by user.
+SMART_CODE_ABORTED = [16, 17, 24, 25]  # Drive is idle and most recent test was aborted by user.
 SMART_CODE_INTERRUPTED = 32  # Drive is idle and most recent test was interrupted before completion.
 SMART_CODE_INTERRUPTED2 = 33  # Drive is idle and most recent test was interrupted before completion.
 SMART_CODE_READ_FAILURE = 118  # Drive failed most recent test with read failure.
@@ -67,6 +67,7 @@ class Drive(object):
         self.unknownUSBBridge = False
         self.device = None
         self.devicePath = devicePath
+        self.estimatedCompletionTime = None
         self.GSenseCount = ""
         self.hours = NOT_INITIALIZED
         self.importantAttributes = list()  # Attributes that should always be shown (like WHEN_FAILs).
@@ -78,13 +79,13 @@ class Drive(object):
         self.smartCapable = False  # Assume a drive is not SMART-capable until proven otherwise.
         self.smartctlOutput = ""  # All smartctl output as a single string.
         self.smartctlLines = list()  # All smartctl output as a list of strings, one per line.
+        self.smartctlProcess = None  # Separate process allows non-blocking call to smartctl.
         self.smartStatusCode = SMART_STATUS_CODE_NOT_INITIALIZED
         self.smartStatusDescription = SMART_STATUS_CODE_NOT_INITIALIZED_MSG
         self.state = DR_STATE_UNKNOWN
-        self.smartctlProcess = None  # Separate process allows non-blocking call to smartctl.
         self.testHistory = list()  # Strings, one per test result from SMART test history.
         self.testHistoryHeader = ""  # Test history column header as given by smartctl.
-        self.testProgress = NOT_INITIALIZED
+        self.testPercentage = NOT_INITIALIZED  # Percentage completion of test.
 
         # Start a smartctl process so the device fields can be filled.
         self.initiateQuery()
@@ -127,6 +128,9 @@ class Drive(object):
             if firstMatchPosition("Solid State Device", self.smartctlOutput) is not SEARCH_FAILED:
                 self.rotationRate = "SSD"
 
+        # Before updating Drive.state make a note if it's currently testing.
+        oldDriveState = self.state
+
         # Search for SMART status code in smartctl output.
         smartStatusCodeSearch = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
 
@@ -146,7 +150,9 @@ class Drive(object):
                 self.state = DR_STATE_IDLE
             # Look for smartctl status codes that imply the drive is running a test.
             elif self.smartStatusCode in range(241, 250):  # Range of SMART testing codes = 241-249.
-                    self.state = DR_STATE_TESTING
+                self.state = DR_STATE_TESTING
+                completionPercentage = (250 - self.smartStatusCode) * 10
+                self.testPercentage = completionPercentage
             # If smartctl status code is not recognized that specify the drive state as unknown.
             else:
                 self.state = DR_STATE_UNKNOWN
@@ -181,6 +187,11 @@ class Drive(object):
                         smartStatusLineOnwards = smartStatusDescNextLineOnwards[smartStatusDescNextLinePos:]
                     else:
                         break
+
+        # If testing has stopped then update related drive members.
+        if oldDriveState is DR_STATE_TESTING and self.state is not DR_STATE_TESTING:
+            self.testPercentage = NOT_INITIALIZED
+            self.estimatedCompletionTime = None
 
         # Look for drive size.
         self.capacity = capture(r"User Capacity:\s*.*\[(.*)\]", self.smartctlOutput)
@@ -239,8 +250,10 @@ class Drive(object):
     # Executes a given terminal command that should be a smartctl test.
     def runTest(self, command):
         if self.state not in [DR_STATE_TESTING, DR_STATE_WIPING]:
-            # Call smartctl directly to run a long test.
-            terminalCommand(command)
+            terminalOutput = terminalCommand(command)
+            completionTime = capture(r"Test will complete after (.*)", terminalOutput)
+            if completionTime is not CAPTURE_FAILED:
+                self.estimatedCompletionTime = completionTime
             self.state = DR_STATE_TESTING
 
     def abortTest(self):
@@ -262,7 +275,7 @@ class Drive(object):
     def statusString(self):
         if self.state is DR_STATE_TESTING and 241 <= self.smartStatusCode <= 249:
             completion = (250 - self.smartStatusCode) * 10
-            return DR_STATE_MSG[self.state] + " " + str(completion) + "%"
+            return DR_STATE_MSG[self.state] + " " + str(self.testPercentage) + "%"
         return DR_STATE_MSG[self.state]
 
     # If any attribute has something other than a dash for WHEN_FAIL then return True.
@@ -278,3 +291,11 @@ class Drive(object):
             if not any(msg in test for msg in harmlessTestMessages):
                 return True
         return False
+
+    # Return remaining test time (ETA) as string.
+    def testTimeRemaining(self):
+        # If an test completion time is known then calculate
+        if self.estimatedCompletionTime:
+            return self.estimatedCompletionTime
+        else:
+            return ""

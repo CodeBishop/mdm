@@ -137,7 +137,7 @@ def terminalCommand(command):
 # Use a regular expression to capture part of a string.
 def capture(pattern, text):
     result = re.search(pattern, text, re.IGNORECASE)
-    if result and result.group:
+    if result and result.group and result.lastindex >= 1:
         return result.group(1)
     else:
         return CAPTURE_FAILED

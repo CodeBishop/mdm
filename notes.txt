@@ -33,10 +33,19 @@ Having an ETA Column Alternative: Drive-centric Approach
         wrong direction. In that event the Drive disables its ETA member on the assumption that something has gone
         screwy with the progress measurement. This will catch instances where a new smart test has been ordered
         from the command line while mdm still thought there was a previous one running based on the ETA file. If the
-        percentage has changed in the right direction then the drive updates the ETA file. This will provide the
-        initial save also.
+        percentage has changed in the right direction then the drive updates the ETA file.
     When Drive.startTest() is called it feeds the terminal output to Drive.interpretTestCommand(). This function
         checks if there's an ETA file and if so then it puts this Drive's info into the ETA file.
+
+Ways In Which ETA Gets In and Out
+---------------------------------
+    IN: Start a test and Drive extracts the ETA and calls updateETAFile on itself.
+    IN: interpretSmartctlOutput() sees that it's testing and has no ETA, then tries to load it from file.
+    OUT: interpretSmartctlOutput() sees that it's percentageComplete has changed and updates file.
+    OUT: interpretSmartctlOutput() sees that it's not testing but has an ETA, it removes its entry from the file.
+    Drive.updateStatusFile(resetETA=False)
+        Updates ETA or removes self. Setting resetETA=True will force an overwrite of any ETA on file (use when
+            starting a new test).
 
 
 Things That Should Be Possible When Drawing the Drive Table
@@ -47,6 +56,7 @@ Things That Should Be Possible When Drawing the Drive Table
     Move the top-left corner position.
     Specify a box (max width and height) that it won't overflow.
     Make it scrollable?
+
 
 Redoing Drive Table Drawing
 ---------------------------

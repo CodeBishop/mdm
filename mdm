@@ -55,6 +55,7 @@ import os
 
 from mdmSMART.Drive import *
 
+
 # Drawing positions for view layout.
 POS_BX = 1  # Left side of search/help bar.
 POS_BY = 3  # Top side of search/help bar.
@@ -83,7 +84,7 @@ HOURS_WARNING = 25000  # Number of drive operation hours above which the user is
 HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is strongly warned of old age.
 
 # Widths of the columns in the drive table.
-columnWidths = [9, 5, 8, 24, 21, 7, 6, 5, 10, 15]
+columnWidths = [9, 5, 8, 24, 21, 7, 6, 5, 10, 15, 10]
 
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
@@ -377,7 +378,7 @@ def main(screen):
 # Construct a 2D array for drive data, including a header row.
 def buildDriveTable(driveList):
     table = list()
-    table.append(["Path", "RPM", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State"])
+    table.append(["Path", "RPM", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State", "ETA"])
     for drive in driveList:
         # Make a color-coded string of the reallocated sector count.
         if drive.reallocCount is 0:
@@ -416,6 +417,7 @@ def buildDriveTable(driveList):
         entry.append(str(drive.GSenseCount))
         entry.append(alertMessage)
         entry.append(drive.statusString())
+        entry.append(drive.testTimeRemaining())
 
         table.append(entry)
     return table
