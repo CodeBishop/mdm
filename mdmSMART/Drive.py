@@ -231,14 +231,17 @@ class Drive(object):
             self.GSenseCount = self.attributes[ATTR_GSENSE2].rawValue
 
     def runShortTest(self):
-        # Call smartctl directly to run a short test.
-        terminalCommand("smartctl -s on -t short " + self.devicePath)
-        self.state = DR_STATE_TESTING
+        self.runTest("smartctl -s on -t short " + self.devicePath)
 
     def runLongTest(self):
-        # Call smartctl directly to run a long test.
-        terminalCommand("smartctl -s on -t long " + self.devicePath)
-        self.state = DR_STATE_TESTING
+        self.runTest("smartctl -s on -t long " + self.devicePath)
+
+    # Executes a given terminal command that should be a smartctl test.
+    def runTest(self, command):
+        if self.state not in [DR_STATE_TESTING, DR_STATE_WIPING]:
+            # Call smartctl directly to run a long test.
+            terminalCommand(command)
+            self.state = DR_STATE_TESTING
 
     def abortTest(self):
         # Call smartctl directly to abort currently running test.

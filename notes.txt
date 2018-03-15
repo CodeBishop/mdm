@@ -15,6 +15,26 @@ Potential Commands
     All drives wipe.
     All drives long scan and if pass then wipe.
 
+
+Having an ETA Column
+--------------------
+    Take the estimated completion time from the terminal output of starting a smartctl test.
+    Subtract that date object from the current date object to get an ETA.
+    Save the ETA to a /var/tmp file filed by serial number. If the drive has no serial number then don't save.
+    After each drive.interpretSmartctlOutput() call the drive should be asked if it's currently running a test and has a
+        serial number. If so then call Drive.readETAFile()
+
+
+Having an ETA Column Alternative: Drive-centric Approach
+--------------------------------------------------------
+    The main program calls a static method of Drive to set the class variable of the ETA file path.
+    When Drive.interpretSmartctlOutput() is called the Drive checks if there's an ETA file and the Drive is testing
+        and the drive has no ETA and the drive has a serial number. Then it should look for itself in the ETA file
+        and load its ETA if found.
+    When Drive.startTest() is called it feeds the terminal output to Drive.interpretTestCommand(). This function
+        checks if there's an ETA file
+
+
 Things That Should Be Possible When Drawing the Drive Table
 -----------------------------------------------------------
     Re-arrange the column ordering.
