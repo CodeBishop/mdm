@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import warnings
+import datetime
 
 from Attribute import Attribute
 from mdmSMART.utils import *
@@ -251,9 +252,11 @@ class Drive(object):
     def runTest(self, command):
         if self.state not in [DR_STATE_TESTING, DR_STATE_WIPING]:
             terminalOutput = terminalCommand(command)
-            completionTime = capture(r"Test will complete after (.*)", terminalOutput)
-            if completionTime is not CAPTURE_FAILED:
-                self.estimatedCompletionTime = completionTime
+            eta = capture(r"Test will complete after (.*)", terminalOutput)
+            if eta is not CAPTURE_FAILED:
+                # Extract time and date substrings from smartctl output.
+                #   Example: "Thu Mar 15 14:29:51 2018"
+                self.estimatedCompletionTime = datetime.datetime.strptime(eta, "%a %b %d %H:%M:%S %Y")
             self.state = DR_STATE_TESTING
 
     def abortTest(self):
@@ -296,6 +299,6 @@ class Drive(object):
     def testTimeRemaining(self):
         # If an test completion time is known then calculate
         if self.estimatedCompletionTime:
-            return self.estimatedCompletionTime
+            return str(self.estimatedCompletionTime - datetime.datetime.now())
         else:
             return ""

@@ -84,7 +84,7 @@ HOURS_WARNING = 25000  # Number of drive operation hours above which the user is
 HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is strongly warned of old age.
 
 # Widths of the columns in the drive table.
-columnWidths = [9, 5, 8, 24, 21, 7, 6, 5, 10, 15, 10]
+columnWidths = [9, 5, 8, 24, 21, 7, 6, 5, 10, 15, 15]
 
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
