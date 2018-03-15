@@ -262,6 +262,9 @@ class Drive(object):
     def abortTest(self):
         # Call smartctl directly to abort currently running test.
         terminalCommand("smartctl -s on -X " + self.devicePath)
+        self.estimatedCompletionTime = None
+        self.testPercentage = NOT_INITIALIZED
+        self.state = DR_STATE_UNKNOWN
 
     # Test if a given string matches any device field as a substring.
     def matchSearchString(self, searchString):
@@ -299,6 +302,11 @@ class Drive(object):
     def testTimeRemaining(self):
         # If an test completion time is known then calculate
         if self.estimatedCompletionTime:
-            return str(self.estimatedCompletionTime - datetime.datetime.now())
+            timeDelta = self.estimatedCompletionTime - datetime.datetime.now()
+            hours, minutes = timeDelta.days * 24 + timeDelta.seconds // 3600, timeDelta.seconds // 60 % 60
+            if hours > 0:
+                return str(hours) + "h " + str(minutes) + "m"
+            else:
+                return str(minutes) + "m"
         else:
             return ""
