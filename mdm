@@ -81,7 +81,8 @@ BEEP_REPEAT_DELAY_SECS = 600
 HOURS_WARNING = 25000  # Number of drive operation hours above which the user is warned of old age.
 HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is strongly warned of old age.
 
-columnWidths = [8, 5, 8, 24, 21, 7, 6, 5, 10, 15]
+# Widths of the columns in the drive table.
+columnWidths = [9, 5, 8, 24, 21, 7, 6, 5, 10, 15]
 
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
@@ -103,7 +104,7 @@ def main(screen):
     searchModeFlag = False  # Toggle search mode (as versus command mode).
     barcodeScanDetection = False  # Treat rapid keypresses as barcode scans to be searched.
     redrawScreen = True  # Signal a screen redraw/refresh.
-    refreshDevices = True  # Signal a rescan of all drives.
+    refreshDrives = True  # Signal a rescan of all drives.
     autoRefresh = True  # Signal recurring rescan of all drives.
     autoRefreshDelaySecs = 60  # Time between auto-rescan of all drives.
     messageBarContents = ""
@@ -127,21 +128,21 @@ def main(screen):
     setPrintWindow(screen)
 
     # Build initial list of drives.
-    devices = findAllDrives()
+    drives = findAllDrives()
 
     exitFlag = False
     lastRefresh = time.time()
     while not exitFlag:
         # Check if auto-refresh should be triggered.
         if autoRefresh and (time.time() - lastRefresh) > autoRefreshDelaySecs:
-            refreshDevices = True
+            refreshDrives = True
 
         # Rescan the drives if signaled to.
-        if refreshDevices:
+        if refreshDrives:
             # Reset the signal flag.
-            refreshDevices = False
-            for device in devices:
-                device.initiateQuery()
+            refreshDrives = False
+            for drive in drives:
+                drive.initiateQuery()
             lastRefresh = time.time()
             redrawScreen = True
 
@@ -168,7 +169,7 @@ def main(screen):
             printAt(POS_MX, POS_MY, messageBarContents)
 
             # Print the drive list.
-            table = buildDriveTable(devices)  # Construct a table of attribute text from the drive list.
+            table = buildDriveTable(drives)  # Construct a table of attribute text from the drive list.
             if selector is not SELECTOR_ABSENT:
                 table[selector+1][0] = CEC_REVERSE + table[selector+1][0]
             screenHeight, screenWidth = screen.getmaxyx()  # Get limitations of screen size.
@@ -179,49 +180,49 @@ def main(screen):
                 # Draw the selector.
                 printAt(POS_DTX - 4, POS_DTY + selector + 1, CEC_REVERSE + "--> ")
 
-                # Note the device the selector is pointed at.
-                device = devices[selector]
-                deviceName = device.devicePath  # Refer to the device by its path.
+                # Note the drive the selector is pointed at.
+                drive = drives[selector]
+                driveName = drive.devicePath  # Refer to the drive by its path.
 
-                # Print detailed info for the currently selected device starting from a position below the drive list.
-                posX, posY = 1, POS_DTY + len(devices) + 2
+                # Print detailed info for the currently selected drive starting from a position below the drive list.
+                posX, posY = 1, POS_DTY + len(drives) + 2
 
                 # Print the current smartctl testing status.
-                if device.unknownUSBBridge:
+                if drive.unknownUSBBridge:
                     printAt(posX, posY, "SMART firmware was not reachable through USB interface.")
                 else:
-                    if device.smartStatusCode == SMART_STATUS_CODE_NOT_INITIALIZED:
+                    if drive.smartStatusCode == SMART_STATUS_CODE_NOT_INITIALIZED:
                         smartTestStateMsg = SMART_STATUS_CODE_NOT_FOUND_MSG
                     else:
-                        smartTestStateMsg = "SMART status code " + str(device.smartStatusCode) + ": "
-                        smartTestStateMsg += device.smartStatusDescription
+                        smartTestStateMsg = "SMART status code " + str(drive.smartStatusCode) + ": "
+                        smartTestStateMsg += drive.smartStatusDescription
                     printAt(posX, posY, smartTestStateMsg)
                 posY += 2  # Increment vertical cursor and add blank line.
 
                 # Print the list of important attributes.
-                if len(device.importantAttributes) > 0:
+                if len(drive.importantAttributes) > 0:
                     printAt(posX, posY, attributeHeader)
                     posY += 1
-                    for attribute in device.importantAttributes:
+                    for attribute in drive.importantAttributes:
                         printAt(posX, posY, attribute.smartctlLine)
                         posY += 1  # Increment vertical cursor
                     posY += 1  # Add a blank line before next section of info.
 
-                # Print the test history for the device.
+                # Print the test history for the drive.
                 # NOTE: The SMART firmware standard stores up to 21 tests and thereafter starts recording over top
                 #       of older tests.
-                if device.smartCapable:
-                    if len(device.testHistory) > 0:
-                        printAt(posX, posY, device.testHistoryHeader)
+                if drive.smartCapable:
+                    if len(drive.testHistory) > 0:
+                        printAt(posX, posY, drive.testHistoryHeader)
                         posY += 1  # Increment vertical cursor
-                        for testResult in device.testHistory:
+                        for testResult in drive.testHistory:
                             if any(msg in testResult for msg in harmlessTestMessages):
                                 printAt(posX, posY, testResult)
                             else:
                                 printAt(posX, posY, CEC_RED + testResult)
                             posY += 1  # Increment vertical cursor.
                     else:
-                        printAt(posX, posY, "No history of SMART tests found for " + deviceName)
+                        printAt(posX, posY, "No history of SMART tests found for " + driveName)
                         posY += 1  # Increment vertical cursor
                     posY += 1  # Add a blank line before next section of info.
 
@@ -281,7 +282,7 @@ def main(screen):
                     searchModeFlag = False
                 elif keypress == ENTER_KEY:
                     if len(searchString) > 0:
-                        selector, messageBarContents = searchDevices(searchString, devices)
+                        selector, messageBarContents = searchDrives(searchString, drives)
                     searchModeFlag = False
                     searchString = ""  # Clear the search string after each search.
                 elif keypress == curses.KEY_BACKSPACE:
@@ -294,11 +295,11 @@ def main(screen):
             # If not in any special modes (searching, alert acknowledgement, etc), then interpret keys as commands.
             else:
                 # If a drive list is present then check for cursor keys.
-                if len(devices) > 0:
+                if len(drives) > 0:
                     if keypress == curses.KEY_DOWN:
-                        selector = (selector + 1) % len(devices)
+                        selector = (selector + 1) % len(drives)
                     if keypress == curses.KEY_UP:
-                        selector = (selector - 1) % len(devices)
+                        selector = (selector - 1) % len(drives)
                 else:
                     selector = SELECTOR_ABSENT
 
@@ -311,56 +312,56 @@ def main(screen):
                 if keypress == ord('s'):
                     if selector is not SELECTOR_ABSENT:
                         # Start the test, refresh the drive and redraw the screen.
-                        devices[selector].runShortTest()
-                        devices[selector].initiateQuery()
+                        drives[selector].runShortTest()
+                        drives[selector].initiateQuery()
                         redrawScreen = True
 
                 if keypress == ord('l'):
                     if selector is not SELECTOR_ABSENT:
                         # Start the test, refresh the drive and redraw the screen.
-                        devices[selector].runLongTest()
-                        devices[selector].initiateQuery()
+                        drives[selector].runLongTest()
+                        drives[selector].initiateQuery()
                         redrawScreen = True
 
                 if keypress == ord('L'):
                     if selector is not SELECTOR_ABSENT:
                         # Start the tests, refresh the drives and redraw the screen.
-                        for device in devices:
-                            if device.connector != "USB":
-                                device.runLongTest()
-                                device.initiateQuery()
+                        for drive in drives:
+                            if drive.connector != "USB":
+                                drive.runLongTest()
+                                drive.initiateQuery()
                         redrawScreen = True
 
                 if keypress == ord('a'):
                     if selector is not SELECTOR_ABSENT:
-                        devices[selector].abortTest()
+                        drives[selector].abortTest()
                         abortionStartTime = time.time()
-                    refreshDevices = redrawScreen = True
+                    refreshDrives = redrawScreen = True
 
                 if keypress == ord('r'):
-                    refreshDevices = redrawScreen = True
+                    refreshDrives = redrawScreen = True
 
                 if keypress in [ord('q'), ord('Q')]:
                     exitFlag = True
 
         # Check if any drives have a smartctl query in progress.
-        for device in devices:
-            if device.state == DR_STATE_QUERYING and device.queryIsDone():
+        for drive in drives:
+            if drive.state == DR_STATE_QUERYING and drive.queryIsDone():
                 # If a query just completed then process the smartctl output.
-                device.interpretSmartctlOutput()
-                # If a drive is identified as having an unknown USB bridge then remove it from the list of devices.
-                if device.unknownUSBBridge:
-                    devices.remove(device)
+                drive.interpretSmartctlOutput()
+                # If a drive is identified as having an unknown USB bridge then remove it from the list of drives.
+                if drive.unknownUSBBridge:
+                    drives.remove(drive)
                 # If at least one test was in progress then check if all tests have completed.
                 if testInProgress:
                     # If drives are idle and there's been no abort command recently then alert user of test completion.
                     secondsSinceLastAbortCommand = int((time.time() - abortionStartTime))
-                    if allDrivesAreIdleOrUnknown(devices) and secondsSinceLastAbortCommand > 5:
+                    if allDrivesAreIdleOrUnknown(drives) and secondsSinceLastAbortCommand > 5:
                         testInProgress = False
                         completionAlert = True
                         beepsRemaining = BEEP_REPEAT_COUNT
                 else:
-                    if any(drive.state == DR_STATE_TESTING for drive in devices):
+                    if any(drive.state == DR_STATE_TESTING for drive in drives):
                         testInProgress = True
 
                 redrawScreen = True  # Show outcome by redrawing screen.
@@ -385,7 +386,7 @@ def buildDriveTable(driveList):
         else:
             reallocText = CEC_YELLOW + "???"  # Includes NOT_INITIALIZED.
 
-        # Note whether the device has any failed attributes.
+        # Note whether the drive has any failed attributes.
         if drive.hasFailureHistory():
             alertMessage = CEC_RED + "bad test"
         elif drive.hasFailedAttributes():
@@ -432,38 +433,38 @@ def initCurses(screen):
     screen.nodelay(True)  # Make getch() non-blocking.
 
 
-def searchDevices(searchString, devices):
+def searchDrives(searchString, drives):
     message = ""  # Default to no message.
     selector = SELECTOR_ABSENT  # Default to hiding the selector.
-    # Build a list of search-matching devices and highlight them as selected.
-    matchingDevices = list()
-    for i in range(len(devices)):
-        if devices[i].matchSearchString(searchString):
-            matchingDevices.append(devices[i])
+    # Build a list of search-matching drives and highlight them as selected.
+    matchingDrives = list()
+    for i in range(len(drives)):
+        if drives[i].matchSearchString(searchString):
+            matchingDrives.append(drives[i])
             selector = i  # Set selector to matching drive.
-    if len(matchingDevices) == 0:
+    if len(matchingDrives) == 0:
         message = "No drives matched search string: " + searchString
-    if len(matchingDevices) >= 2:
+    if len(matchingDrives) >= 2:
         message = "Search matched multiple drives:"
-        for device in matchingDevices:
-            message += " " + device.devicePath
-            selector = SELECTOR_ABSENT  # Hide the selector if >1 device matched search.
+        for drive in matchingDrives:
+            message += " " + drive.devicePath
+            selector = SELECTOR_ABSENT  # Hide the selector if >1 drive matched search.
     return selector, message
 
 
 def findAllDrives():
-    # Get a list of all hard drive device paths.
-    devicePaths = glob.glob('/dev/sd?')
+    # Get a list of all hard drive drive paths.
+    drivePaths = glob.glob('/dev/sd?')
 
-    devices = list()
+    drives = list()
 
-    # Load each device and print a summary of it.
-    for devicePath in sorted(devicePaths):
-        # Attempt to load device smartctl info.
-        device = Drive(devicePath)
-        devices.append(device)
+    # Load each drive and print a summary of it.
+    for drivePath in sorted(drivePaths):
+        # Attempt to load drive smartctl info.
+        drive = Drive(drivePath)
+        drives.append(drive)
 
-    return devices
+    return drives
 
 
 curses.wrapper(main)
