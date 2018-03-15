@@ -129,9 +129,6 @@ class Drive(object):
             if firstMatchPosition("Solid State Device", self.smartctlOutput) is not SEARCH_FAILED:
                 self.rotationRate = "SSD"
 
-        # Before updating Drive.state make a note if it's currently testing.
-        oldDriveState = self.state
-
         # Search for SMART status code in smartctl output.
         smartStatusCodeSearch = capture(r"Self-test execution status:\s*\(\s*(\d+)\s*\)", self.smartctlOutput)
 
@@ -189,10 +186,9 @@ class Drive(object):
                     else:
                         break
 
-        # If testing has stopped then update related drive members.
-        if oldDriveState is DR_STATE_TESTING and self.state is not DR_STATE_TESTING:
-            self.testPercentage = NOT_INITIALIZED
-            self.estimatedCompletionTime = None
+        # If testing is not now occurring then ensure that test timing estimates are disabled.
+        if self.state is not DR_STATE_TESTING:
+            self.resetTestCompletion()
 
         # Look for drive size.
         self.capacity = capture(r"User Capacity:\s*.*\[(.*)\]", self.smartctlOutput)
@@ -262,9 +258,12 @@ class Drive(object):
     def abortTest(self):
         # Call smartctl directly to abort currently running test.
         terminalCommand("smartctl -s on -X " + self.devicePath)
+        self.resetTestCompletion()
+        self.state = DR_STATE_UNKNOWN
+
+    def resetTestCompletion(self):
         self.estimatedCompletionTime = None
         self.testPercentage = NOT_INITIALIZED
-        self.state = DR_STATE_UNKNOWN
 
     # Test if a given string matches any device field as a substring.
     def matchSearchString(self, searchString):
@@ -304,9 +303,11 @@ class Drive(object):
         if self.estimatedCompletionTime:
             timeDelta = self.estimatedCompletionTime - datetime.datetime.now()
             hours, minutes = timeDelta.days * 24 + timeDelta.seconds // 3600, timeDelta.seconds // 60 % 60
-            if hours > 0:
+            if hours is not 0:
                 return str(hours) + "h " + str(minutes) + "m"
-            else:
+            elif minutes is not 0:
                 return str(minutes) + "m"
+            else:
+                return str(timeDelta.seconds) + "s"
         else:
             return ""

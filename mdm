@@ -21,7 +21,6 @@
 
 # High Priority TO DO
 #####################
-# Take the completion time estimate given when initiating and use it to provide an ETA column.
 # Make drives shows a status of "complete" if they have finished a test during the current run.
 # Make an ISO and add pcspkr to /etc/modules.
 # Run the program with a variety of drives to make sure nothing crashes mdm.
@@ -29,6 +28,9 @@
 
 # Moderate Priority To Do
 #########################
+# Save the ETA to file so the program can be quit and re-run without losing the ETA.
+# Figure out why the ETA column can briefly show a negative time at the first refresh after completion.
+#   This can't happen without a buildTable() call, so how is that called when any Drive has junk data?
 # Make the program frequently (1hz) scan for changes in /dev/sdX to see if drives have been hot-swapped.
 # Add a machine ID feature so you can number the machines and they'll have unique beep sequences.
 # Save status data to a /var/tmp file so that session settings remain if you quit the program and re-run it.
@@ -362,6 +364,7 @@ def main(screen):
                         testInProgress = False
                         completionAlert = True
                         beepsRemaining = BEEP_REPEAT_COUNT
+                # Update test-in-progress flag if any drives have started testing.
                 else:
                     if any(drive.state == DR_STATE_TESTING for drive in drives):
                         testInProgress = True
