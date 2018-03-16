@@ -246,7 +246,7 @@ class Drive(object):
 
     # Executes a given terminal command that should be a smartctl test.
     def runTest(self, command):
-        if self.state not in [DR_STATE_TESTING, DR_STATE_WIPING]:
+        if self.smartCapable and self.state not in [DR_STATE_TESTING, DR_STATE_WIPING]:
             terminalOutput = terminalCommand(command)
             eta = capture(r"Test will complete after (.*)", terminalOutput)
             if eta is not CAPTURE_FAILED:
@@ -254,6 +254,7 @@ class Drive(object):
                 #   Example: "Thu Mar 15 14:29:51 2018"
                 self.estimatedCompletionTime = datetime.datetime.strptime(eta, "%a %b %d %H:%M:%S %Y")
             self.state = DR_STATE_TESTING
+            self.initiateQuery()  # Call smartctl a 2nd time to confirm new status as testing.
 
     def abortTest(self):
         # Call smartctl directly to abort currently running test.

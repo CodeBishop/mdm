@@ -22,6 +22,8 @@
 # High Priority TO DO
 #####################
 # Make "bad value" alerts highlight the bad value line(s) in the same color as the alert.
+# De-select when the user hits (f)ind so they won't think they're looking at a found drive if they haven't pushed enter.
+# Make "(L)ong test all" work even if there's no selector in place.
 # Test that a "bad test" red alert will overwrite a "bad value" yellow alert if both are present.
 # Make drives shows a status of "complete" if they have finished a test during the current run.
 # Make an ISO and add pcspkr to /etc/modules.
@@ -319,24 +321,19 @@ def main(screen):
                     if selector is not SELECTOR_ABSENT:
                         # Start the test, refresh the drive and redraw the screen.
                         drives[selector].runShortTest()
-                        drives[selector].initiateQuery()
                         redrawScreen = True
 
                 if keypress == ord('l'):
                     if selector is not SELECTOR_ABSENT:
                         # Start the test, refresh the drive and redraw the screen.
                         drives[selector].runLongTest()
-                        drives[selector].initiateQuery()
                         redrawScreen = True
 
                 if keypress == ord('L'):
-                    if selector is not SELECTOR_ABSENT:
-                        # Start the tests, refresh the drives and redraw the screen.
-                        for drive in drives:
-                            if drive.connector != "USB":
-                                drive.runLongTest()
-                                drive.initiateQuery()
-                        redrawScreen = True
+                    # Start the tests, refresh the drives and redraw the screen.
+                    for drive in drives:
+                        drive.runLongTest()
+                    redrawScreen = True
 
                 if keypress == ord('a'):
                     if selector is not SELECTOR_ABSENT:
