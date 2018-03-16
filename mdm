@@ -22,6 +22,7 @@
 # High Priority TO DO
 #####################
 # Make "bad value" alerts highlight the bad value line(s) in the same color as the alert.
+# Why are the columns all spread out when there's no drives attached?
 # De-select when the user hits (f)ind so they won't think they're looking at a found drive if they haven't pushed enter.
 # Make "(L)ong test all" work even if there's no selector in place.
 # Test that a "bad test" red alert will overwrite a "bad value" yellow alert if both are present.
