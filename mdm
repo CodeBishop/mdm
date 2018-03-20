@@ -33,6 +33,7 @@
 
 # Moderate Priority To Do
 #########################
+# Make sure the program behaves reasonably when the window is resized too small to fit everything.
 # Save the ETA to file so the program can be quit and re-run without losing the ETA.
 # Figure out why the ETA column can briefly show a negative time at the first refresh after completion.
 #   This can't happen without a buildTable() call, so how is that called when any Drive has junk data?
