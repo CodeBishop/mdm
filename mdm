@@ -22,7 +22,6 @@
 # High Priority TO DO
 #####################
 # Why are the columns all spread out when there's no drives attached?
-# De-select when the user hits (f)ind so they won't think they're looking at a found drive if they haven't pushed enter.
 # Make "(L)ong test all" work even if there's no selector in place.
 # Make drives shows a status of "complete" if they have finished a test during the current run.
 # Make an ISO and add pcspkr to /etc/modules.
