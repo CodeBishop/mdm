@@ -72,6 +72,7 @@ class Drive(object):
         self.GSenseCount = ""
         self.hours = NOT_INITIALIZED
         self.importantAttributes = list()  # Attributes that should always be shown (like WHEN_FAILs).
+        self.lastTestAborted = False  # Drive has a test abortion in-progress.
         self.model = ""
         self.name = devicePath  # Device is referred to by its path.
         self.reallocCount = NOT_INITIALIZED  # Marker value for uninitialized integer.
@@ -255,12 +256,14 @@ class Drive(object):
                 self.estimatedCompletionTime = datetime.datetime.strptime(eta, "%a %b %d %H:%M:%S %Y")
             self.state = DR_STATE_TESTING
             self.initiateQuery()  # Call smartctl a 2nd time to confirm new status as testing.
+            self.lastTestAborted = False
 
     def abortTest(self):
         # Call smartctl directly to abort currently running test.
         terminalCommand("smartctl -s on -X " + self.devicePath)
         self.resetTestCompletion()
         self.state = DR_STATE_UNKNOWN
+        self.lastTestAborted = True
 
     def resetTestCompletion(self):
         self.estimatedCompletionTime = None

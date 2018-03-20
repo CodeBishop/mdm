@@ -21,8 +21,8 @@
 
 # High Priority TO DO
 #####################
+# Test that you can abort a test and still get notified by other tests completing.
 # Why are the columns all spread out when there's no drives attached?
-# Make "(L)ong test all" work even if there's no selector in place.
 # Make drives shows a status of "complete" if they have finished a test during the current run.
 # Make an ISO and add pcspkr to /etc/modules.
 # Run the program with a variety of drives to make sure nothing crashes mdm.
@@ -118,7 +118,6 @@ def main(screen):
     programTitle = "%%%r%%%0Multi-Drive Manager"  # Title shown at top of screen.
     testInProgress = False  # True if any drive is in a testing state.
     completionAlert = False  # True if the program is alerting the user all drives have finished testing.
-    abortionStartTime = time.time()  # Reset time marker of last abort command.
     beepAlertStartTime = time.time()  # Reset alert beep repeat delay.
     beepsRemaining = 0  # Number of alert beeps left to repeat.
 
@@ -341,7 +340,6 @@ def main(screen):
                 if keypress == ord('a'):
                     if selector is not SELECTOR_ABSENT:
                         drives[selector].abortTest()
-                        abortionStartTime = time.time()
                     refreshDrives = redrawScreen = True
 
                 if keypress == ord('r'):
@@ -358,20 +356,19 @@ def main(screen):
                 # If a drive is identified as having an unknown USB bridge then remove it from the list of drives.
                 if drive.unknownUSBBridge:
                     drives.remove(drive)
-                # If at least one test was in progress then check if all tests have completed.
-                if testInProgress:
-                    # If drives are idle and there's been no abort command recently then alert user of test completion.
-                    secondsSinceLastAbortCommand = int((time.time() - abortionStartTime))
-                    if allDrivesAreIdleOrUnknown(drives) and secondsSinceLastAbortCommand > 5:
-                        testInProgress = False
-                        completionAlert = True
-                        beepsRemaining = BEEP_REPEAT_COUNT
-                # Update test-in-progress flag if any drives have started testing.
-                else:
-                    if any(drive.state == DR_STATE_TESTING for drive in drives):
-                        testInProgress = True
-
                 redrawScreen = True  # Show outcome by redrawing screen.
+
+        # If at least one test was in progress then check if all tests have completed.
+        if testInProgress:
+            for drive in drives:
+                if drive.state in [DR_STATE_UNKNOWN, DR_STATE_IDLE] and not drive.lastTestAborted:
+                    testInProgress = False
+                    completionAlert = True
+                    beepsRemaining = BEEP_REPEAT_COUNT
+        # Update test-in-progress flag if any drives have started testing.
+        else:
+            if any(drive.state == DR_STATE_TESTING for drive in drives):
+                testInProgress = True
 
         time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
 
