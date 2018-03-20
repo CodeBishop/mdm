@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import re
 
 
 class Attribute(object):
@@ -16,4 +17,5 @@ class Attribute(object):
         self.updated = smartctlLine[66:75]
         self.whenFailed = smartctlLine[75:87]
         self.rawValue = smartctlLine[87:]
+        self.hasWhenFailed = re.search(r"\w*-\w*", self.whenFailed) is None
 

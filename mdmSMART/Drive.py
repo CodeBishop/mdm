@@ -287,7 +287,7 @@ class Drive(object):
     # If any attribute has something other than a dash for WHEN_FAIL then return True.
     def hasFailedAttributes(self):
         for attribute in self.attributes:
-            if attribute and not re.search(r"\w*-\w*", attribute.whenFailed):
+            if attribute and attribute.hasWhenFailed:
                 return True
         return False
 
