@@ -21,8 +21,8 @@
 
 # High Priority TO DO
 #####################
-# Why are the columns all spread out when there's no drives attached?
 # Make drives shows a status of "complete" if they have finished a test during the current run.
+# Make the program reject an excessively small window/screen rather than crash, then test it in a small window.
 # Make an ISO and add pcspkr to /etc/modules.
 # Run the program with a variety of drives to make sure nothing crashes mdm.
 
@@ -87,8 +87,9 @@ BEEP_REPEAT_DELAY_SECS = 600
 HOURS_WARNING = 25000  # Number of drive operation hours above which the user is warned of old age.
 HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user is strongly warned of old age.
 
-# Widths of the columns in the drive table.
-columnWidths = [9, 5, 8, 24, 21, 7, 6, 5, 10, 15, 15]
+# Headers and widths of the columns in the drive table.
+TABLE_HEADERS = ["Path", "RPM", "Size", "Model", "Serial", "RSec", "Hours", "GSen", "Alert", "State", "ETA"]
+columnWidths = [9, 5, 8, 22, 19, 4, 6, 5, 10, 15, 5]
 
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
@@ -379,7 +380,7 @@ def main(screen):
 # Construct a 2D array for drive data, including a header row.
 def buildDriveTable(driveList):
     table = list()
-    table.append(["Path", "RPM", "Size", "Model", "Serial", "ReAlloc", "Hours", "GSen", "Alert", "State", "ETA"])
+    table.append(TABLE_HEADERS)
     for drive in driveList:
         # Make a color-coded string of the reallocated sector count.
         if drive.reallocCount is 0:
