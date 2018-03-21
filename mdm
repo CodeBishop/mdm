@@ -22,7 +22,6 @@
 # High Priority TO DO
 #####################
 # Make drives shows a status of "complete" if they have finished a test during the current run.
-# Make the program reject an excessively small window/screen rather than crash, then test it in a small window.
 # Make an ISO and add pcspkr to /etc/modules.
 # Run the program with a variety of drives to make sure nothing crashes mdm.
 
@@ -91,6 +90,9 @@ HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user i
 TABLE_HEADERS = ["Path", "RPM", "Size", "Model", "Serial", "RSec", "Hours", "GSen", "Alert", "State", "ETA"]
 columnWidths = [9, 5, 8, 22, 19, 4, 6, 5, 10, 15, 5]
 
+MIN_SCREEN_HEIGHT = 34
+MIN_SCREEN_WIDTH = sum(columnWidths) + 18
+
 # Before initializing curses, remove the Esc key delay from the OS environment.
 os.environ.setdefault('ESCDELAY', '0')
 
@@ -104,6 +106,7 @@ if not os.getuid() == 0:
 
 def main(screen):
     initCurses(screen)  # Set parameters of curses environment.
+    checkScreenSize(screen)  # Test that screen is large enough.
     screen.nodelay(True)  # Make getch() non-blocking.
     setupCursesUtils(screen)  # Connect curses to the utility function library.
     selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
@@ -423,6 +426,17 @@ def buildDriveTable(driveList):
 
         table.append(entry)
     return table
+
+
+# Halt with error if screen is too small.
+def checkScreenSize(screen):
+    height, width = screen.getmaxyx()
+    if height < MIN_SCREEN_HEIGHT or width < MIN_SCREEN_WIDTH:
+        curses.endwin()
+        print "ERROR: Screen is too small to run program."
+        print "   Available: width=" + str(width) + "   height=" + str(height)
+        print "   Needed:    width=" + str(MIN_SCREEN_WIDTH) + "   height=" + str(MIN_SCREEN_HEIGHT)
+        exit(1)
 
 
 # Returns true if all drives are idle/unknown,  (not testing or querying).
