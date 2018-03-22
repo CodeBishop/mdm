@@ -21,13 +21,15 @@
 
 # High Priority TO DO
 #####################
-# Make drives shows a status of "complete" if they have finished a test during the current run.
 # Make an ISO and add pcspkr to /etc/modules.
 # Run the program with a variety of drives to make sure nothing crashes mdm.
 
 
 # Moderate Priority To Do
 #########################
+# Add a Drive.completedTest member, drives will show a status of "complete" if they finish a test
+#   while the program is running or if the last test starts with "Completed" and the hours are within
+#   24 hours of the currently shown hours.
 # Make sure the program behaves reasonably when the window is resized too small to fit everything.
 # Save the ETA to file so the program can be quit and re-run without losing the ETA.
 # Figure out why the ETA column can briefly show a negative time at the first refresh after completion.
