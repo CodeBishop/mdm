@@ -133,7 +133,7 @@ def main(screen):
     programTitle = "%%%r%%%0Multi-Drive Manager"  # Title shown at top of screen.
     testInProgress = False  # True if any drive is in a testing state.
     completionAlert = False  # True if the program is alerting the user all drives have finished testing.
-    beepAlertStartTime = time.time()  # Reset alert beep repeat delay.
+    beepAlertStartTime = 0  # Reset alert beep repeat delay (unit is number of seconds since epoch).
     beepsRemaining = 0  # Number of alert beeps left to repeat.
 
     # Construct alert message window.
@@ -269,6 +269,7 @@ def main(screen):
         # Send alert beep if appropriate.
         if completionAlert and beepsRemaining > 0 and (time.time() - beepAlertStartTime) > BEEP_REPEAT_DELAY_SECS:
             # Send alert beep with non-blocking terminal command.
+            exit(78)#DEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUG
             beepCommand = BASE_BEEP
             subprocess.Popen(beepCommand.split(), stdout=subprocess.PIPE, stderr=DEVNULL)
             beepAlertStartTime = time.time()
@@ -366,8 +367,6 @@ def main(screen):
         # Check if any drives have a smartctl query in progress.
         for drive in drives:
             if drive.state == DR_STATE_QUERYING and drive.queryIsDone():
-                # If a query just completed then process the smartctl output.
-                drive.interpretSmartctlOutput()
                 # If a drive is identified as having an unknown USB bridge then remove it from the list of drives.
                 if drive.unknownUSBBridge:
                     drives.remove(drive)

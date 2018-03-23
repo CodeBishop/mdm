@@ -100,11 +100,12 @@ class Drive(object):
 
     # Test if a smartctl query-in-progress has completed.
     def queryIsDone(self):
+        # If smartctl query terminal command has completed then update self based on terminal output.
         if self.state == DR_STATE_QUERYING:
             if self.smartctlProcess.poll() is not None:
                 self.smartctlOutput, _ = self.smartctlProcess.communicate()
                 self.smartctlLines = self.smartctlOutput.split('\n')
-                self.state = DR_STATE_UNKNOWN
+                self.interpretSmartctlOutput()
                 return True  # Query has just completed.
             else:
                 return False  # Querying but smartctl has not completed.

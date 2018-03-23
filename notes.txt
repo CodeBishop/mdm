@@ -81,3 +81,30 @@ drawColoredString(x, y, string)
 TableLayout
     Has column widths but no understanding of what's in those columns.
     Has no connection to the Drive class.
+
+
+Rethinking Drive State
+----------------------
+Questions
+    What state is a drive in if it's already running a SMART test when the program starts?
+        Note that you should get a completion alarm if a drive was testing then finishes during program run.
+    Drive should be tracking its transition from testing to completion. Whatever its post-test state it should also
+        note somewhere that it was testing and has since completed. How will mdm distinguish between drives that
+        have completed a test during mdm's runtime and those that have completed a test before it was run or after
+        it already sounded an alarm? A Drive.completedTest flag that starts False and switches to True when the
+        state transitions out from DR_STATE_TESTING would seem the right way but how does MDM distinguish between
+        drives it's already alarmed for versus one that has just completed a test and still needs an alarm?
+States/Situations
+    Program starts. Drive states are being queried, testInProgress=False.
+    Queries complete. One test-in-progress, testInProgress=True.
+
+
+
+
+Testing Scheme
+--------------
+    Start a short test on a drive, quit and re-run program. Does it alarm on test completion like it should?
+    If a test completes and you start another, does mdm alarm on completion of the second test?
+    If multiple drives are testing, does mdm wait until the last one finishes before alarming?
+    If two drives are testing and one is aborted will the other still alarm on completion like it should?
+    If only one drive is testing and is aborted does it alarm? It should not.
