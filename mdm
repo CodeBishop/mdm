@@ -32,11 +32,11 @@
 # High Priority TO DO
 #####################
 # Make an ISO and add pcspkr to /etc/modules.
-# Run the program with a variety of drives to make sure nothing crashes mdm.
 
 
 # Moderate Priority To Do
 #########################
+# If only one drive is testing and the user aborts the test then it should not give a completion alert.
 # Add a Drive.completedTest member, drives will show a status of "complete" if they finish a test
 #   while the program is running or if the last test starts with "Completed" and the hours are within
 #   24 hours of the currently shown hours.
@@ -269,7 +269,6 @@ def main(screen):
         # Send alert beep if appropriate.
         if completionAlert and beepsRemaining > 0 and (time.time() - beepAlertStartTime) > BEEP_REPEAT_DELAY_SECS:
             # Send alert beep with non-blocking terminal command.
-            exit(78)#DEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUGDEBUG
             beepCommand = BASE_BEEP
             subprocess.Popen(beepCommand.split(), stdout=subprocess.PIPE, stderr=DEVNULL)
             beepAlertStartTime = time.time()
@@ -372,19 +371,17 @@ def main(screen):
                     drives.remove(drive)
                 redrawScreen = True  # Show outcome by redrawing screen.
 
-        # If at least one test was in progress then check if all tests have completed.
-        if testInProgress:
-            for drive in drives:
-                if drive.state in [DR_STATE_UNKNOWN, DR_STATE_IDLE] and not drive.lastTestAborted:
-                    testInProgress = False
-                    completionAlert = True
-                    beepsRemaining = BEEP_REPEAT_COUNT
-        # Update test-in-progress flag if any drives have started testing.
+        # If any drives are testing then make sure test-in-progress flag is True.
+        if any(drive.state == DR_STATE_TESTING for drive in drives):
+            testInProgress = True
         else:
-            if any(drive.state == DR_STATE_TESTING for drive in drives):
-                testInProgress = True
+            # If no drives are testing or querying then the testInProgress flag triggers a completion alert.
+            if testInProgress and not any(drive.state == DR_STATE_QUERYING for drive in drives):
+                testInProgress = False
+                completionAlert = True
+                beepsRemaining = BEEP_REPEAT_COUNT
 
-        time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
+        time.sleep(0.1)  # Sleep for this many seconds to reduce CPU load.
 
     # Clear the screen so that curses doesn't leave it's junk on the terminal (only happens on sysrescue machine).
     screen.clear()
