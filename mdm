@@ -381,7 +381,7 @@ def main(screen):
                 completionAlert = True
                 beepsRemaining = BEEP_REPEAT_COUNT
 
-        time.sleep(0.1)  # Sleep for this many seconds to reduce CPU load.
+        time.sleep(0.01)  # Sleep for this many seconds to reduce CPU load.
 
     # Clear the screen so that curses doesn't leave it's junk on the terminal (only happens on sysrescue machine).
     screen.clear()
