@@ -96,9 +96,20 @@ Questions
         drives it's already alarmed for versus one that has just completed a test and still needs an alarm?
 States/Situations
     Program starts. Drive states are being queried, testInProgress=False.
-    Queries complete. One test-in-progress, testInProgress=True.
+    Queries complete. Found one test-in-progress, testInProgress=True.
 
 
+Rethinking Drive State Proposal:  Drive Subscribers and a DriveWatcher Class
+----------------------------------------------------------------------------
+Drive calls Drive.setState(state). This method then checks the given state against the current state and if the
+state has changed then it notifies all of its stateChangeSubscribers (or maybe stateChangeListeners) of the
+change. Add a DriveWatcher class that subscribes itself to all of these and maintains its own state of
+NOT_TESTING, TESTS_IN_PROGRESS, TESTS_COMPLETED_AWAITING_ACKNOWLEDGMENT by adding, removing and transferring
+drives between lists of drivesTesting, drivesIdle, drivesCompleted, drivesAborted, etc... Then the program has one
+instance of DriveWatcher and triggers its completionAlert flag by asking the DriveWatcher its state. The program
+can also refer to DriveWatcher's lists to decide whether to describe the state of a drive by its own state
+description or by whether its present on the drivesCompleted list of the program's DriveWatcher instance, in
+which case the program would describe the drive in its state as "Completed".
 
 
 Testing Scheme
