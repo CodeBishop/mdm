@@ -27,6 +27,7 @@ CEC_REVERSE = CEC + "r"
 utilsWindow = None
 
 
+# Determine string length after removing embedded color codes.
 def CECStringLength(text):
     return len(text) - text.count(CEC) * (len(CEC) + CECLEN)
 
@@ -38,6 +39,7 @@ def setPrintWindow(activeWindow):
 
 def setupCursesUtils(activeWindow):
     setPrintWindow(activeWindow)
+
     # Prepare color pairs.
     for i in range(1, 8):
         curses.init_pair(i, i, 0)
@@ -68,6 +70,20 @@ def cutToEllipsis(text, maxLength):
 
 
 def printAt(x, y, text, length=-1):
+    # Get current window dimensions and clip them for border.
+    windowHeight, windowWidth = utilsWindow.getmaxyx()
+
+    # Clip the supposed window dimensions on the assumption that the window has a border.
+    windowHeight, windowWidth = windowHeight - 1, windowWidth - 1
+
+    # If text position is outside of window then don't draw it.
+    if x < 0 or y < 0 or x >= windowWidth or y >= windowHeight:
+        return
+
+    # If the string won't fit on screen then don't draw it.
+    if x + CECStringLength(text) >= windowWidth:
+        return
+
     # If string needs to fit a given length then cut it.
     if length > -1:
         text = cutToEllipsis(text, length)

@@ -32,12 +32,12 @@
 # High Priority TO DO
 #####################
 # Make an ISO and add pcspkr to /etc/modules.
-# Test the program with a drive that has enough attributes and test to punch through the bottom of the window.
 # Narrow the column widths again. ETA is getting chopped.
 
 
 # Moderate Priority To Do
 #########################
+# Make printAt() clip strings that go past the right-edge of the window rather than dropping them.
 # Add a reverse search to (f)ind so that it also checks if any of the drive serial number are a subset of
 #   the search string so that internal serials that are substrings of external ones can be found. Note that there
 #   are drives that clip off the start of the external serial and other drives that clip off the end. Both happen.
