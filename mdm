@@ -36,6 +36,9 @@
 
 # Moderate Priority To Do
 #########################
+# Add a reverse search to (f)ind so that it also checks if any of the drive serial number are a subset of
+#   the search string so that internal serials that are substrings of external ones can be found. Note that there
+#   are drives that clip off the start of the external serial and other drives that clip off the end. Both happen.
 # If only one drive is testing and the user aborts the test then it should not give a completion alert.
 # Add a Drive.completedTest member, drives will show a status of "complete" if they finish a test
 #   while the program is running or if the last test starts with "Completed" and the hours are within

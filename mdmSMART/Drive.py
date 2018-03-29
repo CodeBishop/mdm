@@ -45,7 +45,7 @@ NUMBER_OF_SMARTCTL_STATE_CODES = 256
 
 # Smart test status codes.
 SMART_CODE_IDLE = [0, 1]  # Drive is not smart testing.
-SMART_CODE_ABORTED = [16, 17, 24, 25]  # Drive is idle and most recent test was aborted by user.
+SMART_CODE_ABORTED = [16, 17, 24, 25, 40]  # Drive is idle and most recent test was aborted by user.
 SMART_CODE_INTERRUPTED = 32  # Drive is idle and most recent test was interrupted before completion.
 SMART_CODE_INTERRUPTED2 = 33  # Drive is idle and most recent test was interrupted before completion.
 SMART_CODE_READ_FAILURE = 118  # Drive failed most recent test with read failure.
