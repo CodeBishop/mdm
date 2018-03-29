@@ -32,7 +32,6 @@
 # High Priority TO DO
 #####################
 # Make an ISO and add pcspkr to /etc/modules.
-# Narrow the column widths again. ETA is getting chopped.
 
 
 # Moderate Priority To Do
@@ -105,7 +104,7 @@ HOURS_CRITICAL = 50000  # Number of drive operation hours above which the user i
 
 # Headers and widths of the columns in the drive table.
 TABLE_HEADERS = ["Path", "RPM", "Size", "Model", "Serial", "RSec", "Hours", "GSen", "Alert", "State", "ETA"]
-columnWidths = [9, 5, 8, 22, 19, 4, 6, 5, 10, 15, 5]
+columnWidths = [9, 5, 8, 22, 17, 4, 6, 5, 10, 15, 7]
 
 MIN_SCREEN_HEIGHT = 34
 MIN_SCREEN_WIDTH = sum(columnWidths) + 18
