@@ -32,6 +32,8 @@
 # High Priority TO DO
 #####################
 # Make an ISO and add pcspkr to /etc/modules.
+# Test the program with a drive that has enough attributes and test to punch through the bottom of the window.
+# Narrow the column widths again. ETA is getting chopped.
 
 
 # Moderate Priority To Do
