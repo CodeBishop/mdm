@@ -26,7 +26,7 @@
 #   Font effects: dim=underline=normal, reverse=standout(fg/bg color reversal), bold is brighter text.
 #       blink is grey text on dark grey background (no blinking).
 #   Characters known to appear in smartctl output:
-#       Parantheses, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
+#       Parenthesis, numbers, letters, underscores, whitespace, +, -, :, =, ", ., square brackets,
 
 
 # High Priority TO DO
@@ -36,6 +36,8 @@
 
 # Moderate Priority To Do
 #########################
+# Make the ETA adjust itself each time the percentage remaining updates. Currently the ETA can give a negative
+#   number if it elapses without completing.
 # Make printAt() clip strings that go past the right-edge of the window rather than dropping them.
 # Add a reverse search to (f)ind so that it also checks if any of the drive serial number are a subset of
 #   the search string so that internal serials that are substrings of external ones can be found. Note that there
