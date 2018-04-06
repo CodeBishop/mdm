@@ -36,6 +36,8 @@
 
 # Moderate Priority To Do
 #########################
+# Initiating a long test on all drives at once can cause a freeze up. Make the program show a message or progress
+#   indicator.
 # Make the ETA adjust itself each time the percentage remaining updates. Currently the ETA can give a negative
 #   number if it elapses without completing.
 # Make printAt() clip strings that go past the right-edge of the window rather than dropping them.
