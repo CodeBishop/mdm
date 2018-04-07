@@ -87,7 +87,6 @@ POS_MY = 5  # Top side of message bar.
 POS_DTX = 6  # Left side of drive table.
 POS_DTY = 7  # Top side of drive table.
 
-SELECTOR_ABSENT = -1
 NO_KEYS_PRESSED = -1
 ESCAPE_KEY = 27
 ENTER_KEY = 10
@@ -129,7 +128,8 @@ def main(screen):
     checkScreenSize(screen)  # Test that screen is large enough.
     screen.nodelay(True)  # Make getch() non-blocking.
     setupCursesUtils(screen)  # Connect curses to the utility function library.
-    selector = SELECTOR_ABSENT  # Hide the drive selector until drives are found.
+    selectorVisible = False  # Hide the drive selector until drives are found.
+    selector = 0  # Selector index defaults to first drive.
     searchString = ""
     searchModeFlag = False  # Toggle search mode (as versus command mode).
     barcodeScanDetection = False  # Treat rapid keypresses as barcode scans to be searched.
@@ -199,13 +199,13 @@ def main(screen):
 
             # Print the drive list.
             table = buildDriveTable(drives)  # Construct a table of attribute text from the drive list.
-            if selector is not SELECTOR_ABSENT:
+            if selectorVisible:
                 table[selector+1][0] = CEC_REVERSE + table[selector+1][0]
             screenHeight, screenWidth = screen.getmaxyx()  # Get limitations of screen size.
             drawTable(table, columnWidths, POS_DTX, POS_DTY, screenWidth - POS_DTX, screenHeight - POS_DTY)
 
             # If a drive is currently selected.
-            if selector is not SELECTOR_ABSENT:
+            if selectorVisible:
                 # Draw the selector.
                 printAt(POS_DTX - 4, POS_DTY + selector + 1, CEC_REVERSE + "--> ")
 
@@ -314,7 +314,7 @@ def main(screen):
                     searchModeFlag = False
                 elif keypress == ENTER_KEY:
                     if len(searchString) > 0:
-                        selector, messageBarContents = searchDrives(searchString, drives)
+                        selector, selectorVisible, messageBarContents = searchDrives(searchString, drives)
                     searchModeFlag = False
                     searchString = ""  # Clear the search string after each search.
                 elif keypress == curses.KEY_BACKSPACE:
@@ -329,41 +329,49 @@ def main(screen):
                 # If a drive list is present then check for cursor keys.
                 if len(drives) > 0:
                     if keypress == curses.KEY_DOWN:
-                        selector = (selector + 1) % len(drives)
+                        # If the selector is hidden then the down key activates it without moving it.
+                        if not selectorVisible:
+                            selectorVisible = True
+                        # If the selector is visible then the down key moves it.
+                        else:
+                            selector = (selector + 1) % len(drives)
+                    # Key-up makes the selector visible and moves it.
                     if keypress == curses.KEY_UP:
+                        selectorVisible = True
                         selector = (selector - 1) % len(drives)
-                else:
-                    selector = SELECTOR_ABSENT
 
-                if keypress == ESCAPE_KEY:
-                    selector = SELECTOR_ABSENT
-
-                if keypress == ord('f'):
-                    selector = SELECTOR_ABSENT
-                    searchModeFlag = True
-
-                if keypress == ord('s'):
-                    if selector is not SELECTOR_ABSENT:
-                        # Start the test, refresh the drive and redraw the screen.
+                # If the selector is visible then allow commands to be executed on the selected drive.
+                if selectorVisible:
+                    # Start a short test.
+                    if keypress == ord('s'):
                         drives[selector].runShortTest()
                         redrawScreen = True
 
-                if keypress == ord('l'):
-                    if selector is not SELECTOR_ABSENT:
-                        # Start the test, refresh the drive and redraw the screen.
+                    # Start a long test.
+                    if keypress == ord('l'):
                         drives[selector].runLongTest()
                         redrawScreen = True
 
+                    # Abort a running test.
+                    if keypress == ord('a'):
+                        drives[selector].abortTest()
+                        refreshDrives = redrawScreen = True
+
+                # Hide the selector.
+                if keypress == ESCAPE_KEY:
+                    selectorVisible = False
+
+                # Enter search mode.
+                if keypress == ord('f'):
+                    selectorVisible = False
+                    searchModeFlag = True
+
+                # Start long tests on all the drives.
                 if keypress == ord('L'):
                     # Start the tests, refresh the drives and redraw the screen.
                     for drive in drives:
                         drive.runLongTest()
                     redrawScreen = True
-
-                if keypress == ord('a'):
-                    if selector is not SELECTOR_ABSENT:
-                        drives[selector].abortTest()
-                    refreshDrives = redrawScreen = True
 
                 if keypress == ord('r'):
                     refreshDrives = redrawScreen = True
@@ -470,7 +478,6 @@ def initCurses(screen):
 
 def searchDrives(searchString, drives):
     message = ""  # Default to no message.
-    selector = SELECTOR_ABSENT  # Default to hiding the selector.
     # Build a list of search-matching drives and highlight them as selected.
     matchingDrives = list()
     for i in range(len(drives)):
@@ -483,8 +490,8 @@ def searchDrives(searchString, drives):
         message = "Search matched multiple drives:"
         for drive in matchingDrives:
             message += " " + drive.devicePath
-            selector = SELECTOR_ABSENT  # Hide the selector if >1 drive matched search.
-    return selector, message
+            selectorVisible = False  # Hide the selector if >1 drive matched search.
+    return selector, selectorVisible, message
 
 
 def findAllDrives():
