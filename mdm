@@ -36,6 +36,9 @@
 
 # Moderate Priority To Do
 #########################
+# Look up all the possible SMART status codes to better recognize them. In particular the many codes that all
+#   produce the same messages for aborts and resets.
+# Consider differentiating idle from abort/reset in the the displayed status.
 # Initiating a long test on all drives at once can cause a freeze up. Make the program show a message or progress
 #   indicator.
 # Make the ETA adjust itself each time the percentage remaining updates. Currently the ETA can give a negative
