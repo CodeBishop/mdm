@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../lapscan/.idea/lapscan.iml" filepath="$PROJECT_DIR$/../lapscan/.idea/lapscan.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/poki.iml" filepath="$PROJECT_DIR$/.idea/poki.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../repview/.idea/repview.iml" filepath="$PROJECT_DIR$/../repview/.idea/repview.iml" />
     </modules>
   </component>
 </project>
