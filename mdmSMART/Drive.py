@@ -48,7 +48,7 @@ SMART_CODE_IDLE = [0, 1]  # Drive is not smart testing.
 SMART_CODE_ABORTED = [16, 17, 23, 24, 25, 39, 40, 41]  # Drive is idle and most recent test was aborted by user.
 SMART_CODE_INTERRUPTED = 32  # Drive is idle and most recent test was interrupted before completion.
 SMART_CODE_INTERRUPTED2 = 33  # Drive is idle and most recent test was interrupted before completion.
-SMART_CODE_READ_FAILURE = 118  # Drive failed most recent test with read failure.
+SMART_CODE_READ_FAILURE = [112, 118]  # Drive failed most recent test with read failure.
 
 # Attribute ID numbers.
 ATTR_REALLOC = 5
