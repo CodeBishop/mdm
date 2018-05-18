@@ -6,6 +6,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="lapscan" />
     <orderEntry type="module" module-name="repview" />
+    <orderEntry type="module" module-name="curses-examples" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="Unittests" />
